@@ -49,7 +49,7 @@ The system should:
 ### 1. Clone the repository
 
 ```bash
-git clone [REPOSITORY_URL] .
+git clone https://github.com/Blinktechnologies-company/ireeme-front.git .
 ```
 
 ---
