@@ -448,7 +448,7 @@ function NavGroupSection({
   isActive: (href: string) => boolean;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen ?? true);
+  const [open, setOpen] = useState(defaultOpen ?? false); // Changed to false by default
 
   // If a child is active, start open
   const hasActiveChild = group.items.some((i) => isActive(i.href));
@@ -574,7 +574,6 @@ export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: S
             key={group.id}
             group={group}
             isActive={isActive}
-            defaultOpen={true}
           />
         ))}
       </nav>
