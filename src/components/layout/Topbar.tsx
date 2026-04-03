@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown, Settings, Menu, Search } from "lucide-react";
+import { Bell, ChevronDown, Settings, PanelLeft, Search } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
 import { useState } from "react";
 import Link from "next/link";
@@ -39,7 +39,7 @@ export function Topbar({
   const roleDisplay = roleDisplayNames[role] || "User";
 
   return (
-    <header className="app-topbar-modern">
+    <header className={`app-topbar-modern ${role === "accountant" ? "accountant-topbar" : ""}`}>
       {/* Left Section */}
       <div className="topbar-left-section">
         {/* Sidebar Toggle */}
@@ -48,27 +48,34 @@ export function Topbar({
           onClick={onToggleSidebar}
           aria-label="Toggle sidebar"
         >
-          <Menu size={20} />
+          <PanelLeft size={20} />
         </button>
 
-        {/* Search */}
-        <div className="topbar-search-modern">
-          <Search size={18} className="topbar-search-icon" />
-          <input
-            type="text"
-            placeholder="Search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="topbar-search-input"
-          />
-        </div>
+        {/* Conditional: Page Title for Accountant or Search for others */}
+        {role === "accountant" && title ? (
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+          </div>
+        ) : (
+          /* Search */
+          <div className="topbar-search-modern">
+            <Search size={18} className="topbar-search-icon" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="topbar-search-input"
+            />
+          </div>
+        )}
       </div>
 
       {/* User Section */}
       <div className="topbar-user-section">
         {/* Notifications */}
         <button className="topbar-notification-btn" aria-label="Notifications">
-          <Bell size={20} />
+          <Bell size={role === "accountant" ? 14 : 16} />
           {notificationCount > 0 && (
             <span className="topbar-notification-dot-modern" />
           )}
@@ -76,12 +83,11 @@ export function Topbar({
 
         {/* User Info */}
         <div className="topbar-user-info">
+          <div className="topbar-user-avatar">
+            <Avatar name={userName} size={role === "accountant" ? "sm" : "md"} />
+          </div>
           <div className="topbar-user-text">
             <span className="topbar-user-name">{userName}</span>
-            <span className="topbar-user-role">{roleDisplay}</span>
-          </div>
-          <div className="topbar-user-avatar">
-            <Avatar name={userName} size="md" />
           </div>
         </div>
       </div>
