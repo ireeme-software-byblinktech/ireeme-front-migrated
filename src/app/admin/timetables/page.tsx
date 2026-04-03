@@ -1,0 +1,2 @@
+import { PlaceholderPage } from "@/components/ui/PlaceholderPage";
+export default function AdminTimetablesPage() { return <PlaceholderPage title="Timetables" subtitle="Manage school timetables and schedules" role="admin" />; }
