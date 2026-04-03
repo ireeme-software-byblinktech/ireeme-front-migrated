@@ -26,6 +26,7 @@ import {
   StickyNote,
   UserCheck,
   TrendingUp,
+  User,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
 
@@ -43,6 +44,7 @@ export type NavGroup = {
   label: string;
   items: NavItem[];
   collapsible?: boolean;
+  icon?: React.ReactNode;
 };
 
 // ─── NAVIGATION CONFIGS per role ──────────────────────────────
@@ -59,41 +61,44 @@ const TEACHER_GROUPS: NavGroup[] = [
   {
     id: "academics",
     label: "Academics",
+    icon: <GraduationCap size={18} />,
     collapsible: true,
     items: [
-      { label: "Grades", href: "/teacher/grades", icon: <GraduationCap size={18} /> },
+      { label: "Grades", href: "/teacher/grades", icon: <BarChart2 size={18} /> },
       { label: "Assignments", href: "/teacher/assignments", icon: <ClipboardList size={18} /> },
       { label: "Attendance", href: "/teacher/attendance", icon: <UserCheck size={18} /> },
       { label: "Timetable", href: "/teacher/timetable", icon: <CalendarDays size={18} /> },
       { label: "Notes", href: "/teacher/notes", icon: <StickyNote size={18} /> },
       { label: "Report Card", href: "/teacher/report-card", icon: <FileText size={18} /> },
-      { label: "Library", href: "/teacher/library", icon: <Library size={18} /> },
     ],
   },
   {
-    id: "students",
-    label: "Students",
-    collapsible: false,
+    id: "resources",
+    label: "Resources",
+    icon: <Library size={18} />,
+    collapsible: true,
     items: [
+      { label: "Library", href: "/teacher/library", icon: <BookOpen size={18} /> },
       { label: "Students", href: "/teacher/students", icon: <Users size={18} /> },
     ],
   },
   {
-    id: "schedule",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Schedule", href: "/teacher/timetable", icon: <CalendarDays size={18} /> },
-    ],
-  },
-  {
     id: "tools",
-    label: "",
-    collapsible: false,
+    label: "Tools",
+    icon: <Bot size={18} />,
+    collapsible: true,
     items: [
       { label: "Appeals", href: "/teacher/appeals", icon: <ShieldAlert size={18} /> },
       { label: "Campus AI", href: "/teacher/ai", icon: <Bot size={18} /> },
+    ],
+  },
+  {
+    id: "communication",
+    label: "",
+    collapsible: false,
+    items: [
       { label: "Messages", href: "/teacher/messages", icon: <MessageSquare size={18} />, badge: 3 },
+      { label: "Settings", href: "/teacher/settings", icon: <Settings size={18} /> },
     ],
   },
 ];
@@ -110,6 +115,7 @@ const ADMIN_GROUPS: NavGroup[] = [
   {
     id: "academics",
     label: "Academics",
+    icon: <GraduationCap size={18} />,
     collapsible: true,
     items: [
       { label: "Students", href: "/admin/students", icon: <Users size={18} /> },
@@ -118,12 +124,21 @@ const ADMIN_GROUPS: NavGroup[] = [
       { label: "Attendance", href: "/admin/attendance", icon: <UserCheck size={18} /> },
       { label: "Grades", href: "/admin/grades", icon: <BarChart2 size={18} /> },
       { label: "Timetable", href: "/admin/timetable", icon: <CalendarDays size={18} /> },
-      { label: "Library", href: "/admin/library", icon: <Library size={18} /> },
+    ],
+  },
+  {
+    id: "resources",
+    label: "Resources",
+    icon: <Library size={18} />,
+    collapsible: true,
+    items: [
+      { label: "Library", href: "/admin/library", icon: <BookOpen size={18} /> },
     ],
   },
   {
     id: "communication",
     label: "Communication",
+    icon: <MessageSquare size={18} />,
     collapsible: true,
     items: [
       { label: "Announcements", href: "/admin/announcements", icon: <Bell size={18} /> },
@@ -153,18 +168,51 @@ const STUDENT_GROUPS: NavGroup[] = [
   {
     id: "academics",
     label: "Academics",
+    icon: <GraduationCap size={18} />,
     collapsible: true,
     items: [
-      { label: "My Grades", href: "/student/grades", icon: <GraduationCap size={18} /> },
       { label: "Assignments", href: "/student/assignments", icon: <ClipboardList size={18} /> },
-      { label: "Timetable", href: "/student/timetable", icon: <CalendarDays size={18} /> },
-      { label: "Attendance", href: "/student/attendance", icon: <UserCheck size={18} /> },
-      { label: "Library", href: "/student/library", icon: <Library size={18} /> },
+      { label: "Grades", href: "/student/grades", icon: <BarChart2 size={18} /> },
+      { label: "Notes", href: "/student/notes", icon: <StickyNote size={18} /> },
       { label: "Report Card", href: "/student/report-card", icon: <FileText size={18} /> },
+      { label: "Attendance", href: "/student/attendance", icon: <UserCheck size={18} /> },
     ],
   },
   {
-    id: "tools",
+    id: "resources",
+    label: "Resources",
+    icon: <Library size={18} />,
+    collapsible: true,
+    items: [
+      { label: "Library", href: "/student/library", icon: <BookOpen size={18} /> },
+      { label: "Timetable", href: "/student/timetable", icon: <CalendarDays size={18} /> },
+      { label: "Projects", href: "/student/projects", icon: <ClipboardList size={18} /> },
+    ],
+  },
+  {
+    id: "services",
+    label: "Services",
+    icon: <Stethoscope size={18} />,
+    collapsible: true,
+    items: [
+      { label: "Health", href: "/student/health", icon: <Stethoscope size={18} /> },
+      { label: "Permissions", href: "/student/permissions", icon: <ShieldAlert size={18} /> },
+      { label: "Discipline", href: "/student/discipline", icon: <ShieldAlert size={18} /> },
+    ],
+  },
+  {
+    id: "engagement",
+    label: "Engagement",
+    icon: <Users size={18} />,
+    collapsible: true,
+    items: [
+      { label: "Appeals", href: "/student/appeals", icon: <MessageSquare size={18} /> },
+      { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
+      { label: "Campus AI", href: "/student/ai", icon: <Bot size={18} /> },
+    ],
+  },
+  {
+    id: "communication",
     label: "",
     collapsible: false,
     items: [
@@ -187,15 +235,16 @@ const PARENT_GROUPS: NavGroup[] = [
   {
     id: "academics",
     label: "Academics",
+    icon: <GraduationCap size={18} />,
     collapsible: true,
     items: [
-      { label: "Grades", href: "/parent/grades", icon: <GraduationCap size={18} /> },
+      { label: "Grades", href: "/parent/grades", icon: <BarChart2 size={18} /> },
       { label: "Attendance", href: "/parent/attendance", icon: <UserCheck size={18} /> },
       { label: "Timetable", href: "/parent/timetable", icon: <CalendarDays size={18} /> },
     ],
   },
   {
-    id: "tools",
+    id: "communication",
     label: "",
     collapsible: false,
     items: [
@@ -212,9 +261,24 @@ const ACCOUNTANT_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/accountant", icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    icon: <DollarSign size={18} />,
+    collapsible: true,
+    items: [
       { label: "Payments", href: "/accountant/payments", icon: <DollarSign size={18} /> },
       { label: "Invoices", href: "/accountant/invoices", icon: <FileText size={18} /> },
       { label: "Reports", href: "/accountant/reports", icon: <BarChart2 size={18} /> },
+    ],
+  },
+  {
+    id: "system",
+    label: "",
+    collapsible: false,
+    items: [
       { label: "Settings", href: "/accountant/settings", icon: <Settings size={18} /> },
     ],
   },
@@ -227,10 +291,33 @@ const SUPER_ADMIN_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/super-admin", icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    id: "management",
+    label: "Management",
+    icon: <Users size={18} />,
+    collapsible: true,
+    items: [
       { label: "Schools", href: "/super-admin/schools", icon: <BookOpen size={18} /> },
       { label: "Users", href: "/super-admin/users", icon: <Users size={18} /> },
+    ],
+  },
+  {
+    id: "analytics",
+    label: "Analytics",
+    icon: <BarChart2 size={18} />,
+    collapsible: true,
+    items: [
       { label: "Analytics", href: "/super-admin/analytics", icon: <BarChart2 size={18} /> },
       { label: "Reports", href: "/super-admin/reports", icon: <TrendingUp size={18} /> },
+    ],
+  },
+  {
+    id: "system",
+    label: "",
+    collapsible: false,
+    items: [
       { label: "Settings", href: "/super-admin/settings", icon: <Settings size={18} /> },
     ],
   },
@@ -243,9 +330,24 @@ const DISCIPLINE_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/discipline", icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    id: "discipline",
+    label: "Discipline",
+    icon: <ShieldAlert size={18} />,
+    collapsible: true,
+    items: [
       { label: "Incidents", href: "/discipline/incidents", icon: <ShieldAlert size={18} /> },
       { label: "Students", href: "/discipline/students", icon: <Users size={18} /> },
       { label: "Reports", href: "/discipline/reports", icon: <FileText size={18} /> },
+    ],
+  },
+  {
+    id: "system",
+    label: "",
+    collapsible: false,
+    items: [
       { label: "Settings", href: "/discipline/settings", icon: <Settings size={18} /> },
     ],
   },
@@ -258,9 +360,24 @@ const LIBRARIAN_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/librarian", icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    id: "library",
+    label: "Library",
+    icon: <Library size={18} />,
+    collapsible: true,
+    items: [
       { label: "Books", href: "/librarian/books", icon: <BookOpen size={18} /> },
       { label: "Loans", href: "/librarian/loans", icon: <Library size={18} /> },
       { label: "Members", href: "/librarian/members", icon: <Users size={18} /> },
+    ],
+  },
+  {
+    id: "system",
+    label: "",
+    collapsible: false,
+    items: [
       { label: "Settings", href: "/librarian/settings", icon: <Settings size={18} /> },
     ],
   },
@@ -273,9 +390,24 @@ const NURSE_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/nurse", icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    id: "health",
+    label: "Health",
+    icon: <Stethoscope size={18} />,
+    collapsible: true,
+    items: [
       { label: "Health Records", href: "/nurse/records", icon: <Stethoscope size={18} /> },
       { label: "Students", href: "/nurse/students", icon: <Users size={18} /> },
       { label: "Reports", href: "/nurse/reports", icon: <FileText size={18} /> },
+    ],
+  },
+  {
+    id: "system",
+    label: "",
+    collapsible: false,
+    items: [
       { label: "Settings", href: "/nurse/settings", icon: <Settings size={18} /> },
     ],
   },
@@ -334,6 +466,37 @@ function NavGroupSection({
     );
   }
 
+  // If group has an icon, render it like a nav item with dropdown
+  if (group.icon) {
+    return (
+      <div className="sidebar-group">
+        <button
+          className="sidebar-nav-item sidebar-group-nav-header"
+          onClick={() => {
+            setInitialized(true);
+            setOpen((v) => !v);
+          }}
+          aria-expanded={isOpen}
+        >
+          <span className="sidebar-nav-icon">{group.icon}</span>
+          <span className="sidebar-nav-label">{group.label}</span>
+          <ChevronDown
+            size={14}
+            className={cn("sidebar-group-chevron", isOpen && "sidebar-group-chevron--open")}
+          />
+        </button>
+        {isOpen && (
+          <ul className="sidebar-nav-list sidebar-nav-list--indented">
+            {group.items.map((item) => (
+              <NavLink key={item.href} item={item} isActive={isActive(item.href)} />
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
+  // Default group header style (for groups without icons)
   return (
     <div className="sidebar-group">
       <button
@@ -384,9 +547,10 @@ interface SidebarProps {
   role: string;
   userName?: string;
   userEmail?: string;
+  isOpen?: boolean;
 }
 
-export function Sidebar({ role, userName = "User", userEmail }: SidebarProps) {
+export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: SidebarProps) {
   const pathname = usePathname();
   const groups = NAV_MAP[role] ?? ADMIN_GROUPS;
   const roleLabel = ROLE_LABELS[role] ?? role;
@@ -397,14 +561,11 @@ export function Sidebar({ role, userName = "User", userEmail }: SidebarProps) {
   };
 
   return (
-    <aside className="app-sidebar">
+    <aside className={`app-sidebar ${!isOpen ? 'app-sidebar--hidden' : ''}`}>
       {/* Logo */}
       <div className="sidebar-logo">
-        <span className="sidebar-logo-wordmark">iremee</span>
+        <img src="/icons/logo.png" alt="iremee" className="sidebar-logo-image" />
       </div>
-
-      {/* Role label */}
-      <div className="sidebar-role-badge">{roleLabel}</div>
 
       {/* Navigation */}
       <nav className="sidebar-nav">
@@ -420,18 +581,13 @@ export function Sidebar({ role, userName = "User", userEmail }: SidebarProps) {
 
       {/* User footer */}
       <div className="sidebar-footer">
-        <div className="sidebar-user">
-          <Avatar name={userName} size="sm" />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="sidebar-user-name truncate">{userName}</div>
-            {userEmail && (
-              <div className="sidebar-user-email truncate">{userEmail}</div>
-            )}
-          </div>
-        </div>
-        <Link href="/login" className="sidebar-nav-item sidebar-logout">
-          <LogOut size={16} className="sidebar-nav-icon" />
-          <span className="sidebar-nav-label">Sign Out</span>
+        <Link href={`/${role}/profile`} className="sidebar-nav-item sidebar-footer-item">
+          <User size={20} className="sidebar-nav-icon" />
+          <span className="sidebar-nav-label">Profile</span>
+        </Link>
+        <Link href="/login" className="sidebar-nav-item sidebar-footer-item">
+          <LogOut size={20} className="sidebar-nav-icon" />
+          <span className="sidebar-nav-label">Logout</span>
         </Link>
       </div>
     </aside>
