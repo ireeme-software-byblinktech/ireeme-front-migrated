@@ -110,48 +110,11 @@ const ADMIN_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
-    ],
-  },
-  {
-    id: "academics",
-    label: "Academics",
-    icon: <GraduationCap size={18} />,
-    collapsible: true,
-    items: [
+      { label: "Teachers", href: "/admin/teachers", icon: <User size={18} /> },
       { label: "Students", href: "/admin/students", icon: <Users size={18} /> },
-      { label: "Teachers", href: "/admin/teachers", icon: <GraduationCap size={18} /> },
-      { label: "Classes", href: "/admin/classes", icon: <BookOpen size={18} /> },
-      { label: "Attendance", href: "/admin/attendance", icon: <UserCheck size={18} /> },
-      { label: "Grades", href: "/admin/grades", icon: <BarChart2 size={18} /> },
-      { label: "Timetable", href: "/admin/timetable", icon: <CalendarDays size={18} /> },
-    ],
-  },
-  {
-    id: "resources",
-    label: "Resources",
-    icon: <Library size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Library", href: "/admin/library", icon: <BookOpen size={18} /> },
-    ],
-  },
-  {
-    id: "communication",
-    label: "Communication",
-    icon: <MessageSquare size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Announcements", href: "/admin/announcements", icon: <Bell size={18} /> },
-      { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} /> },
-    ],
-  },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Reports", href: "/admin/reports", icon: <TrendingUp size={18} /> },
-      { label: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
+      { label: "Timetables", href: "/admin/timetables", icon: <CalendarDays size={18} /> },
+      { label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} /> },
+      { label: "Elections", href: "/admin/elections", icon: <FileText size={18} /> },
     ],
   },
 ];
@@ -229,27 +192,11 @@ const PARENT_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/parent", icon: <LayoutDashboard size={18} /> },
-      { label: "My Children", href: "/parent/children", icon: <Users size={18} /> },
-    ],
-  },
-  {
-    id: "academics",
-    label: "Academics",
-    icon: <GraduationCap size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Grades", href: "/parent/grades", icon: <BarChart2 size={18} /> },
       { label: "Attendance", href: "/parent/attendance", icon: <UserCheck size={18} /> },
-      { label: "Timetable", href: "/parent/timetable", icon: <CalendarDays size={18} /> },
-    ],
-  },
-  {
-    id: "communication",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Messages", href: "/parent/messages", icon: <MessageSquare size={18} /> },
-      { label: "Settings", href: "/parent/settings", icon: <Settings size={18} /> },
+      { label: "Grades", href: "/parent/grades", icon: <BarChart2 size={18} /> },
+      { label: "Teachers", href: "/parent/teachers", icon: <Users size={18} /> },
+      { label: "Chats", href: "/parent/chats", icon: <MessageSquare size={18} /> },
+      { label: "Report Card", href: "/parent/report-card", icon: <FileText size={18} /> },
     ],
   },
 ];
@@ -261,25 +208,12 @@ const ACCOUNTANT_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/accountant", icon: <LayoutDashboard size={18} /> },
-    ],
-  },
-  {
-    id: "finance",
-    label: "Finance",
-    icon: <DollarSign size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Payments", href: "/accountant/payments", icon: <DollarSign size={18} /> },
-      { label: "Invoices", href: "/accountant/invoices", icon: <FileText size={18} /> },
-      { label: "Reports", href: "/accountant/reports", icon: <BarChart2 size={18} /> },
-    ],
-  },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/accountant/settings", icon: <Settings size={18} /> },
+      { label: "Parents", href: "/accountant/parents", icon: <User size={18} /> },
+      { label: "Students", href: "/accountant/students", icon: <Users size={18} /> },
+      { label: "Staff", href: "/accountant/staff", icon: <Users size={18} /> },
+      { label: "Stock", href: "/accountant/stock", icon: <FileText size={18} /> },
+      { label: "Documents", href: "/accountant/documents", icon: <FileText size={18} /> },
+      { label: "Transactions", href: "/accountant/transactions", icon: <DollarSign size={18} /> },
     ],
   },
 ];
@@ -291,34 +225,10 @@ const SUPER_ADMIN_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Dashboard", href: "/super-admin", icon: <LayoutDashboard size={18} /> },
-    ],
-  },
-  {
-    id: "management",
-    label: "Management",
-    icon: <Users size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Schools", href: "/super-admin/schools", icon: <BookOpen size={18} /> },
-      { label: "Users", href: "/super-admin/users", icon: <Users size={18} /> },
-    ],
-  },
-  {
-    id: "analytics",
-    label: "Analytics",
-    icon: <BarChart2 size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Analytics", href: "/super-admin/analytics", icon: <BarChart2 size={18} /> },
-      { label: "Reports", href: "/super-admin/reports", icon: <TrendingUp size={18} /> },
-    ],
-  },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/super-admin/settings", icon: <Settings size={18} /> },
+      { label: "Schools", href: "/super-admin/schools", icon: <User size={18} /> },
+      { label: "Admins", href: "/super-admin/admins", icon: <Users size={18} /> },
+      { label: "Documents", href: "/super-admin/documents", icon: <FileText size={18} /> },
+      { label: "Reports", href: "/super-admin/reports", icon: <BarChart2 size={18} /> },
     ],
   },
 ];
