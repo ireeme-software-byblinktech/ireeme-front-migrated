@@ -449,6 +449,12 @@ body {
   min-width: 0;
 }
 
+/* Increased height for accountant pages */
+.app-topbar-modern.accountant-topbar {
+  height: 80px;
+  padding: 16px 24px;
+}
+
 .topbar-left-section {
   display: flex;
   align-items: center;
@@ -461,8 +467,8 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  border: 1px solid #E5E7EB;
-  background: #FFFFFF;
+  border: none;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -473,7 +479,7 @@ body {
 }
 
 .topbar-sidebar-toggle:hover {
-  background: #F9FAFB;
+  background: transparent;
   color: #374151;
 }
 
@@ -539,6 +545,12 @@ body {
   flex-shrink: 0;
 }
 
+/* Smaller notification button for accountant */
+.accountant-topbar .topbar-notification-btn {
+  width: 36px;
+  height: 36px;
+}
+
 .topbar-notification-btn:hover {
   background: #F9FAFB;
   color: #374151;
@@ -593,7 +605,13 @@ body {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  border: 2px solid #E5E7EB;
+  border: none;
+}
+
+/* Smaller avatar for accountant */
+.accountant-topbar .topbar-user-avatar {
+  width: 36px;
+  height: 36px;
 }
 
 .topbar-title {
@@ -810,15 +828,15 @@ body {
 .stat-card-horizontal {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px 24px 20px 8px;
   border: 1px solid #E5E7EB;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
   display: flex;
   align-items: flex-start;
-  gap: 20px;
+  gap: 6px;
   transition: all 0.15s;
-  min-width: 300px;
-  max-width: 300px;
+  min-width: 260px;
+  max-width: 260px;
   min-height: 120px;
   flex-shrink: 0;
   flex-grow: 0;
@@ -889,6 +907,7 @@ body {
   font-size: 12px;
   font-weight: 500;
   color: #000000;
+  white-space: nowrap;
 }
 
 .stat-card-trend-small.up { color: #000000; }
@@ -900,7 +919,7 @@ body {
 }
 
 .stat-card-trend-text {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 /* ===================== CARDS ===================== */
@@ -965,6 +984,8 @@ body {
   background: var(--color-bg-hover);
   white-space: nowrap;
 }
+
+/* Black header for assignments table */
 
 .data-table td {
   padding: 14px 16px;
@@ -1331,6 +1352,20 @@ body {
   border-color: var(--color-primary);
 }
 
+/* Rounded pagination for assignments */
+.pagination-rounded .pagination-btn {
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pagination-rounded .pagination-btn.active {
+  background: #000000;
+  border-color: #000000;
+}
+
 /* ===================== MODAL ===================== */
 .modal-overlay {
   position: fixed;
@@ -1566,3 +1601,28 @@ body {
 .text-muted { color: var(--color-text-secondary); }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .w-full { width: 100%; }
+
+/* ===================== ASSIGNMENTS TABLE CUSTOM STYLES ===================== */
+/* Black header for assignments table - placed at end for highest specificity */
+.assignments-table th,
+.data-table.assignments-table th,
+table.assignments-table th {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 14px !important;
+  padding: 16px 16px !important;
+  border-bottom: 1px solid #333333 !important;
+}
+
+.assignments-table th:first-child,
+.data-table.assignments-table th:first-child {
+  padding-left: 16px !important;
+}
+
+.assignments-table th:last-child,
+.data-table.assignments-table th:last-child {
+  padding-right: 16px !important;
+}
