@@ -458,7 +458,7 @@ export default function TeacherAssignmentsPage() {
           </button>
           <button 
             onClick={() => setIsCreateModalOpen(false)}
-            className="bg-white text-black border-[1.5px] border-gray-300 px-12 py-3 rounded-xl font-medium text-base min-w-[200px] hover:bg-gray-50"
+            className="bg-white text-black border-[1.5px] border-gray-300 px-12 py-3 rounded-xl font-medium text-base min-w-[200px] hover:opacity-75 transition-opacity"
           >
             cancel
           </button>
@@ -595,7 +595,7 @@ export default function TeacherAssignmentsPage() {
           </button>
           <button 
             onClick={() => setIsSubmissionsModalOpen(false)}
-            className="bg-white text-black border-[1.5px] border-gray-300 px-10 py-3 rounded-xl font-medium text-sm min-w-[180px] hover:bg-gray-50"
+            className="bg-white text-black border-[1.5px] border-gray-300 px-10 py-3 rounded-xl font-medium text-sm min-w-[180px] hover:opacity-75 transition-opacity"
           >
             cancel
           </button>

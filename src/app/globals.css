@@ -2218,6 +2218,13 @@ table.assignments-table th {
   position: absolute;
   right: 16px;
   color: #FFFFFF !important;
+  background: transparent !important;
+  transition: opacity 0.2s ease;
+}
+
+.modal--premium .btn-ghost:hover {
+  background: transparent !important;
+  opacity: 0.7;
 }
 
 .modal-section-grid {
