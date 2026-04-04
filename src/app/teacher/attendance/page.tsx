@@ -1,91 +1,252 @@
 "use client";
 
 import { useState } from "react";
-import { PageHeader } from "@/components/ui/Shared";
-import { Card, CardBody, CardHeader, StatCard } from "@/components/ui/Card";
-import { DataTable, TableUser, Column } from "@/components/ui/DataTable";
-import { StatusBadge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { SearchInput, Select } from "@/components/ui/FormElements";
-import { UserCheck, UserX, Clock, Users, Plus } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, Users, Check } from "lucide-react";
+import { StatCard } from "@/components/ui/Card";
 
-const ATTENDANCE_DATA = [
-  { id: 1, student: "Alice Nguyen", studentId: "S001", class: "10A", date: "2024-03-20", status: "Present", time: "07:58 AM" },
-  { id: 2, student: "Brian Oke", studentId: "S002", class: "10A", date: "2024-03-20", status: "Absent", time: "--" },
-  { id: 3, student: "Clara Mbu", studentId: "S003", class: "10A", date: "2024-03-20", status: "Present", time: "08:05 AM" },
-  { id: 4, student: "David Kim", studentId: "S004", class: "10A", date: "2024-03-20", status: "Late", time: "08:32 AM" },
-  { id: 5, student: "Eva Russo", studentId: "S005", class: "10A", date: "2024-03-20", status: "Present", time: "07:55 AM" },
-  { id: 6, student: "Frank Balo", studentId: "S006", class: "10A", date: "2024-03-20", status: "Absent", time: "--" },
-];
-
-type AttRow = typeof ATTENDANCE_DATA[number];
-
-export default function TeacherAttendancePage() {
-  const [search, setSearch] = useState("");
-
-  const filtered = ATTENDANCE_DATA.filter((r) =>
-    r.student.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const present = ATTENDANCE_DATA.filter((r) => r.status === "Present").length;
-  const absent = ATTENDANCE_DATA.filter((r) => r.status === "Absent").length;
-  const late = ATTENDANCE_DATA.filter((r) => r.status === "Late").length;
-
-  const columns: Column<AttRow>[] = [
-    { key: "student", header: "Student", render: (_, row) => <TableUser name={row.student} sub={`ID: ${row.studentId}`} /> },
-    { key: "class", header: "Class" },
-    { key: "date", header: "Date", render: (v) => new Date(String(v)).toLocaleDateString("en-US", { month: "short", day: "numeric" }) },
-    { key: "time", header: "Check-in Time" },
-    { key: "status", header: "Status", render: (v) => <StatusBadge status={String(v)} /> },
-    {
-      key: "id", header: "Action", align: "right",
-      render: (_, row) => (
-        <div className="flex gap-2 justify-end">
-          <Button variant="ghost" size="sm" style={{ color: "var(--color-success)" }}>Present</Button>
-          <Button variant="ghost" size="sm" style={{ color: "var(--color-danger)" }}>Absent</Button>
-        </div>
-      )
-    },
-  ];
+const FilterDropdown = ({ title, options }: { title: string, options: string[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  
+  const toggle = (opt: string) => {
+    if (selected.includes(opt)) setSelected(selected.filter(o => o !== opt));
+    else setSelected([...selected, opt]);
+  };
 
   return (
-    <div>
-      <PageHeader
-        title="Attendance"
-        subtitle="Track daily student attendance"
-        breadcrumbs={[{ label: "Attendance" }]}
-        actions={
-          <Button icon={<Plus size={15} />} size="sm">Mark Attendance</Button>
-        }
-      />
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-white border-[1.5px] border-gray-200 px-4 py-2.5 rounded-lg text-sm font-semibold text-[#374151] flex items-center gap-6"
+      >
+        {selected.length > 0 ? selected[0] : title} 
+        {isOpen ? (
+          <ChevronUp size={18} className="text-gray-400" />
+        ) : (
+          <ChevronDown size={18} className="text-gray-400" />
+        )}
+      </button>
 
-      <div className="stats-grid">
-        <StatCard label="Total Students" value={String(ATTENDANCE_DATA.length)} icon={<Users size={22} />} color="blue" />
-        <StatCard label="Present" value={String(present)} icon={<UserCheck size={22} />} color="green" />
-        <StatCard label="Absent" value={String(absent)} icon={<UserX size={22} />} color="red" />
-        <StatCard label="Late" value={String(late)} icon={<Clock size={22} />} color="orange" />
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-[220px] bg-white border-[1px] border-gray-200 rounded-xl shadow-md z-50 py-3">
+          <div className="text-[14px] text-gray-500 mb-2 px-4 font-medium">Select status</div>
+          <div className="flex flex-col gap-1">
+            {options.map(opt => (
+              <div 
+                key={opt} 
+                className="flex items-center gap-4 px-4 cursor-pointer py-2 hover:bg-gray-50 transition-colors"
+                onClick={() => toggle(opt)}
+              >
+                <div className={`w-[24px] h-[24px] rounded-[6px] border-[2.5px] border-[#CBD5E1] flex items-center justify-center transition-colors flex-shrink-0 ${
+                  selected.includes(opt) ? "bg-black" : "bg-white"
+                }`}>
+                  {selected.includes(opt) && <Check size={16} strokeWidth={3} className="text-white" />}
+                </div>
+                <span className="text-[16px] font-medium text-[#374151]">{opt}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const DateDropdown = ({ options }: { options: string[] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState(options[0]);
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-white border-[1.5px] border-gray-200 px-4 py-2.5 rounded-lg text-sm font-semibold text-[#374151] flex items-center gap-4"
+      >
+        <span className="text-[15px]">{selected}</span>
+        {isOpen ? (
+          <ChevronUp size={18} className="text-[#374151]" />
+        ) : (
+          <ChevronDown size={18} className="text-[#374151]" />
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-full min-w-[160px] bg-white border-[1.5px] border-gray-200 rounded-xl shadow-sm z-50 py-2">
+          <div className="flex flex-col">
+            {options.map(opt => (
+              <div 
+                key={opt} 
+                className="px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => { setSelected(opt); setIsOpen(false); }}
+              >
+                <span className="text-[16px] text-[#374151]">{opt}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function TeacherAttendancePage() {
+  const [students, setStudents] = useState([
+    { id: 1, initials: "AJ", name: "Alice Johnson", streak: "15 day streak", status: "Present" },
+    { id: 2, initials: "BS", name: "Bob Smith", streak: "12 day streak", status: "Present" },
+    { id: 3, initials: "CB", name: "Charlie Brown", streak: "No streak", status: "Absent" },
+    { id: 4, initials: "DP", name: "Diana Prince", streak: "20 day streak", status: "Present" },
+    { id: 5, initials: "EH", name: "Ethan Hunt", streak: "8 day streak", status: "Late" },
+    { id: 6, initials: "FG", name: "Fiona Green", streak: "18 day streak", status: "Present" },
+    { id: 7, initials: "GW", name: "George Wilson", streak: "10 day streak", status: "Present" },
+    { id: 8, initials: "HL", name: "Hannah Lee", streak: "14 day streak", status: "Excused" },
+  ]);
+
+  const updateStatus = (id: number, newStatus: string) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
+  };
+
+  const markAllPresent = () => {
+    setStudents(prev => prev.map(s => ({ ...s, status: "Present" })));
+  };
+
+  const clearAll = () => {
+    setStudents(prev => prev.map(s => ({ ...s, status: "" })));
+  };
+
+  const presentCount = students.filter(s => s.status === "Present").length;
+  const absentCount = students.filter(s => s.status === "Absent").length;
+  const lateCount = students.filter(s => s.status === "Late").length;
+
+  return (
+    <div className="pb-10">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-[28px] font-bold mb-2">Attendance</h1>
+          <p className="text-gray-500 font-medium text-[15px]">Track and manage student attendance</p>
+        </div>
+        <button className="bg-black text-white px-8 py-3 rounded-md font-semibold text-[14px] hover:opacity-90 transition-opacity">
+          Export Report
+        </button>
       </div>
 
-      <Card>
-        <div className="filter-bar" style={{ padding: "16px 20px", borderBottom: "1px solid var(--color-border-light)" }}>
-          <SearchInput
-            placeholder="Search student..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            containerClassName="flex-1"
-            style={{ maxWidth: 300 }}
-          />
-          <Select
-            options={[{ value: "10A", label: "Class 10A" }, { value: "10B", label: "Class 10B" }]}
-            placeholder="All Classes"
-            style={{ width: 150 }}
-          />
-          <input type="date" className="form-input" style={{ width: 160 }} defaultValue={new Date().toISOString().slice(0, 10)} />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-4 mb-10 text-[#374151]">
+        <StatCard
+          label="Total Students"
+          value={String(students.length)}
+          progress={100}
+          icon={<Users size={24} />}
+          trend={{ value: "3.6%", direction: "up", label: "Across 3 classes" }}
+        />
+        <StatCard
+          label="Present"
+          value={String(presentCount)}
+          progress={Math.round((presentCount / students.length) * 100) || 0}
+          icon={<Users size={24} />}
+          trend={{ value: "2.3%", direction: "up", label: "from last term" }}
+        />
+        <StatCard
+          label="absent"
+          value={String(absentCount)}
+          progress={Math.round((absentCount / students.length) * 100) || 0}
+          icon={<Users size={24} />}
+          trend={{ value: "", direction: "up", label: "Assignments to grade" }}
+        />
+        <StatCard
+          label="Late"
+          value={String(lateCount)}
+          progress={Math.round((lateCount / students.length) * 100) || 0}
+          icon={<Users size={24} />}
+          trend={{ value: "", direction: "down", label: "Students below 70%" }}
+        />
+      </div>
+
+      {/* Actions and Filters */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <button onClick={markAllPresent} className="bg-black text-white px-6 py-2.5 rounded-lg text-[13px] font-bold hover:opacity-90 transition-opacity">
+            Mark All Present
+          </button>
+          <button onClick={clearAll} className="bg-white text-[#374151] border-[1.5px] border-gray-200 px-6 py-2.5 rounded-lg text-[13px] font-bold hover:bg-gray-50 transition-colors">
+            Clear All
+          </button>
         </div>
-        <CardBody style={{ padding: 0 }}>
-          <DataTable columns={columns} data={filtered} keyField="id" />
-        </CardBody>
-      </Card>
+        <div className="flex items-center gap-4">
+          <FilterDropdown 
+            title="Select Class" 
+            options={["All Classes", "Year 2A", "Year 2B", "Year 2C", "Year 1A"]} 
+          />
+          <DateDropdown 
+            options={["2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15"]} 
+          />
+        </div>
+      </div>
+
+      {/* Attendance List */}
+      <div className="bg-white rounded-[20px] border-[1.5px] border-gray-200 p-8 pb-10">
+        <h2 className="text-xl font-bold mb-6">Student Attendance</h2>
+        
+        <div className="flex flex-col gap-4">
+          {students.map(student => (
+            <div key={student.id} className="bg-[#FAFAFA] rounded-xl p-4 flex items-center justify-between">
+              
+              {/* Avatar and Name */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center text-[15px] font-bold shrink-0">
+                  {student.initials}
+                </div>
+                <div>
+                  <h3 className="font-bold text-[16px] text-black mb-0.5">{student.name}</h3>
+                  <p className="text-[13px] text-gray-400 font-medium">{student.streak}</p>
+                </div>
+              </div>
+
+              {/* Status Pills */}
+              <div className="flex items-center gap-2">
+                {["Present", "Absent", "Late", "Excused"].map(statusStr => (
+                  <button 
+                    key={statusStr}
+                    onClick={() => updateStatus(student.id, statusStr)}
+                    className={`px-5 py-2 rounded-md text-[13px] font-semibold transition-colors ${
+                      student.status === statusStr 
+                        ? "bg-black text-white" 
+                        : "bg-[#F3F4F6] text-[#374151] hover:bg-gray-200"
+                    }`}
+                  >
+                    {statusStr}
+                  </button>
+                ))}
+              </div>
+
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination mimicking the screenshot */}
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <button className="w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm text-gray-400 hover:bg-gray-100 transition-colors">
+            {"<"}
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] font-bold text-sm bg-black text-white">
+            1
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] font-bold text-sm text-gray-500 border border-gray-300 hover:bg-gray-100 transition-colors bg-white">
+            2
+          </button>
+          <span className="w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm text-gray-400">
+            ...
+          </span>
+          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] font-bold text-sm text-gray-500 border border-gray-300 hover:bg-gray-100 transition-colors bg-white">
+            5
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm text-gray-400 hover:bg-gray-100 transition-colors">
+            {">"}
+          </button>
+        </div>
+
+      </div>
+
     </div>
   );
 }
