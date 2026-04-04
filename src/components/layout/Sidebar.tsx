@@ -73,35 +73,52 @@ const TEACHER_GROUPS: NavGroup[] = [
     ],
   },
   {
-    id: "resources",
-    label: "Resources",
-    icon: <Library size={18} />,
-    collapsible: true,
+    id: "student",
+    label: "Students",
+    icon: <Users size={18} />,
+    collapsible: false,
     items: [
-      { label: "Library", href: "/teacher/library", icon: <BookOpen size={18} /> },
       { label: "Students", href: "/teacher/students", icon: <Users size={18} /> },
     ],
   },
   {
-    id: "tools",
-    label: "Tools",
-    icon: <Bot size={18} />,
-    collapsible: true,
+    id: "schedule",
+    label: "Schedule",
+    icon: <CalendarDays size={18} />,
+    collapsible: false,
     items: [
-      { label: "Appeals", href: "/teacher/appeals", icon: <ShieldAlert size={18} /> },
-      { label: "Campus AI", href: "/teacher/ai", icon: <Bot size={18} /> },
+      { label: "Schedule", href: "/teacher/schedule", icon: <CalendarDays size={18} /> },
     ],
   },
   {
-    id: "communication",
-    label: "",
+    id: "appeals",
+    label: "Appeals",
+    icon: <ShieldAlert size={18} />,
     collapsible: false,
     items: [
-      { label: "Messages", href: "/teacher/messages", icon: <MessageSquare size={18} />, badge: 3 },
-      { label: "Settings", href: "/teacher/settings", icon: <Settings size={18} /> },
+      { label: "Appeals", href: "/teacher/appeals", icon: <ShieldAlert size={18} /> },
+    ],
+  },
+  {
+    id: "campus-ai",
+    label: "Campus Ai",
+    icon: <Bot size={18} />,
+    collapsible: false,
+    items: [
+      { label: "Campus Ai", href: "/teacher/campus-ai", icon: <Bot size={18} />},
+    ],
+  },
+  {
+    id: "messages",
+    label: "Messages",
+    icon: <MessageSquare size={18} />,
+    collapsible: false,
+    items: [
+      { label: "Messages", href: "/teacher/messages", icon: <MessageSquare size={18} /> },
     ],
   },
 ];
+
 
 const ADMIN_GROUPS: NavGroup[] = [
   {

@@ -89,7 +89,7 @@ export function StatCard({
   progress = 75,
   className,
 }: StatCardProps) {
-  const circumference = 2 * Math.PI * 35; // radius = 35 for even larger circle
+  const circumference = 2 * Math.PI * 35; // radius = 35
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
@@ -105,7 +105,7 @@ export function StatCard({
             r="35"
             fill="none"
             stroke="#E5E7EB"
-            strokeWidth="4"
+            strokeWidth="3"
           />
           {/* Progress circle */}
           <circle
@@ -114,7 +114,7 @@ export function StatCard({
             r="35"
             fill="none"
             stroke="#000000"
-            strokeWidth="4"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={strokeDasharray}
             strokeDashoffset={strokeDashoffset}
@@ -129,20 +129,19 @@ export function StatCard({
 
       {/* Content */}
       <div className="stat-card-content-horizontal">
-        <h3 className="stat-card-title-small">{label}</h3>
-        <div className="stat-card-number-row">
-          <p className="stat-card-number-small">{value}</p>
-          {trend && (
-            <div className={cn("stat-card-trend-small", trend.direction)}>
+        <p className="stat-card-label-small">{label}</p>
+        <h3 className="stat-card-value-small">{value}</h3>
+        {trend && (
+          <div className={cn("stat-card-trend-small", trend.direction)}>
+            <div className="stat-card-trend-text">
               <span className="stat-card-trend-arrow">
-                {trend.direction === "up" ? "↗" : "↘"}
+                {trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "→"}
               </span>
-              <span className="stat-card-trend-text">
-                {trend.value} {trend.label || "This month"}
-              </span>
+              <span>{trend.value}</span>
+              {trend.label && <span className="stat-card-trend-label">{trend.label}</span>}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
