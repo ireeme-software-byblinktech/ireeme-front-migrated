@@ -124,7 +124,7 @@ export default function TeacherSchedulePage() {
               <tr>
                 <td className="py-2 pr-4 text-xs font-semibold text-gray-500 align-top pt-4">08:00 - 09:00</td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#EFF6FF] border-[1.5px] border-[#93C5FD] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#EFF6FF] border-[1.5px] border-[#93C5FD] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#1D4ED8]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#2563EB] mb-2">Grade 5B</div>
                     <div className="text-[10.5px] text-[#3B82F6] flex items-center gap-1 mt-auto">
@@ -135,9 +135,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-full rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top">
-                  <div className="h-full bg-[#EFF6FF] border-[1.5px] border-[#93C5FD] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#EFF6FF] border-[1.5px] border-[#93C5FD] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#1D4ED8]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#2563EB] mb-2">Grade 5B</div>
                     <div className="text-[10.5px] text-[#3B82F6] flex items-center gap-1 mt-auto">
@@ -148,9 +148,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-full rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top">
-                  <div className="h-full bg-[#EFF6FF] border-[1.5px] border-[#93C5FD] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#EFF6FF] border-[1.5px] border-[#93C5FD] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#1D4ED8]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#2563EB] mb-2">Grade 5B</div>
                     <div className="text-[10.5px] text-[#3B82F6] flex items-center gap-1 mt-auto">
@@ -166,9 +166,9 @@ export default function TeacherSchedulePage() {
               {/* 09:00 - 10:00 */}
               <tr>
                 <td className="py-2 pr-4 text-xs font-semibold text-gray-500 align-top pt-4">09:00 - 10:00</td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#F0FDF4] border-[1.5px] border-[#86EFAC] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#F0FDF4] border-[1.5px] border-[#86EFAC] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#15803D]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#16A34A] mb-2">Grade 5A</div>
                     <div className="text-[10.5px] text-[#22C55E] flex items-center gap-1 mt-auto">
@@ -179,9 +179,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#F0FDF4] border-[1.5px] border-[#86EFAC] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#F0FDF4] border-[1.5px] border-[#86EFAC] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#15803D]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#16A34A] mb-2">Grade 5A</div>
                     <div className="text-[10.5px] text-[#22C55E] flex items-center gap-1 mt-auto">
@@ -192,14 +192,14 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
               </tr>
 
               {/* 10:00 - 11:00 */}
               <tr>
                 <td className="py-2 pr-4 text-xs font-semibold text-gray-500 align-top pt-4">10:00 - 11:00</td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FAF5FF] border-[1.5px] border-[#D8B4FE] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FAF5FF] border-[1.5px] border-[#D8B4FE] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#7E22CE]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#9333EA] mb-2">Grade 6B</div>
                     <div className="text-[10.5px] text-[#A855F7] flex items-center gap-1 mt-auto">
@@ -210,9 +210,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FAF5FF] border-[1.5px] border-[#D8B4FE] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FAF5FF] border-[1.5px] border-[#D8B4FE] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#7E22CE]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#9333EA] mb-2">Grade 6B</div>
                     <div className="text-[10.5px] text-[#A855F7] flex items-center gap-1 mt-auto">
@@ -223,9 +223,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FAF5FF] border-[1.5px] border-[#D8B4FE] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FAF5FF] border-[1.5px] border-[#D8B4FE] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#7E22CE]">Mathematics</div>
                     <div className="text-[11px] font-semibold text-[#9333EA] mb-2">Grade 6B</div>
                     <div className="text-[10.5px] text-[#A855F7] flex items-center gap-1 mt-auto">
@@ -241,9 +241,9 @@ export default function TeacherSchedulePage() {
               {/* 11:00 - 12:00 */}
               <tr>
                 <td className="py-2 pr-4 text-xs font-semibold text-gray-500 align-top pt-4">11:00 - 12:00</td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FFF7ED] border-[1.5px] border-[#FDBA74] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FFF7ED] border-[1.5px] border-[#FDBA74] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#C2410C]">Algebra II</div>
                     <div className="text-[11px] font-semibold text-[#EA580C] mb-2">Grade 7A</div>
                     <div className="text-[10.5px] text-[#F97316] flex items-center gap-1 mt-auto">
@@ -254,9 +254,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FFF7ED] border-[1.5px] border-[#FDBA74] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FFF7ED] border-[1.5px] border-[#FDBA74] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#C2410C]">Algebra II</div>
                     <div className="text-[11px] font-semibold text-[#EA580C] mb-2">Grade 7A</div>
                     <div className="text-[10.5px] text-[#F97316] flex items-center gap-1 mt-auto">
@@ -267,7 +267,7 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
               </tr>
 
               {/* 12:00 - 13:00 LUNCH */}
@@ -289,7 +289,7 @@ export default function TeacherSchedulePage() {
               <tr>
                 <td className="py-2 pr-4 text-xs font-semibold text-gray-500 align-top pt-4">13:00 - 14:00</td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FDF2F8] border-[1.5px] border-[#F9A8D4] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FDF2F8] border-[1.5px] border-[#F9A8D4] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#BE185D]">Calculus</div>
                     <div className="text-[11px] font-semibold text-[#DB2777] mb-2">Grade 8B</div>
                     <div className="text-[10.5px] text-[#EC4899] flex items-center gap-1 mt-auto">
@@ -300,9 +300,9 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
-                  <div className="h-full bg-[#FDF2F8] border-[1.5px] border-[#F9A8D4] rounded-xl p-3 flex flex-col justify-center">
+                  <div className="h-[110px] bg-[#FDF2F8] border-[1.5px] border-[#F9A8D4] rounded-xl p-3 flex flex-col justify-center">
                     <div className="font-bold text-[13px] text-[#BE185D]">Calculus</div>
                     <div className="text-[11px] font-semibold text-[#DB2777] mb-2">Grade 8B</div>
                     <div className="text-[10.5px] text-[#EC4899] flex items-center gap-1 mt-auto">
@@ -313,14 +313,14 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
               </tr>
 
               {/* 14:00 - 15:00 */}
               <tr>
                 <td className="py-2 pr-4 text-xs font-semibold text-gray-500 align-top pt-4">14:00 - 15:00</td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
                   <div className="h-[75px] bg-[#FEFCE8] border-[1.5px] border-[#FDE047] rounded-xl p-3 flex flex-col justify-center mb-2">
                     <div className="font-bold text-[12px] text-[#A16207]">Office Hours</div>
@@ -329,7 +329,7 @@ export default function TeacherSchedulePage() {
                     </div>
                   </div>
                 </td>
-                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[1.5px] border-dashed border-gray-200"></div></td>
+                <td className="p-2 align-top"><div className="h-[110px] rounded-xl border-[2px] border-dashed border-gray-200"></div></td>
                 <td className="p-2 align-top h-[110px]">
                   <div className="h-[75px] bg-[#FEFCE8] border-[1.5px] border-[#FDE047] rounded-xl p-3 flex flex-col justify-center mb-2">
                     <div className="font-bold text-[12px] text-[#A16207]">Office Hours</div>
