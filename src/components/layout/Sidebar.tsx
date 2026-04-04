@@ -14,7 +14,6 @@ import {
   Library,
   FileText,
   MessageSquare,
-  Bell,
   BarChart2,
   Settings,
   LogOut,
@@ -25,10 +24,8 @@ import {
   ChevronDown,
   StickyNote,
   UserCheck,
-  TrendingUp,
   User,
 } from "lucide-react";
-import { Avatar } from "@/components/ui/Shared";
 
 // ─── TYPES ────────────────────────────────────────────────────
 
@@ -64,12 +61,10 @@ const TEACHER_GROUPS: NavGroup[] = [
     icon: <GraduationCap size={18} />,
     collapsible: true,
     items: [
-      { label: "Grades", href: "/teacher/grades", icon: <BarChart2 size={18} /> },
       { label: "Assignments", href: "/teacher/assignments", icon: <ClipboardList size={18} /> },
+      { label: "Grades", href: "/teacher/grades", icon: <BarChart2 size={18} /> },
       { label: "Attendance", href: "/teacher/attendance", icon: <UserCheck size={18} /> },
-      { label: "Timetable", href: "/teacher/timetable", icon: <CalendarDays size={18} /> },
       { label: "Notes", href: "/teacher/notes", icon: <StickyNote size={18} /> },
-      { label: "Report Card", href: "/teacher/report-card", icon: <FileText size={18} /> },
     ],
   },
   {
@@ -105,7 +100,7 @@ const TEACHER_GROUPS: NavGroup[] = [
     icon: <Bot size={18} />,
     collapsible: false,
     items: [
-      { label: "Campus Ai", href: "/teacher/campus-ai", icon: <Bot size={18} />},
+      { label: "Campus Ai", href: "/teacher/campus-ai", icon: <Bot size={18} /> },
     ],
   },
   {

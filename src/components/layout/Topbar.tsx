@@ -1,9 +1,9 @@
 "use client";
 
-import { Bell, ChevronDown, Settings, PanelLeft, Search } from "lucide-react";
+import { Bell, PanelLeft, Search } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
 import { useState } from "react";
-import Link from "next/link";
+
 
 interface TopbarProps {
   title?: string;
@@ -13,6 +13,7 @@ interface TopbarProps {
   notificationCount?: number;
   onToggleSidebar?: () => void;
 }
+
 
 export function Topbar({
   title,

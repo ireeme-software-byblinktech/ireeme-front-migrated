@@ -131,14 +131,29 @@ export default function TeacherDashboard() {
           </div>
           <div className="assignment-card">
             <div className="assignment-header">
-              <h3 className="assignment-title">Algebra Quiz #4</h3>
-              <span className="assignment-due">Due: 20/03/2024</span>
+              <h3 className="assignment-title">Practice Problems Set 3</h3>
+              <span className="assignment-due text-orange-600 font-bold">DRAFT</span>
             </div>
-            <p className="assignment-subtitle">Grade 10-A</p>
+            <p className="assignment-subtitle">Mathematics - Grade 5A</p>
             <div className="assignment-stats">
               <div className="assignment-stat">
                 <CheckCircle size={14} className="text-black" />
-                <span>28/32 submitted</span>
+                <span>0/24 submitted</span>
+              </div>
+            </div>
+            <button className="assignment-btn">Publish Assignment</button>
+          </div>
+
+          <div className="assignment-card">
+            <div className="assignment-header">
+              <h3 className="assignment-title">Homework #4 - Algebraic Equations</h3>
+              <span className="assignment-due">Due: Tomorrow, 10:00 AM</span>
+            </div>
+            <p className="assignment-subtitle">Mathematics - Grade 5B</p>
+            <div className="assignment-stats">
+              <div className="assignment-stat">
+                <CheckCircle size={14} className="text-black" />
+                <span>20/26 submitted</span>
               </div>
               <div className="assignment-stat">
                 <Award size={14} className="text-black" />
@@ -150,59 +165,21 @@ export default function TeacherDashboard() {
 
           <div className="assignment-card">
             <div className="assignment-header">
-              <h3 className="assignment-title">Calculus Problem Set</h3>
-              <span className="assignment-due">Due: 19/03/2024</span>
+              <h3 className="assignment-title">Quiz 5 - Geometry Basics</h3>
+              <span className="assignment-due">Due: Dec 20, 2024</span>
             </div>
-            <p className="assignment-subtitle">Grade 12-A</p>
+            <p className="assignment-subtitle">Mathematics - Grade 5A</p>
             <div className="assignment-stats">
               <div className="assignment-stat">
                 <CheckCircle size={14} className="text-black" />
-                <span>25/25 submitted</span>
+                <span>24/24 submitted</span>
               </div>
               <div className="assignment-stat">
                 <Award size={14} className="text-black" />
-                <span>25 graded</span>
+                <span>24 graded</span>
               </div>
             </div>
-            <button className="assignment-btn">Grade Submissions</button>
-          </div>
-
-          <div className="assignment-card">
-            <div className="assignment-header">
-              <h3 className="assignment-title">Geometry Worksheet</h3>
-              <span className="assignment-due">Due: 21/03/2024</span>
-            </div>
-            <p className="assignment-subtitle">Grade 9-C</p>
-            <div className="assignment-stats">
-              <div className="assignment-stat">
-                <CheckCircle size={14} className="text-black" />
-                <span>20/35 submitted</span>
-              </div>
-              <div className="assignment-stat">
-                <Award size={14} className="text-black" />
-                <span>0 graded</span>
-              </div>
-            </div>
-            <button className="assignment-btn">Grade Submissions</button>
-          </div>
-
-          <div className="assignment-card">
-            <div className="assignment-header">
-              <h3 className="assignment-title">Trigonometry Test</h3>
-              <span className="assignment-due">Due: 18/03/2024</span>
-            </div>
-            <p className="assignment-subtitle">Grade 11-A</p>
-            <div className="assignment-stats">
-              <div className="assignment-stat">
-                <CheckCircle size={14} className="text-black" />
-                <span>30/30 submitted</span>
-              </div>
-              <div className="assignment-stat">
-                <Award size={14} className="text-black" />
-                <span>23 graded</span>
-              </div>
-            </div>
-            <button className="assignment-btn">Grade Submissions</button>
+            <button className="assignment-btn">View Results</button>
           </div>
         </div>
 
