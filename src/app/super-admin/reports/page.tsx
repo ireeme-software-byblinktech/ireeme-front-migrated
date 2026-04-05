@@ -247,7 +247,7 @@ export default function SuperAdminReportsPage() {
         <div className="relative px-6 pb-8">
           {/* Y-axis rotated label */}
           <div
-            className="absolute -left-10 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[12px] font-semibold text-gray-400 tracking-widest whitespace-nowrap select-none w-0 flex justify-center items-center"
+            className="absolute left-6 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[12px] font-medium text-gray-400 tracking-widest whitespace-nowrap select-none w-0 flex justify-center items-center"
           >
             ( Number of students enrolled )
           </div>
