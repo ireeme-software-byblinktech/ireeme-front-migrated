@@ -100,7 +100,7 @@ const TEACHER_GROUPS: NavGroup[] = [
     icon: <Bot size={18} />,
     collapsible: false,
     items: [
-      { label: "Campus Ai", href: "/teacher/campus-ai", icon: <Bot size={18} /> },
+      { label: "Campus Ai", href: "/teacher/ai", icon: <Bot size={18} /> },
     ],
   },
   {
@@ -359,7 +359,6 @@ const ROLE_LABELS: Record<string, string> = {
   nurse: "School Nurse",
 };
 
-// ─── Collapsible Group Component ─────────────────────────────
 
 function NavGroupSection({
   group,
@@ -370,9 +369,8 @@ function NavGroupSection({
   isActive: (href: string) => boolean;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen ?? false); // Changed to false by default
+  const [open, setOpen] = useState(defaultOpen ?? false);
 
-  // If a child is active, start open
   const hasActiveChild = group.items.some((i) => isActive(i.href));
 
   const [initialized, setInitialized] = useState(false);
@@ -388,7 +386,6 @@ function NavGroupSection({
     );
   }
 
-  // If group has an icon, render it like a nav item with dropdown
   if (group.icon) {
     return (
       <div className="sidebar-group">
