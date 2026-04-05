@@ -203,12 +203,15 @@ body {
   padding: 4px 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
 }
 
 .sidebar-nav::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Edge */
+  display: none;
+  /* Chrome/Safari/Edge */
   width: 0;
   height: 0;
 }
@@ -409,7 +412,7 @@ body {
 }
 
 .sidebar-footer-item:hover {
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-footer-item .sidebar-nav-icon {
@@ -789,11 +792,30 @@ body {
   flex-shrink: 0;
 }
 
-.stat-card-icon.blue { background: var(--color-info-bg); color: var(--color-info); }
-.stat-card-icon.green { background: var(--color-success-bg); color: var(--color-success); }
-.stat-card-icon.orange { background: var(--color-warning-bg); color: var(--color-warning); }
-.stat-card-icon.purple { background: var(--color-purple-bg); color: var(--color-purple); }
-.stat-card-icon.red { background: var(--color-danger-bg); color: var(--color-danger); }
+.stat-card-icon.blue {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.stat-card-icon.green {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.stat-card-icon.orange {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.stat-card-icon.purple {
+  background: var(--color-purple-bg);
+  color: var(--color-purple);
+}
+
+.stat-card-icon.red {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
 
 .stat-card-info {
   flex: 1;
@@ -821,8 +843,13 @@ body {
   font-weight: 500;
 }
 
-.stat-card-trend.up { color: var(--color-success); }
-.stat-card-trend.down { color: var(--color-danger); }
+.stat-card-trend.up {
+  color: var(--color-success);
+}
+
+.stat-card-trend.down {
+  color: var(--color-danger);
+}
 
 /* Horizontal Stat Card Design */
 .stat-card-horizontal {
@@ -910,8 +937,13 @@ body {
   white-space: nowrap;
 }
 
-.stat-card-trend-small.up { color: #000000; }
-.stat-card-trend-small.down { color: #000000; }
+.stat-card-trend-small.up {
+  color: #000000;
+}
+
+.stat-card-trend-small.down {
+  color: #000000;
+}
 
 .stat-card-trend-arrow {
   font-size: 12px;
@@ -1262,7 +1294,7 @@ body {
   pointer-events: none;
 }
 
-.form-input-icon ~ .form-input {
+.form-input-icon~.form-input {
   padding-left: 38px;
 }
 
@@ -1496,10 +1528,29 @@ body {
   color: var(--color-primary);
 }
 
-.avatar-sm { width: 28px; height: 28px; font-size: 11px; }
-.avatar-md { width: 36px; height: 36px; font-size: 13px; }
-.avatar-lg { width: 48px; height: 48px; font-size: 16px; }
-.avatar-xl { width: 64px; height: 64px; font-size: 22px; }
+.avatar-sm {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+.avatar-md {
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
+}
+
+.avatar-lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.avatar-xl {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+}
 
 /* ===================== BREADCRUMBS ===================== */
 .breadcrumbs {
@@ -1551,9 +1602,17 @@ body {
   background: var(--color-primary);
 }
 
-.score-bar-fill.high { background: var(--color-success); }
-.score-bar-fill.medium { background: var(--color-warning); }
-.score-bar-fill.low { background: var(--color-danger); }
+.score-bar-fill.high {
+  background: var(--color-success);
+}
+
+.score-bar-fill.medium {
+  background: var(--color-warning);
+}
+
+.score-bar-fill.low {
+  background: var(--color-danger);
+}
 
 /* ===================== LOADING SKELETON ===================== */
 .skeleton {
@@ -1564,43 +1623,127 @@ body {
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ===================== GRID UTILITIES ===================== */
-.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
 
 @media (max-width: 900px) {
-  .grid-4 { grid-template-columns: repeat(2, 1fr); }
-  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
-  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
-  .app-sidebar { transform: translateX(-100%); }
-  .app-main { margin-left: 0; }
+
+  .grid-4,
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
 }
 
 /* ===================== UTILITIES ===================== */
-.flex { display: flex; }
-.flex-1 { flex: 1; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-2 { gap: 8px; }
-.gap-3 { gap: 12px; }
-.gap-4 { gap: 16px; }
-.mb-4 { margin-bottom: 16px; }
-.mb-6 { margin-bottom: 24px; }
-.text-sm { font-size: 13px; }
-.text-xs { font-size: 12px; }
-.font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
-.text-muted { color: var(--color-text-secondary); }
-.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.w-full { width: 100%; }
+.flex {
+  display: flex;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.mb-6 {
+  margin-bottom: 24px;
+}
+
+.text-sm {
+  font-size: 13px;
+}
+
+.text-xs {
+  font-size: 12px;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-muted {
+  color: var(--color-text-secondary);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.w-full {
+  width: 100%;
+}
 
 /* ===================== ASSIGNMENTS TABLE CUSTOM STYLES ===================== */
 /* Black header for assignments table - placed at end for highest specificity */

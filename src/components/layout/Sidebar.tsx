@@ -27,6 +27,11 @@ import {
   UserCheck,
   TrendingUp,
   User,
+  BriefcaseMedical,
+  Pill,
+  Calendar,
+  Briefcase,
+  FolderOpen
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
 
@@ -299,26 +304,14 @@ const NURSE_GROUPS: NavGroup[] = [
     label: "",
     collapsible: false,
     items: [
-      { label: "Dashboard", href: "/nurse", icon: <LayoutDashboard size={18} /> },
-    ],
-  },
-  {
-    id: "health",
-    label: "Health",
-    icon: <Stethoscope size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Health Records", href: "/nurse/records", icon: <Stethoscope size={18} /> },
-      { label: "Students", href: "/nurse/students", icon: <Users size={18} /> },
-      { label: "Reports", href: "/nurse/reports", icon: <FileText size={18} /> },
-    ],
-  },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/nurse/settings", icon: <Settings size={18} /> },
+      { label: "Dashboard", href: "/nurse", icon: <LayoutDashboard size={20} /> },
+      { label: "Health Records", href: "/nurse/records", icon: <User size={20} /> },
+      { label: "Home Permissions", href: "/nurse/permissions", icon: <GraduationCap size={20} /> },
+      { label: "Appointments", href: "/nurse/appointments", icon: <FileText size={20} /> },
+      { label: "Medical Case", href: "/nurse/cases", icon: <Briefcase size={20} /> },
+      { label: "Medications", href: "/nurse/medications", icon: <Pill size={20} /> },
+      { label: "Documents", href: "/nurse/documents", icon: <FolderOpen size={20} /> },
+      { label: "Reports", href: "/nurse/reports", icon: <BarChart2 size={20} /> },
     ],
   },
 ];
@@ -473,8 +466,13 @@ export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: S
   return (
     <aside className={`app-sidebar ${!isOpen ? 'app-sidebar--hidden' : ''}`}>
       {/* Logo */}
-      <div className="sidebar-logo">
-        <img src="/icons/logo.png" alt="iremee" className="sidebar-logo-image" />
+      <div className="sidebar-logo flex flex-col items-center pt-2 pb-0 -mt-6">
+        <img
+          src="/icons/logo.png"
+          alt="iremee"
+          className="sidebar-logo-image"
+          style={{ height: "128px", width: "auto" }}
+        />
       </div>
 
       {/* Navigation */}
