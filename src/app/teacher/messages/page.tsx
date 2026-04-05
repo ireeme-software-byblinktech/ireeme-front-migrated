@@ -121,7 +121,7 @@ export default function TeacherMessagesPage() {
         <div className="p-5 space-y-4 border-b border-gray-50">
           <SearchInput placeholder="Search conversations..." className="bg-gray-50 border-none rounded-md outline-none" />
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 py-2.5 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800 transition-all">
+            <button className="flex items-center justify-center gap-2 py-2.5 bg-black text-white rounded-md text-sm font-medium hover:bg-black/80 transition-all">
               <Plus size={18} strokeWidth={2.5} />
               New
             </button>
