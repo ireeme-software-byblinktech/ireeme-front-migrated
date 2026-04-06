@@ -14,7 +14,6 @@ import {
   Library,
   FileText,
   MessageSquare,
-  Bell,
   BarChart2,
   Settings,
   LogOut,
@@ -25,7 +24,6 @@ import {
   ChevronDown,
   StickyNote,
   UserCheck,
-  TrendingUp,
   User,
   BriefcaseMedical,
   Pill,
@@ -33,7 +31,6 @@ import {
   Briefcase,
   FolderOpen
 } from "lucide-react";
-import { Avatar } from "@/components/ui/Shared";
 
 // ─── TYPES ────────────────────────────────────────────────────
 
@@ -69,44 +66,59 @@ const TEACHER_GROUPS: NavGroup[] = [
     icon: <GraduationCap size={18} />,
     collapsible: true,
     items: [
-      { label: "Grades", href: "/teacher/grades", icon: <BarChart2 size={18} /> },
       { label: "Assignments", href: "/teacher/assignments", icon: <ClipboardList size={18} /> },
+      { label: "Grades", href: "/teacher/grades", icon: <BarChart2 size={18} /> },
       { label: "Attendance", href: "/teacher/attendance", icon: <UserCheck size={18} /> },
-      { label: "Timetable", href: "/teacher/timetable", icon: <CalendarDays size={18} /> },
       { label: "Notes", href: "/teacher/notes", icon: <StickyNote size={18} /> },
-      { label: "Report Card", href: "/teacher/report-card", icon: <FileText size={18} /> },
     ],
   },
   {
-    id: "resources",
-    label: "Resources",
-    icon: <Library size={18} />,
-    collapsible: true,
+    id: "student",
+    label: "Students",
+    icon: <Users size={18} />,
+    collapsible: false,
     items: [
-      { label: "Library", href: "/teacher/library", icon: <BookOpen size={18} /> },
       { label: "Students", href: "/teacher/students", icon: <Users size={18} /> },
     ],
   },
   {
-    id: "tools",
-    label: "Tools",
-    icon: <Bot size={18} />,
-    collapsible: true,
+    id: "schedule",
+    label: "Schedule",
+    icon: <CalendarDays size={18} />,
+    collapsible: false,
     items: [
-      { label: "Appeals", href: "/teacher/appeals", icon: <ShieldAlert size={18} /> },
-      { label: "Campus AI", href: "/teacher/ai", icon: <Bot size={18} /> },
+      { label: "Schedule", href: "/teacher/schedule", icon: <CalendarDays size={18} /> },
     ],
   },
   {
-    id: "communication",
-    label: "",
+    id: "appeals",
+    label: "Appeals",
+    icon: <ShieldAlert size={18} />,
     collapsible: false,
     items: [
-      { label: "Messages", href: "/teacher/messages", icon: <MessageSquare size={18} />, badge: 3 },
-      { label: "Settings", href: "/teacher/settings", icon: <Settings size={18} /> },
+      { label: "Appeals", href: "/teacher/appeals", icon: <ShieldAlert size={18} /> },
+    ],
+  },
+  {
+    id: "campus-ai",
+    label: "Campus Ai",
+    icon: <Bot size={18} />,
+    collapsible: false,
+    items: [
+      { label: "Campus Ai", href: "/teacher/ai", icon: <Bot size={18} /> },
+    ],
+  },
+  {
+    id: "messages",
+    label: "Messages",
+    icon: <MessageSquare size={18} />,
+    collapsible: false,
+    items: [
+      { label: "Messages", href: "/teacher/messages", icon: <MessageSquare size={18} /> },
     ],
   },
 ];
+
 
 const ADMIN_GROUPS: NavGroup[] = [
   {
@@ -340,7 +352,6 @@ const ROLE_LABELS: Record<string, string> = {
   nurse: "School Nurse",
 };
 
-// ─── Collapsible Group Component ─────────────────────────────
 
 function NavGroupSection({
   group,
@@ -351,9 +362,8 @@ function NavGroupSection({
   isActive: (href: string) => boolean;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen ?? false); // Changed to false by default
+  const [open, setOpen] = useState(defaultOpen ?? false);
 
-  // If a child is active, start open
   const hasActiveChild = group.items.some((i) => isActive(i.href));
 
   const [initialized, setInitialized] = useState(false);
@@ -369,7 +379,6 @@ function NavGroupSection({
     );
   }
 
-  // If group has an icon, render it like a nav item with dropdown
   if (group.icon) {
     return (
       <div className="sidebar-group">

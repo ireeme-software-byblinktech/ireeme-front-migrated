@@ -1,170 +1,257 @@
 "use client";
 
-import { useState } from "react";
-import { PageHeader } from "@/components/ui/Shared";
-import { Card, CardBody } from "@/components/ui/Card";
-import { DataTable, TableUser, ScoreCell, Column, Pagination } from "@/components/ui/DataTable";
-import { StatusBadge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { SearchInput, Select } from "@/components/ui/FormElements";
-import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/FormElements";
-import { Plus, Download } from "lucide-react";
+import { Download, ChevronDown, ChevronUp, CircleDollarSign, Percent, Award, Info, Check } from "lucide-react";
 import Link from "next/link";
+import { StatCard } from "@/components/ui/Card";
+import { useState } from "react";
 
-const GRADES_DATA = [
-  { id: 1, student: "Alice Nguyen", studentId: "S001", subject: "Mathematics", class: "10A", date: "2024-03-20", score: 87, total: 100, status: "Passed" },
-  { id: 2, student: "Brian Oke", studentId: "S002", subject: "English", class: "10B", date: "2024-03-19", score: 45, total: 100, status: "Failed" },
-  { id: 3, student: "Clara Mbu", studentId: "S003", subject: "Physics", class: "10A", date: "2024-03-18", score: 92, total: 100, status: "Passed" },
-  { id: 4, student: "David Kim", studentId: "S004", subject: "Chemistry", class: "11A", date: "2024-03-17", score: 60, total: 100, status: "Passed" },
-  { id: 5, student: "Eva Russo", studentId: "S005", subject: "Biology", class: "11B", date: "2024-03-16", score: 38, total: 100, status: "Failed" },
-  { id: 6, student: "Frank Balo", studentId: "S006", subject: "Mathematics", class: "10A", date: "2024-03-15", score: 75, total: 100, status: "Passed" },
-  { id: 7, student: "Grace Liu", studentId: "S007", subject: "English", class: "10B", date: "2024-03-14", score: 55, total: 100, status: "Passed" },
-  { id: 8, student: "Henry Doe", studentId: "S008", subject: "Physics", class: "11A", date: "2024-03-13", score: 29, total: 100, status: "Failed" },
-];
-
-type GradeRow = typeof GRADES_DATA[number];
-
-const PAGE_SIZE = 5;
-
-export default function TeacherGradesPage() {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [page, setPage] = useState(1);
-  const [addOpen, setAddOpen] = useState(false);
-
-  const filtered = GRADES_DATA.filter((g) => {
-    const matchesSearch =
-      g.student.toLowerCase().includes(search.toLowerCase()) ||
-      g.subject.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = !statusFilter || g.status.toLowerCase() === statusFilter.toLowerCase();
-    return matchesSearch && matchesStatus;
-  });
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const columns: Column<GradeRow>[] = [
-    {
-      key: "student",
-      header: "Student",
-      render: (_, row) => (
-        <Link href={`/teacher/grades/${row.id}`} style={{ textDecoration: "none" }}>
-          <TableUser name={row.student} sub={`ID: ${row.studentId}`} />
-        </Link>
-      ),
-    },
-    { key: "subject", header: "Subject" },
-    { key: "class", header: "Class" },
-    {
-      key: "date",
-      header: "Date",
-      render: (v) => new Date(String(v)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    },
-    {
-      key: "score",
-      header: "Score",
-      render: (_, row) => <ScoreCell score={row.score} total={row.total} />,
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (v) => <StatusBadge status={String(v)} />,
-    },
-    {
-      key: "id",
-      header: "Actions",
-      align: "right",
-      render: (_, row) => (
-        <div className="flex gap-2 justify-end">
-          <Link href={`/teacher/grades/${row.id}`}>
-            <Button variant="ghost" size="sm">View</Button>
-          </Link>
-          <Button variant="outline" size="sm">Edit</Button>
-        </div>
-      ),
-    },
-  ];
+const FilterDropdown = ({ title, options, isBlack = false }: { title: string, options: string[], isBlack?: boolean }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  
+  const toggle = (opt: string) => {
+    if (selected.includes(opt)) setSelected(selected.filter(o => o !== opt));
+    else setSelected([...selected, opt]);
+  };
 
   return (
-    <div>
-      <PageHeader
-        title="Grades Management"
-        subtitle="Manage and track student grades across all classes"
-        breadcrumbs={[{ label: "Grades" }]}
-        actions={
-          <>
-            <Button variant="secondary" icon={<Download size={15} />} size="sm">
-              Export
-            </Button>
-            <Button icon={<Plus size={15} />} size="sm" onClick={() => setAddOpen(true)}>
-              Add Grade
-            </Button>
-          </>
-        }
-      />
-
-      <Card>
-        {/* Filters */}
-        <div className="filter-bar" style={{ padding: "16px 20px", borderBottom: "1px solid var(--color-border-light)" }}>
-          <SearchInput
-            placeholder="Search student or subject..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            containerClassName="flex-1"
-            style={{ maxWidth: 320 }}
-          />
-          <Select
-            options={[
-              { value: "passed", label: "Passed" },
-              { value: "failed", label: "Failed" },
-            ]}
-            placeholder="All Status"
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            style={{ width: 150 }}
-          />
-        </div>
-
-        <CardBody style={{ padding: 0 }}>
-          <DataTable
-            columns={columns}
-            data={paginated}
-            keyField="id"
-            emptyMessage="No grades found"
-          />
-        </CardBody>
-
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          totalItems={filtered.length}
-          pageSize={PAGE_SIZE}
-        />
-      </Card>
-
-      {/* Add Grade Modal */}
-      <Modal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        title="Add New Grade"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button onClick={() => setAddOpen(false)}>Save Grade</Button>
-          </>
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={
+          isBlack 
+            ? "bg-black text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-6"
+            : "bg-white border-[1.5px] border-gray-200 px-4 py-2.5 rounded-lg text-sm font-semibold text-[#374151] flex items-center gap-6"
         }
       >
-        <Input label="Student Name" placeholder="Search student..." required />
-        <Select label="Subject" options={[{ value: "math", label: "Mathematics" }, { value: "eng", label: "English" }, { value: "phy", label: "Physics" }]} placeholder="Select subject" required />
-        <Select label="Class" options={[{ value: "10A", label: "Class 10A" }, { value: "10B", label: "Class 10B" }, { value: "11A", label: "Class 11A" }]} placeholder="Select class" required />
-        <div className="grid-2">
-          <Input label="Score" type="number" placeholder="0" required />
-          <Input label="Total Marks" type="number" placeholder="100" required />
+        {isBlack ? title : (selected.length > 0 ? selected[0] : title)} 
+        {isOpen ? (
+          <ChevronUp size={isBlack ? 15 : 18} className={isBlack ? "text-white" : "text-gray-400"} />
+        ) : (
+          <ChevronDown size={isBlack ? 15 : 18} className={isBlack ? "text-white" : "text-gray-400"} />
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-[220px] bg-white border-[1px] border-gray-200 rounded-xl shadow-md z-50 py-3">
+          <div className="text-[14px] text-gray-500 mb-2 px-4 font-medium">Select status</div>
+          <div className="flex flex-col gap-1">
+            {options.map(opt => (
+              <div 
+                key={opt} 
+                className="flex items-center gap-4 px-4 cursor-pointer py-2 hover:bg-gray-50 transition-colors"
+                onClick={() => toggle(opt)}
+              >
+                <div className={`w-[24px] h-[24px] rounded-[6px] border-[2.5px] border-[#CBD5E1] flex items-center justify-center transition-colors flex-shrink-0 ${
+                  selected.includes(opt) ? "bg-black" : "bg-white"
+                }`}>
+                  {selected.includes(opt) && <Check size={16} strokeWidth={3} className="text-white" />}
+                </div>
+                <span className="text-[16px] font-medium text-[#374151]">{opt}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <Input label="Date" type="date" required />
-      </Modal>
+      )}
+    </div>
+  );
+}
+
+export default function TeacherGradesPage() {
+  return (
+    <div className="pb-10">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-[28px] font-bold mb-2">Grades Management</h1>
+          <p className="text-gray-500 font-medium text-[15px]">Manage and track student grades across all classes</p>
+        </div>
+        <button className="bg-black text-white px-8 py-3 rounded-md font-semibold text-[14px] hover:opacity-90 transition-opacity">
+          Export All Grades
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-4 mb-8 text-[#374151]">
+        <StatCard
+          label="Total Students"
+          value="78"
+          progress={100}
+          icon={<CircleDollarSign size={24} />}
+          trend={{ value: "3.6%", direction: "up", label: "Across 3 classes" }}
+        />
+        <StatCard
+          label="Average Grade"
+          value="87.2"
+          progress={87}
+          icon={<Percent size={24} />}
+          trend={{ value: "2.3%", direction: "up", label: "from last term" }}
+        />
+        <StatCard
+          label="Pending Grades"
+          value="12"
+          progress={15}
+          icon={<Award size={24} />}
+          trend={{ value: "", direction: "up", label: "Assignments to grade" }}
+        />
+        <StatCard
+          label="At Risk"
+          value="3"
+          progress={5}
+          icon={<Info size={24} />}
+          trend={{ value: "", direction: "down", label: "Students below 70%" }}
+        />
+      </div>
+
+      {/* Filter Row */}
+      <div className="flex items-center justify-end gap-4 mb-6">
+        <span className="text-sm font-semibold text-gray-500">Filter By:</span>
+        <FilterDropdown 
+          title="Select Class" 
+          options={["All Classes", "Year 2A", "Year 2B", "Year 2C", "Year 1A"]} 
+        />
+        <FilterDropdown 
+          title="Course" 
+          options={["Mathematics", "Physics", "Java", "English", "DSA"]} 
+          isBlack={true}
+        />
+      </div>
+
+      {/* Main Grid: Left (Classes + Dist) / Right (Quick Actions) */}
+      <div className="flex gap-6">
+        
+        {/* Left Column (takes up approx 2/3) */}
+        <div className="flex-[2]">
+          <h2 className="text-xl font-bold mb-6">Classes Overview</h2>
+          
+          <div className="class-overview-card">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-[17px] font-bold mb-1">Mathematics - Grade 5B</h3>
+                <p className="text-gray-400 text-sm font-medium">26 students</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black mb-1">87.4%</div>
+                <p className="text-gray-400 text-sm font-medium">Class Average</p>
+              </div>
+            </div>
+            <div className="dual-action-btn">
+              <Link href="/teacher/grades/1" className="dual-action-left" style={{ textDecoration: 'none' }}>
+                View Gradebook
+              </Link>
+              <div className="dual-action-right">
+                Grade Assignments
+              </div>
+            </div>
+          </div>
+
+          <div className="class-overview-card">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-[17px] font-bold mb-1">Mathematics - Grade 5A</h3>
+                <p className="text-gray-400 text-sm font-medium">24 students</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black mb-1">85.2%</div>
+                <p className="text-gray-400 text-sm font-medium">Class Average</p>
+              </div>
+            </div>
+            <div className="dual-action-btn">
+              <Link href="/teacher/grades/1" className="dual-action-left" style={{ textDecoration: 'none' }}>
+                View Gradebook
+              </Link>
+              <div className="dual-action-right">
+                Grade Assignments
+              </div>
+            </div>
+          </div>
+
+          <div className="class-overview-card">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-[17px] font-bold mb-1">Mathematics - Grade 6B</h3>
+                <p className="text-gray-400 text-sm font-medium">28 students</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-black mb-1">89.1%</div>
+                <p className="text-gray-400 text-sm font-medium">Class Average</p>
+              </div>
+            </div>
+            <div className="dual-action-btn">
+              <Link href="/teacher/grades/1" className="dual-action-left" style={{ textDecoration: 'none' }}>
+                View Gradebook
+              </Link>
+              <div className="dual-action-right">
+                Grade Assignments
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold mb-6 mt-12">Grade Distribution</h2>
+          <div className="bg-[#F9FAFB] rounded-2xl p-6 border-[1.5px] border-gray-200">
+            {/* Row A */}
+            <div className="mb-6">
+              <div className="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                <span>A (90-100%)</span>
+                <span>32 students</span>
+              </div>
+              <div className="dist-bar-bg">
+                <div className="dist-bar-fill" style={{ width: '40%' }}></div>
+              </div>
+            </div>
+            
+            {/* Row B */}
+            <div className="mb-6">
+              <div className="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                <span>B (80-89%)</span>
+                <span>28 students</span>
+              </div>
+              <div className="dist-bar-bg">
+                <div className="dist-bar-fill" style={{ width: '35%' }}></div>
+              </div>
+            </div>
+
+            {/* Row C */}
+            <div className="mb-6">
+              <div className="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                <span>C (70-79%)</span>
+                <span>15 students</span>
+              </div>
+              <div className="dist-bar-bg">
+                <div className="dist-bar-fill" style={{ width: '20%' }}></div>
+              </div>
+            </div>
+
+            {/* Row Below 70 */}
+            <div>
+              <div className="flex justify-between text-sm font-bold text-gray-700 mb-1">
+                <span>Below 70%</span>
+                <span>3 students</span>
+              </div>
+              <div className="dist-bar-bg">
+                <div className="dist-bar-fill" style={{ width: '5%' }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (takes up approx 1/3) */}
+        <div className="flex-1">
+          <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
+          <div className="bg-[#F9FAFB] border-[1.5px] border-gray-200 rounded-2xl p-6">
+            <button className="quick-action-btn dark">
+              Grade Pending Work
+            </button>
+            <button className="quick-action-btn light">
+              Generate Report Cards
+            </button>
+            <button className="quick-action-btn light">
+              Email Grade Reports
+            </button>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }

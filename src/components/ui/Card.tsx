@@ -89,8 +89,9 @@ export function StatCard({
   className,
   meta,
 }: StatCardProps) {
-  const circumference = 2 * Math.PI * 32; // Reduced radius from 42 to 32
-  const strokeDasharray = `${(progress / 100) * circumference} ${circumference}`;
+  const circumference = 2 * Math.PI * 35; // radius = 35
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <motion.div
@@ -110,7 +111,7 @@ export function StatCard({
             cy="40"
             r="32"
             fill="none"
-            stroke="#F1F5F9"
+            stroke="#E5E7EB"
             strokeWidth="3"
           />
           <motion.circle
@@ -133,31 +134,18 @@ export function StatCard({
         </div>
       </div>
 
-      {/* Content: Labels and value */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-[12px] font-black text-gray-400 uppercase tracking-[0.1em] truncate mb-1.5">{label}</h3>
-
-        <div className="flex items-baseline gap-2 mb-3">
-          <p className="text-[28px] font-black text-gray-900 leading-none">{value}</p>
-          {trend && (
-            <span className={cn(
-              "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
-              trend.direction === "up" ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
-            )}>
-              {trend.value}%
-            </span>
-          )}
-        </div>
-
-        {meta && (
-          <div className="flex gap-3 items-center">
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-black rounded-[1px]" />
-              <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">Male: {meta.male}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 bg-gray-300 rounded-[1px]" />
-              <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">Female: {meta.female}</span>
+      {/* Content */}
+      <div className="stat-card-content-horizontal">
+        <p className="stat-card-label-small">{label}</p>
+        <h3 className="stat-card-value-small">{value}</h3>
+        {trend && (
+          <div className={cn("stat-card-trend-small", trend.direction)}>
+            <div className="stat-card-trend-text">
+              <span className="stat-card-trend-arrow">
+                {trend.direction === "up" ? "↑" : trend.direction === "down" ? "↓" : "→"}
+              </span>
+              <span>{trend.value}</span>
+              {trend.label && <span className="stat-card-trend-label">{trend.label}</span>}
             </div>
           </div>
         )}

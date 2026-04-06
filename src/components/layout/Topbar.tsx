@@ -1,9 +1,9 @@
 "use client";
 
-import { Bell, ChevronDown, Settings, PanelLeft, Search } from "lucide-react";
+import { Bell, PanelLeft, Search } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
 import { useState } from "react";
-import Link from "next/link";
+
 
 interface TopbarProps {
   title?: string;
@@ -13,6 +13,7 @@ interface TopbarProps {
   notificationCount?: number;
   onToggleSidebar?: () => void;
 }
+
 
 export function Topbar({
   title,
@@ -26,7 +27,7 @@ export function Topbar({
   // Map role to display name
   const roleDisplayNames: Record<string, string> = {
     student: "Student",
-    teacher: "Teacher", 
+    teacher: "Teacher",
     admin: "Administrator",
     parent: "Parent",
     "super-admin": "Super Admin",
@@ -43,7 +44,7 @@ export function Topbar({
       {/* Left Section */}
       <div className="topbar-left-section">
         {/* Sidebar Toggle */}
-        <button 
+        <button
           className="topbar-sidebar-toggle"
           onClick={onToggleSidebar}
           aria-label="Toggle sidebar"
@@ -72,24 +73,23 @@ export function Topbar({
       </div>
 
       {/* User Section */}
-      <div className="topbar-user-section">
-        {/* Notifications */}
-        <button className="topbar-notification-btn" aria-label="Notifications">
-          <Bell size={role === "accountant" ? 14 : 16} />
-          {notificationCount > 0 && (
-            <span className="topbar-notification-dot-modern" />
-          )}
+      <div className="flex items-center gap-5">
+        {/* Bell Icon – circular border */}
+        <button
+          className="flex items-center justify-center w-[42px] h-[42px] rounded-full border border-[#DDE1E6] bg-white hover:bg-gray-50 transition-colors shrink-0"
+          aria-label="Notifications"
+        >
+          <Bell size={19} className="text-[#4B5563]" strokeWidth={1.6} />
         </button>
 
-        {/* User Info */}
-        <div className="topbar-user-info">
-          <div className="topbar-user-avatar">
-            <Avatar name={userName} size={role === "accountant" ? "sm" : "md"} />
-          </div>
-          <div className="topbar-user-text">
-            <span className="topbar-user-name">{userName}</span>
-          </div>
+        {/* Name + Role text */}
+        <div className="hidden sm:flex flex-col items-start">
+          <span className="text-[14px] font-medium text-[#111827] leading-snug">{userName}</span>
+          <span className="text-[12px] font-normal text-[#9CA3AF] leading-snug">{roleDisplay}</span>
         </div>
+
+        {/* Avatar */}
+        <Avatar name={userName} size="md" className="w-[42px] h-[42px] rounded-full ring-2 ring-gray-100 shrink-0" />
       </div>
     </header>
   );
