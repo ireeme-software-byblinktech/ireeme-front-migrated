@@ -1,0 +1,2 @@
+import { PlaceholderPage } from "@/components/ui/PlaceholderPage";
+export default function AdminElectionsPage() { return <PlaceholderPage title="Elections" subtitle="Manage student government elections and voting" role="admin" />; }

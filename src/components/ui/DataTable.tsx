@@ -186,6 +186,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   totalItems?: number;
   pageSize?: number;
+  className?: string;
 }
 
 export function Pagination({
@@ -194,6 +195,7 @@ export function Pagination({
   onPageChange,
   totalItems,
   pageSize,
+  className,
 }: PaginationProps) {
   const pages: (number | "...")[] = [];
 
@@ -215,14 +217,14 @@ export function Pagination({
 
   return (
     <div className="flex items-center justify-between px-5 py-4">
-      {totalItems !== undefined && pageSize !== undefined && (
+      {totalItems !== undefined && pageSize !== undefined && !className?.includes('pagination-rounded') && (
         <span className="text-sm text-muted">
           Showing{" "}
           {Math.min((currentPage - 1) * pageSize + 1, totalItems)}–
           {Math.min(currentPage * pageSize, totalItems)} of {totalItems}
         </span>
       )}
-      <div className="pagination ml-auto">
+      <div className={cn("pagination ml-auto", className)}>
         <button
           className="pagination-btn"
           onClick={() => onPageChange(currentPage - 1)}

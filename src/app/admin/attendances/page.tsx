@@ -1,0 +1,2 @@
+import { PlaceholderPage } from "@/components/ui/PlaceholderPage";
+export default function AdminAttendancesPage() { return <PlaceholderPage title="Attendances" subtitle="Monitor and manage student attendance records" role="admin" />; }
