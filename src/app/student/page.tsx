@@ -254,14 +254,14 @@ export default function StudentDashboard() {
 
       {/* Assignments Section */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between w-full">
-            <h2 className="text-lg font-semibold text-gray-900">Assignments</h2>
-            <Link href="/student/assignments" className="text-sm text-gray-600 hover:text-gray-900 font-medium ml-auto">
+        <CardHeader
+          title="Assignments"
+          action={
+            <Link href="/student/assignments" className="text-sm text-gray-600 hover:text-gray-900 font-medium pt-1">
               View all
             </Link>
-          </div>
-        </CardHeader>
+          }
+        />
         <CardBody className="p-0">
           {/* Tabs */}
           <div className="flex border-b border-gray-200 px-6">
