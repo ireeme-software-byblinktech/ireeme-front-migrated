@@ -133,8 +133,9 @@ const ADMIN_GROUPS: NavGroup[] = [
       { label: "Teachers", href: "/admin/teachers", icon: <User size={18} /> },
       { label: "Students", href: "/admin/students", icon: <Users size={18} /> },
       { label: "Timetables", href: "/admin/timetables", icon: <CalendarDays size={18} /> },
-      { label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} /> },
-      { label: "Elections", href: "/admin/elections", icon: <FileText size={18} /> },
+      {label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} />},
+      {label: "Elections", href: "/admin/elections", icon: <FileText size={18} />},
+      {label: "Alumni", href: "/admin/alumni", icon: <GraduationCap size={18} />},
     ],
   },
 ];
@@ -275,6 +276,7 @@ const SUPER_ADMIN_GROUPS: NavGroup[] = [
       { label: "Admins", href: "/super-admin/admins", icon: <Users size={18} /> },
       { label: "Documents", href: "/super-admin/documents", icon: <FileText size={18} /> },
       { label: "Reports", href: "/super-admin/reports", icon: <BarChart2 size={18} /> },
+      { label: "Alumni", href: "/super-admin/alumni", icon: <GraduationCap size={18} /> },
     ],
   },
 ];
