@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
-import { useState } from "react";
+import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
 
 // Stats data array
 const statsData = [
@@ -175,6 +176,13 @@ const assignmentsData: Assignment[] = [
 
 export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState<"Pending" | "To do" | "Done">("Pending");
+  const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleViewSubmission = (submission: Assignment) => {
+    setSelectedSubmission(submission);
+    setIsModalOpen(true);
+  };
 
   // Filter assignments based on active tab
   const filteredAssignments = assignmentsData.filter(assignment => assignment.category === activeTab);
@@ -223,8 +231,11 @@ export default function StudentDashboard() {
       key: "action",
       header: "",
       align: "right",
-      render: () => (
-        <button className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors">
+      render: (_, row) => (
+        <button 
+          onClick={() => handleViewSubmission(row)}
+          className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
+        >
           View submission
         </button>
       )
@@ -290,6 +301,18 @@ export default function StudentDashboard() {
           </div>
         </CardBody>
       </Card>
+
+      <ViewSubmissionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        submission={selectedSubmission ? {
+          ...selectedSubmission,
+          submittedDate: "Today, 10:45 AM", // Mock date for demo
+          fileName: selectedSubmission.status === "Submitted" ? `${selectedSubmission.title.replace(/\s+/g, '_')}.pdf` : undefined,
+          fileSize: "1.2 MB",
+          comments: selectedSubmission.status === "Submitted" ? "Excellent work on this assignment. Your methodology is clear and well-documented." : undefined
+        } : null}
+      />
     </div>
   );
 }

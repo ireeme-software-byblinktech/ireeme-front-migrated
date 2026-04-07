@@ -126,11 +126,28 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
 .app-main--sidebar-closed {
   margin-left: 80px;
+}
+
+@media (max-width: 1024px) {
+  .app-sidebar:not(.app-sidebar--hidden) {
+    width: var(--sidebar-width);
+    transform: translateX(0);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+  }
+
+  .app-sidebar--hidden {
+    transform: translateX(-100%);
+  }
+
+  .app-main {
+    margin-left: 0 !important;
+  }
 }
 
 .app-topbar {
@@ -1659,20 +1676,50 @@ body {
   }
 }
 
-@media (max-width: 640px) {
+/* ===================== PREMIUM CUSTOM SCROLLBARS ===================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
 
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.modal-body {
+  scrollbar-gutter: stable;
+}
+
+/* Modal specific scrollbar behavior */
+.modal-overlay ::-webkit-scrollbar {
+  width: 4px;
+}
+
+.modal-overlay ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  /* Custom height effect via transparent borders if needed, but thin is better */
+}
+
+@media (max-width: 640px) {
   .grid-4,
   .grid-3,
   .grid-2 {
     grid-template-columns: 1fr;
-  }
-
-  .app-sidebar {
-    transform: translateX(-100%);
-  }
-
-  .app-main {
-    margin-left: 0;
   }
 }
 

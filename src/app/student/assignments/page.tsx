@@ -5,6 +5,7 @@ import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
 import { GraduationCap, BookOpen, FileText, BarChart2, Filter } from "lucide-react";
+import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
 
 // Stats data array
 const statsData = [
@@ -183,6 +184,8 @@ export default function AssignmentsPage() {
   const [termFilter, setTermFilter] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const itemsPerPage = 10;
 
@@ -269,8 +272,14 @@ export default function AssignmentsPage() {
       key: "action",
       header: "Action",
       align: "right",
-      render: () => (
-        <button className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors">
+      render: (_, row) => (
+        <button 
+          onClick={() => {
+            setSelectedSubmission(row);
+            setIsModalOpen(true);
+          }}
+          className="bg-black text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
+        >
           View
         </button>
       )
@@ -379,6 +388,19 @@ export default function AssignmentsPage() {
           </div>
         </CardBody>
       </Card>
+
+      <ViewSubmissionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        submission={selectedSubmission ? {
+          ...selectedSubmission,
+          teacher: "Dr. Anais Kamal", // Standardizing teacher for assignment records
+          submittedDate: "Today, 10:45 AM", // Mock date for demo
+          fileName: selectedSubmission.status === "Completed" ? `${selectedSubmission.title.replace(/\s+/g, '_')}.pdf` : undefined,
+          fileSize: "1.2 MB",
+          comments: selectedSubmission.status === "Completed" ? "Excellent work on this assignment. Your methodology is clear and well-documented." : undefined
+        } : null}
+      />
     </div>
   );
 }
