@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Download, ChevronDown, FileText, Printer, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const YEARS = ["2024-2025", "2023-2024", "2022-2023"];
+const YEARS = ["Class of 2015", "Class of 2014", "Class of 2013"];
 
 const SUBJECTS = [
   { name: "Advanced Calculus", cat: 38.5, exam: 42, tot: 80.5, grade: "A+" },
@@ -18,13 +18,13 @@ const SUBJECTS = [
   { name: "Web Development", cat: 22, exam: 24, tot: 46, grade: "D" },
 ];
 
-export default function StudentReportCardPage() {
+export default function AlumniReportCardPage() {
   const [selectedYear, setSelectedYear] = useState(YEARS[0]);
 
   return (
     <div className="pb-10">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-black text-black uppercase tracking-tight">Academic Transcript</h2>
+        <h2 className="text-2xl font-black text-black uppercase tracking-tight">Academic Transcripts</h2>
         <div className="flex items-center gap-4 bg-white px-4 py-2 border border-gray-100 rounded-2xl shadow-sm">
           <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Academic Year</span>
           <div className="relative">
@@ -41,14 +41,14 @@ export default function StudentReportCardPage() {
       </div>
 
       <div className="bg-white border-[3px] border-black rounded-[40px] p-8 shadow-xl shadow-black/5">
-        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-dashed border-gray-200" title="Report Card Controls">
+        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-dashed border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-white">
               <FileText size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-black uppercase">Official Term Report</h3>
-              <p className="text-xs font-bold text-gray-400 italic">Current Session: {selectedYear}</p>
+              <h3 className="text-lg font-black text-black uppercase">Official Transcript</h3>
+              <p className="text-xs font-bold text-gray-400 italic">Historical Record: {selectedYear}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -60,7 +60,7 @@ export default function StudentReportCardPage() {
                 <Share2 size={16} />
                 Share
              </Button>
-             <Button className="bg-black text-white hover:bg-gray-800 rounded-xl px-6 h-10 font-black text-xs uppercase flex items-center gap-2 shadow-lg shadow-black/20 transition-all">
+             <Button className="bg-black text-white hover:bg-emerald-600 rounded-xl px-6 h-10 font-black text-xs uppercase flex items-center gap-2 shadow-lg shadow-black/20 transition-colors">
                 <Download size={16} />
                 Export PDF
               </Button>
@@ -79,27 +79,28 @@ export default function StudentReportCardPage() {
               </div>
               <div>
                 <h1 className="text-4xl font-black text-black mb-1 italic tracking-tighter">IREME SCHOOLS</h1>
-                <p className="text-sm font-black text-gray-800 uppercase tracking-widest opacity-60">National Academic Enterprise Board</p>
+                <p className="text-sm font-black text-gray-800 uppercase tracking-widest opacity-60">Verified Alumni Achievement Record</p>
                 <div className="mt-4 space-y-1">
                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-black rounded-full" />
-                      Academic Standard: International
+                      Issue Date: July 20, 2015
                    </p>
                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-black rounded-full" />
-                      Contact: support@blinkcampus.edu
+                      Verification ID: BC-AL-99421
                    </p>
                 </div>
               </div>
             </div>
             <div className="w-32 h-40 border-[3px] border-black rounded-2xl flex flex-col items-center justify-center p-3 text-center bg-gray-50 relative overflow-hidden group">
                <div className="absolute inset-0 border-2 border-dashed border-gray-200 m-1 rounded-xl group-hover:border-black/10 transition-all" />
-               <span className="text-[10px] text-gray-400 font-black uppercase leading-tight z-10 italic">Certified Student Record</span>
+               <span className="text-[10px] text-gray-400 font-black uppercase leading-tight z-10 italic">Official Institutional Seal</span>
             </div>
           </div>
 
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-black underline underline-offset-8 decoration-[5px] tracking-[0.2em] italic uppercase">TERM PERFORMANCE REPORT</h2>
+            <h2 className="text-3xl font-black text-black underline underline-offset-8 decoration-[5px] tracking-[0.2em] italic uppercase">TRANSCRIPT OF RESULTS</h2>
+            <div className="mt-4 text-xs font-black text-gray-500 uppercase tracking-widest italic">{selectedYear} / Year 3 Final Assessment</div>
           </div>
 
           <div className="relative">
@@ -109,9 +110,9 @@ export default function StudentReportCardPage() {
              <table className="w-full border-collapse border-[4px] border-black text-xs font-black">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="border-[4px] border-black p-4 text-left w-1/4 uppercase italic tracking-widest">SUBJECTS</th>
-                  <th className="border-[4px] border-black p-2 uppercase text-center bg-gray-900 border-white/10 italic">CAT (50)</th>
-                  <th className="border-[4px] border-black p-2 uppercase text-center bg-gray-800 border-white/10 italic">EXAM (50)</th>
+                  <th className="border-[4px] border-black p-4 text-left w-1/4 uppercase italic tracking-widest">COURSES</th>
+                  <th className="border-[4px] border-black p-2 uppercase text-center bg-gray-900 border-white/10 italic">CAT (50%)</th>
+                  <th className="border-[4px] border-black p-2 uppercase text-center bg-gray-800 border-white/10 italic">EXAM (50%)</th>
                   <th className="border-[4px] border-black p-2 uppercase text-center bg-gray-700 border-white/10 italic">TOTAL (100)</th>
                   <th className="border-[4px] border-black p-4 text-center uppercase italic">GRADE</th>
                 </tr>
@@ -130,19 +131,19 @@ export default function StudentReportCardPage() {
                   </tr>
                 ))}
                 <tr className="bg-black text-white">
-                  <td className="border-[4px] border-black p-4 text-left font-black uppercase italic tracking-widest">Final Weighted Mean</td>
+                  <td className="border-[4px] border-black p-4 text-left font-black uppercase italic tracking-widest">Aggregate Cumulative</td>
                   <td className="border-[4px] border-black p-2 text-center font-black">279.5</td>
                   <td className="border-[4px] border-black p-2 text-center font-black">294.0</td>
-                  <td colSpan={2} className="border-[4px] border-black p-6 text-center font-black text-2xl italic tracking-widest bg-white text-black underline decoration-[4px]">
+                  <td colSpan={2} className="border-[4px] border-black p-6 text-center font-black text-2xl italic tracking-widest bg-white text-black">
                     84.33%
                   </td>
                 </tr>
                 <tr>
-                  <td className="border-[4px] border-black p-6 text-left font-black uppercase h-32 align-top italic tracking-tighter opacity-70">Signature of Advisor</td>
+                  <td className="border-[4px] border-black p-6 text-left font-black uppercase h-32 align-top italic tracking-tighter opacity-70">Signature of Registrar</td>
                   <td colSpan={4} className="border-[4px] border-black p-3 relative bg-gray-50/30">
                      <div className="absolute bottom-6 right-10 flex flex-col items-center">
                         <div className="w-48 border-b-2 border-black border-dashed mb-2" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Official Portal Timestamp</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Verified Alumni Signature</span>
                      </div>
                   </td>
                 </tr>
