@@ -17,6 +17,7 @@ const ROLE_ROUTES: Record<string, string> = {
   discipline: "/discipline",
   librarian: "/librarian",
   nurse: "/nurse",
+  alumni: "/alumni",
 };
 
 export default function LoginPage() {
@@ -143,6 +144,7 @@ export default function LoginPage() {
               { value: "discipline", label: "Discipline Officer" },
               { value: "librarian", label: "Librarian" },
               { value: "nurse", label: "School Nurse" },
+              { value: "alumni", label: "Alumni" },
             ]}
             value={role}
             onChange={(e) => setRole(e.target.value)}
