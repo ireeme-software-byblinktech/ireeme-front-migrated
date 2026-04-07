@@ -29,7 +29,10 @@ import {
   Pill,
   Calendar,
   Briefcase,
-  FolderOpen
+  FolderOpen,
+  Heart,
+  Trophy,
+  Globe
 } from "lucide-react";
 
 // ─── TYPES ────────────────────────────────────────────────────
@@ -229,6 +232,21 @@ const PARENT_GROUPS: NavGroup[] = [
   },
 ];
 
+const ALUMNI_GROUPS: NavGroup[] = [
+  {
+    id: "main",
+    label: "",
+    collapsible: false,
+    items: [
+      { label: "Dashboard", href: "/alumni", icon: <LayoutDashboard size={18} /> },
+      { label: "Alumni Directory", href: "/alumni/directory", icon: <Users size={18} /> },
+      { label: "Academic Docs", href: "/alumni/documents", icon: <FileText size={18} /> },
+      { label: "Report Cards", href: "/alumni/report-cards", icon: <GraduationCap size={18} /> },
+      { label: "Applications", href: "/alumni/applications", icon: <Globe size={18} /> },
+    ],
+  },
+];
+
 const ACCOUNTANT_GROUPS: NavGroup[] = [
   {
     id: "main",
@@ -349,6 +367,7 @@ const NAV_MAP: Record<string, NavGroup[]> = {
   discipline: DISCIPLINE_GROUPS,
   librarian: LIBRARIAN_GROUPS,
   nurse: NURSE_GROUPS,
+  alumni: ALUMNI_GROUPS,
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -361,6 +380,7 @@ const ROLE_LABELS: Record<string, string> = {
   discipline: "Discipline Officer",
   librarian: "Librarian",
   nurse: "School Nurse",
+  alumni: "Alumni / Graduate",
 };
 
 
