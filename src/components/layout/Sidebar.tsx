@@ -189,8 +189,7 @@ const STUDENT_GROUPS: NavGroup[] = [
     collapsible: true,
     items: [
       { label: "Appeals", href: "/student/appeals", icon: <MessageSquare size={18} /> },
-      { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
-      { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
+      { label: "Elections", href: "/student/elections", icon: <UserCheck size={18} /> },
     ],
   },
   {

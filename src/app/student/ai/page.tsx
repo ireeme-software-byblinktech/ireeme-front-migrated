@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
-import { Sparkles, Share2, MoreVertical, FileText, BookOpen, ClipboardList, PenTool, Image as ImageIcon, Mic, Send, ChevronRight, User } from "lucide-react";
+import { Sparkles, Share2, MoreVertical, FileText, BookOpen, ClipboardList, PenTool, Image as ImageIcon, Mic, Send, ChevronRight, User, GraduationCap, X, FolderOpen, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const suggestions = [
@@ -53,6 +53,8 @@ export default function StudentAIPage() {
   const [micActive, setMicActive] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isNotePickerOpen, setIsNotePickerOpen] = useState(false);
+  const [selectedNoteForAI, setSelectedNoteForAI] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -122,13 +124,20 @@ export default function StudentAIPage() {
     setInput("");
     setSelectedImage(null);
     setAudioUrl(null);
+    setSelectedNoteForAI(null); // Clear after sending
     setIsTyping(true);
 
     // Simulate AI Response
     setTimeout(() => {
-      const responseText = attachment 
-        ? `Thanks for sharing this ${attachment.type}. I'm analyzing the ${attachment.type === 'image' ? 'visuals' : 'audio content'} now. I'll provide detailed feedback about it once my systems are fully unlocked!`
-        : `I'm your Campus AI assistant! I've received your request: "${text.trim()}". While I am currently operating in demo mode, eventually I will provide personalized study guides, quizzes, and summaries right here.`;
+      let responseText = "";
+      
+      if (attachment) {
+        responseText = `Thanks for sharing this ${attachment.type}. I'm analyzing the ${attachment.type === 'image' ? 'visuals' : 'audio content'} now. I'll provide detailed feedback about it once my systems are fully unlocked!`;
+      } else if (newUserMsg.text.toLowerCase().includes("summarize")) {
+        responseText = "I've analyzed your selected note. Here's a brief summary: This material focuses on the foundational concepts of the subject, highlighting key formulas and theoretical frameworks. Would you like me to create a quick quiz based on this?";
+      } else {
+        responseText = `I'm your Campus AI assistant! I've received your request: "${text.trim()}". While I am currently operating in demo mode, eventually I will provide personalized study guides, quizzes, and summaries right here.`;
+      }
 
       const newAiMsg: Message = { 
         id: (Date.now() + 1).toString(), 
@@ -216,12 +225,15 @@ export default function StudentAIPage() {
               </div>
             </div>
 
-            {/* Action Cards */}
+            {/* Action Cards - OPERATION FIRST */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto px-4">
               {actionCards.map((card, i) => (
                 <button 
                   key={i} 
-                  onClick={() => handleSend(`Could you help me ${card.title.toLowerCase()}?`)}
+                  onClick={() => {
+                    setIsNotePickerOpen(true);
+                    setInput(`I want to ${card.title.toLowerCase()} for...`);
+                  }}
                   className="group p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-100 flex gap-4 cursor-pointer rounded-xl bg-white text-left w-full shadow-sm"
                 >
                   <div className="w-12 h-12 rounded-md flex items-center justify-center shrink-0 shadow-sm bg-black group-hover:scale-110 transition-transform">
@@ -310,7 +322,7 @@ export default function StudentAIPage() {
         <div className="max-w-4xl mx-auto relative group flex flex-col gap-3">
           
           {/* Previews */}
-          {(selectedImage || audioUrl) && (
+          {(selectedImage || audioUrl || selectedNoteForAI) && (
             <div className="flex flex-wrap gap-4 px-2">
               {selectedImage && (
                 <div className="relative group">
@@ -322,6 +334,20 @@ export default function StudentAIPage() {
                 <div className="relative bg-white border border-gray-200 shadow-md shadow-gray-200/60 rounded-xl p-2 flex items-center gap-3">
                   <audio src={audioUrl} controls className="h-10 w-[240px]" />
                   <button onClick={() => setAudioUrl(null)} className="bg-red-50 hover:bg-red-100 text-red-500 rounded-md px-3 py-2 text-xs font-bold transition-colors">Discard</button>
+                </div>
+              )}
+              {selectedNoteForAI && (
+                <div className="relative bg-black text-white rounded-xl p-3 flex items-center gap-3 shadow-lg max-w-[280px]">
+                  <div className="w-8 h-8 bg-white/10 rounded flex items-center justify-center">
+                    <FileText size={16} />
+                  </div>
+                  <div className="flex-1 truncate">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Attached Note</p>
+                    <p className="text-xs font-bold truncate">{selectedNoteForAI.title}</p>
+                  </div>
+                  <button onClick={() => setSelectedNoteForAI(null)} className="text-gray-400 hover:text-white font-bold p-1">
+                    <X size={14} />
+                  </button>
                 </div>
               )}
             </div>
@@ -346,6 +372,13 @@ export default function StudentAIPage() {
               title="Voice Note"
             >
               <Mic size={22} strokeWidth={1.5} />
+            </button>
+            <button 
+              onClick={() => setIsNotePickerOpen(true)}
+              className="p-3 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer shrink-0"
+              title="Attach Notes"
+            >
+              <FileText size={22} strokeWidth={1.5} />
             </button>
             
             {micActive ? (
@@ -384,6 +417,72 @@ export default function StudentAIPage() {
           </div>
         </div>
       </div>
+
+      {/* Note Selection Modal for AI */}
+      <NotePickerModal 
+        isOpen={isNotePickerOpen}
+        onClose={() => setIsNotePickerOpen(false)}
+        onSelect={(note) => {
+          setSelectedNoteForAI(note);
+          setIsNotePickerOpen(false);
+          setInput(`Can you help me with this note: "${note.title}"?`);
+        }}
+      />
     </div>
   );
 }
+
+// Note Picker Modal
+function NotePickerModal({ isOpen, onClose, onSelect }: { isOpen: boolean; onClose: () => void; onSelect: (note: any) => void }) {
+  if (!isOpen) return null;
+
+  const notes = [
+    { id: "1", title: "Introduction to Calculus", subject: "Math", date: "Nov 20" },
+    { id: "2", title: "Newton's Laws of Motion", subject: "Physics", date: "Nov 19" },
+    { id: "3", title: "Chemical Bonding", subject: "Chemistry", date: "Nov 18" },
+    { id: "4", title: "World War II Overview", subject: "History", date: "Nov 17" }
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose}></div>
+      <div className="bg-white rounded-[32px] w-full max-w-xl relative z-10 shadow-2xl overflow-hidden shadow-black/20">
+        <div className="bg-black p-10 text-white">
+           <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-black tracking-tight">Select academic material</h2>
+              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X size={24} /></button>
+           </div>
+           <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">Neural extraction will begin upon selection</p>
+        </div>
+
+        <div className="p-8 max-h-[400px] overflow-y-auto no-scrollbar space-y-4">
+           {notes.map((note) => (
+             <button 
+              key={note.id} 
+              onClick={() => onSelect(note)}
+              className="w-full group flex items-center justify-between p-5 bg-gray-50 hover:bg-black hover:text-white transition-all rounded-2xl border border-gray-100 hover:border-black shadow-sm"
+             >
+                <div className="flex items-center gap-4">
+                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-900 group-hover:scale-110 transition-transform">
+                      <FolderOpen size={24} />
+                   </div>
+                   <div className="text-left">
+                      <p className="text-sm font-black tracking-tight">{note.title}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400">{note.subject} • {note.date}</p>
+                   </div>
+                </div>
+                <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-white group-hover:bg-white group-hover:text-black transition-all">
+                   <ChevronRight size={20} />
+                </div>
+             </button>
+           ))}
+        </div>
+
+        <div className="p-8 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+           <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">IREMEE AI PICKER</span>
+           <button onClick={onClose} className="bg-black text-white px-10 py-3 rounded-xl font-bold text-xs hover:bg-gray-800 transition-all">DISMISS</button>
+        </div>
+      </div>
+    </div>
+  );
+}
