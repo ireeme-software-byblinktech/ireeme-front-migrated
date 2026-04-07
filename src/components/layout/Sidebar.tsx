@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -29,7 +29,10 @@ import {
   Pill,
   Calendar,
   Briefcase,
-  FolderOpen
+  FolderOpen,
+  Heart,
+  Trophy,
+  Globe
 } from "lucide-react";
 
 // ─── TYPES ────────────────────────────────────────────────────
@@ -130,8 +133,9 @@ const ADMIN_GROUPS: NavGroup[] = [
       { label: "Teachers", href: "/admin/teachers", icon: <User size={18} /> },
       { label: "Students", href: "/admin/students", icon: <Users size={18} /> },
       { label: "Timetables", href: "/admin/timetables", icon: <CalendarDays size={18} /> },
-      { label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} /> },
-      { label: "Elections", href: "/admin/elections", icon: <FileText size={18} /> },
+      {label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} />},
+      {label: "Elections", href: "/admin/elections", icon: <FileText size={18} />},
+      {label: "Alumni", href: "/admin/alumni", icon: <GraduationCap size={18} />},
     ],
   },
 ];
@@ -228,6 +232,21 @@ const PARENT_GROUPS: NavGroup[] = [
   },
 ];
 
+const ALUMNI_GROUPS: NavGroup[] = [
+  {
+    id: "main",
+    label: "",
+    collapsible: false,
+    items: [
+      { label: "Dashboard", href: "/alumni", icon: <LayoutDashboard size={18} /> },
+      { label: "Alumni Directory", href: "/alumni/directory", icon: <Users size={18} /> },
+      { label: "Academic Docs", href: "/alumni/documents", icon: <FileText size={18} /> },
+      { label: "Report Cards", href: "/alumni/report-cards", icon: <GraduationCap size={18} /> },
+      { label: "Applications", href: "/alumni/applications", icon: <Globe size={18} /> },
+    ],
+  },
+];
+
 const ACCOUNTANT_GROUPS: NavGroup[] = [
   {
     id: "main",
@@ -256,6 +275,7 @@ const SUPER_ADMIN_GROUPS: NavGroup[] = [
       { label: "Admins", href: "/super-admin/admins", icon: <Users size={18} /> },
       { label: "Documents", href: "/super-admin/documents", icon: <FileText size={18} /> },
       { label: "Reports", href: "/super-admin/reports", icon: <BarChart2 size={18} /> },
+      { label: "Alumni", href: "/super-admin/alumni", icon: <GraduationCap size={18} /> },
     ],
   },
 ];
@@ -348,6 +368,7 @@ const NAV_MAP: Record<string, NavGroup[]> = {
   discipline: DISCIPLINE_GROUPS,
   librarian: LIBRARIAN_GROUPS,
   nurse: NURSE_GROUPS,
+  alumni: ALUMNI_GROUPS,
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -360,6 +381,7 @@ const ROLE_LABELS: Record<string, string> = {
   discipline: "Discipline Officer",
   librarian: "Librarian",
   nurse: "School Nurse",
+  alumni: "Alumni / Graduate",
 };
 
 
@@ -474,13 +496,21 @@ interface SidebarProps {
 
 export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: SidebarProps) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const groups = NAV_MAP[role] ?? ADMIN_GROUPS;
   const roleLabel = ROLE_LABELS[role] ?? role;
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isActive = (href: string) => {
+    if (!mounted) return false;
     if (href === `/${role}`) return pathname === href;
     return pathname.startsWith(href);
   };
+
+  if (!mounted) return <div className="app-sidebar" />; // Render placeholder or empty sidebar during hydration
 
   return (
     <aside className={`app-sidebar ${!isOpen ? 'app-sidebar--hidden' : ''}`}>
@@ -507,9 +537,9 @@ export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: S
 
       {/* User footer */}
       <div className="sidebar-footer">
-        <Link href={`/${role}/profile`} className="sidebar-nav-item sidebar-footer-item">
-          <User size={20} className="sidebar-nav-icon" />
-          <span className="sidebar-nav-label">Profile</span>
+        <Link href={`/${role}/settings`} className="sidebar-nav-item sidebar-footer-item">
+          <Settings size={20} className="sidebar-nav-icon" />
+          <span className="sidebar-nav-label">Settings</span>
         </Link>
         <Link href="/login" className="sidebar-nav-item sidebar-footer-item">
           <LogOut size={20} className="sidebar-nav-icon" />
