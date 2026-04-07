@@ -3,100 +3,100 @@
 import { useState } from "react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
-import { Search, Filter, Upload, Edit, Trash2 } from "lucide-react";
+import { Search, Filter, Upload, Eye, Download, Trash2 } from "lucide-react";
 
-// Permission data interface
-interface Permission {
+// Document data interface
+interface Document {
   id: string;
-  reqId: string;
-  reason: string;
-  dateSubmitted: string;
-  returnDate: string;
-  status: "Pending" | "Approved" | "Rejected" | "Present";
+  name: string;
+  category: string;
+  fileType: string;
+  uploadDate: string;
+  status: "Private" | "Public" | "Shared";
 }
 
-// Sample permission data
-const permissionsData: Permission[] = [
+// Sample document data
+const documentsData: Document[] = [
   {
     id: "1",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
+    name: "Birth Certificate",
+    category: "Certificate",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "2",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Approved"
+    name: "Birth Certificate",
+    category: "Certificate",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "3",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Approved"
+    name: "Birth Certificate",
+    category: "Certificate",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "4",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Approved"
+    name: "Birth Certificate",
+    category: "Certificate",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "5",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
+    name: "Birth Certificate",
+    category: "Certificate",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "6",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
+    name: "Birth Certificate",
+    category: "Certificate",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "7",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
+    name: "Medical Clearance",
+    category: "Medical record",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   },
   {
     id: "8",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Present"
+    name: "Medical Clearance",
+    category: "Medical record",
+    fileType: "PDF",
+    uploadDate: "20-07-2025",
+    status: "Private"
   }
 ];
 
-export default function StudentPermissionsPage() {
+export default function StudentDocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
-  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const itemsPerPage = 8;
 
   // Filter data based on search and filters
-  const filteredData = permissionsData.filter(permission => {
-    const matchesSearch = permission.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         permission.reqId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || permission.status.toLowerCase() === statusFilter.toLowerCase();
-    return matchesSearch && matchesStatus;
+  const filteredData = documentsData.filter(doc => {
+    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         doc.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === "all" || doc.category.toLowerCase().includes(categoryFilter.toLowerCase());
+    return matchesSearch && matchesCategory;
   });
 
   // Pagination
@@ -104,57 +104,51 @@ export default function StudentPermissionsPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-  const getStatusBadge = (status: string) => {
-    const baseClasses = "px-3 py-1 rounded text-xs font-medium";
-    
-    switch (status) {
-      case "Pending":
-        return `${baseClasses} bg-black text-white`;
-      case "Approved":
-        return `${baseClasses} bg-black text-white`;
-      case "Rejected":
-        return `${baseClasses} bg-red-600 text-white`;
-      case "Present":
-        return `${baseClasses} bg-gray-600 text-white`;
-      default:
-        return `${baseClasses} bg-gray-500 text-white`;
-    }
-  };
-
-  const columns: Column<Permission>[] = [
+  const columns: Column<Document>[] = [
     {
-      key: "reqId",
-      header: "Req-ID",
-      render: (_, row) => (
-        <div className="font-medium text-gray-900">{row.reqId}</div>
+      key: "select",
+      header: "",
+      width: "50px",
+      render: () => (
+        <input
+          type="checkbox"
+          className="w-4 h-4 rounded border-gray-300"
+        />
       )
     },
     {
-      key: "reason",
-      header: "Reason",
+      key: "name",
+      header: "Name",
       render: (_, row) => (
-        <div className="text-gray-600">{row.reason}</div>
+        <div className="font-medium text-gray-900">{row.name}</div>
       )
     },
     {
-      key: "dateSubmitted",
-      header: "Date submitted",
+      key: "category",
+      header: "Category",
       render: (_, row) => (
-        <div className="text-gray-600">{row.dateSubmitted}</div>
+        <div className="text-gray-600">{row.category}</div>
       )
     },
     {
-      key: "returnDate",
-      header: "Return date",
+      key: "fileType",
+      header: "File type",
       render: (_, row) => (
-        <div className="text-gray-600">{row.returnDate}</div>
+        <div className="text-gray-600">{row.fileType}</div>
+      )
+    },
+    {
+      key: "uploadDate",
+      header: "Upload date",
+      render: (_, row) => (
+        <div className="text-gray-600">{row.uploadDate}</div>
       )
     },
     {
       key: "status",
       header: "Status",
       render: (_, row) => (
-        <span className={getStatusBadge(row.status)}>
+        <span className="bg-black text-white px-3 py-1 rounded text-xs font-medium">
           {row.status}
         </span>
       )
@@ -166,7 +160,10 @@ export default function StudentPermissionsPage() {
       render: () => (
         <div className="flex items-center justify-center gap-2">
           <button className="text-gray-600 hover:text-gray-900 p-1">
-            <Edit size={16} />
+            <Eye size={16} />
+          </button>
+          <button className="text-gray-600 hover:text-gray-900 p-1">
+            <Download size={16} />
           </button>
           <button className="text-gray-600 hover:text-gray-900 p-1">
             <Trash2 size={16} />
@@ -181,15 +178,15 @@ export default function StudentPermissionsPage() {
       {/* Header Section */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Permission Requests</h1>
-          <p className="text-gray-600">Submit leave requests and track the status of your permission applications.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Documents</h1>
+          <p className="text-gray-600">Store, organize, and access your academic and school documents.</p>
         </div>
         <button 
-          onClick={() => setIsRequestModalOpen(true)}
+          onClick={() => setIsAddModalOpen(true)}
           className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
         >
           <Upload size={16} />
-          New Request
+          Upload a document
         </button>
       </div>
 
@@ -210,14 +207,14 @@ export default function StudentPermissionsPage() {
           <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 min-w-[140px]">
             <Filter size={16} className="text-gray-400" />
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
               className="outline-none text-sm bg-transparent"
             >
               <option value="all">All documents</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
+              <option value="certificate">Certificate</option>
+              <option value="medical">Medical record</option>
+              <option value="academic">Academic</option>
             </select>
           </div>
           
@@ -237,7 +234,7 @@ export default function StudentPermissionsPage() {
         </div>
       </div>
 
-      {/* Permissions Table */}
+      {/* Documents Table */}
       <Card>
         <CardBody className="p-0">
           <div className="overflow-x-auto">
@@ -287,27 +284,23 @@ export default function StudentPermissionsPage() {
         </CardBody>
       </Card>
 
-      {/* Request Permission Modal */}
-      {isRequestModalOpen && (
-        <RequestPermissionModal
-          isOpen={isRequestModalOpen}
-          onClose={() => setIsRequestModalOpen(false)}
+      {/* Add Document Modal */}
+      {isAddModalOpen && (
+        <AddDocumentModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
         />
       )}
     </div>
   );
 }
 
-// Request Permission Modal Component
-function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+// Add Document Modal Component
+function AddDocumentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [formData, setFormData] = useState({
-    studentName: "",
-    studentId: "",
-    grade: "",
-    class: "",
-    departureDate: "",
-    returnDate: "",
-    reason: ""
+    title: "",
+    category: "",
+    description: ""
   });
 
   if (!isOpen) return null;
@@ -332,7 +325,7 @@ function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose:
           <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
             {/* Header with black background */}
             <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Request permission</h2>
+              <h2 className="text-xl font-semibold">Add Document</h2>
               <button
                 onClick={onClose}
                 className="text-white hover:text-gray-300"
@@ -346,108 +339,52 @@ function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose:
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Student Name */}
+                  {/* Document Title */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Student Name *
+                      Document title *
                     </label>
                     <input
                       type="text"
-                      value={formData.studentName}
-                      onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
                       placeholder="Your first name"
                     />
                   </div>
 
-                  {/* Student ID */}
+                  {/* Document Category */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Student ID *
+                      Document category *
                     </label>
                     <input
                       type="text"
-                      value={formData.studentId}
-                      onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  {/* Grade */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Grade *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.grade}
-                      onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Your first name"
-                    />
-                  </div>
-
-                  {/* Class */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Class *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.class}
-                      onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  {/* Departure Date */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Departure date *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.departureDate}
-                      onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="select a date"
-                    />
-                  </div>
-
-                  {/* Return Date */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Return date *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.returnDate}
-                      onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
                       placeholder="Enter your email"
                     />
                   </div>
                 </div>
 
-                {/* Reason for Permission */}
+                {/* Description */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Reason for permission *
+                    Description *
                   </label>
                   <textarea
-                    value={formData.reason}
-                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400 h-20 resize-none"
                     placeholder="Enter a small description"
                   />
                 </div>
 
-                {/* Upload Supporting Documents */}
+                {/* File Upload */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Upload supporting documents *
+                    Upload a file *
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <div className="flex flex-col items-center">
@@ -458,7 +395,7 @@ function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose:
                           <path d="M12 12l0 9" />
                         </svg>
                       </div>
-                      <p className="text-gray-600 font-medium mb-1">Upload a document</p>
+                      <p className="text-gray-600 font-medium mb-1">Upload a picture</p>
                       <p className="text-gray-500 text-sm mb-4">Supported formats: Pdf, Docx, Jpg, PNG (Max 10MB)</p>
                       <button
                         type="button"
@@ -476,7 +413,7 @@ function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose:
                     type="submit"
                     className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
                   >
-                    Request
+                    Add document
                   </button>
                   <button
                     type="button"

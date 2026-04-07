@@ -280,9 +280,8 @@ export default function AssignmentsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
-        <button className="text-sm text-gray-600 hover:text-gray-900 font-medium">View all</button>
       </div>
       
       {/* Stats Cards */}

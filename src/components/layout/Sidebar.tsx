@@ -168,6 +168,7 @@ const STUDENT_GROUPS: NavGroup[] = [
     collapsible: true,
     items: [
       { label: "Library", href: "/student/library", icon: <BookOpen size={18} /> },
+      { label: "Documents", href: "/student/documents", icon: <FolderOpen size={18} /> },
       { label: "Timetable", href: "/student/timetable", icon: <CalendarDays size={18} /> },
       { label: "Projects", href: "/student/projects", icon: <ClipboardList size={18} /> },
     ],
@@ -181,6 +182,7 @@ const STUDENT_GROUPS: NavGroup[] = [
       { label: "Health", href: "/student/health", icon: <Stethoscope size={18} /> },
       { label: "Permissions", href: "/student/permissions", icon: <ShieldAlert size={18} /> },
       { label: "Discipline", href: "/student/discipline", icon: <ShieldAlert size={18} /> },
+      { label: "Career Guidance", href: "/student/career-guidance", icon: <Briefcase size={18} /> },
     ],
   },
   {
@@ -191,7 +193,16 @@ const STUDENT_GROUPS: NavGroup[] = [
     items: [
       { label: "Appeals", href: "/student/appeals", icon: <MessageSquare size={18} /> },
       { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
-      { label: "Campus AI", href: "/student/ai", icon: <Bot size={18} /> },
+      { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
+    ],
+  },
+  {
+    id: "campus-ai",
+    label: "Campus Ai",
+    icon: <Bot size={18} />,
+    collapsible: false,
+    items: [
+      { label: "Campus Ai", href: "/student/ai", icon: <Bot size={18} /> },
     ],
   },
   {
