@@ -46,22 +46,73 @@ interface AppealRecord {
   type: "Grade" | "Discipline";
   subject: string;
   reason: string;
+  description: string;
   submittedDate: string;
   status: "Pending" | "Under Review" | "Approved" | "Rejected";
 }
 
 const tableData: AppealRecord[] = [
-  { id: "1", type: "Grade", subject: "Mathematics", reason: "Grading Error", submittedDate: "Nov 20, 2025", status: "Pending" },
-  { id: "2", type: "Discipline", subject: "Discipline", reason: "Extenuating Circumstances", submittedDate: "Nov 18, 2025", status: "Under Review" },
-  { id: "3", type: "Grade", subject: "Physics", reason: "Missing Work Not Counted", submittedDate: "Nov 15, 2025", status: "Approved" },
-  { id: "4", type: "Discipline", subject: "Discipline", reason: "Misunderstanding", submittedDate: "Nov 10, 2025", status: "Rejected" },
-  { id: "5", type: "Grade", subject: "Chemistry", reason: "Data Entry Error", submittedDate: "Nov 05, 2025", status: "Approved" },
-  { id: "6", type: "Grade", subject: "English", reason: "Late Submission Penalty", submittedDate: "Oct 28, 2025", status: "Rejected" },
+  { 
+    id: "1", 
+    type: "Grade", 
+    subject: "Mathematics", 
+    reason: "Grading Error", 
+    description: "The marks for the final question were miscalculated in the system.",
+    submittedDate: "Nov 20, 2025", 
+    status: "Pending" 
+  },
+  { 
+    id: "2", 
+    type: "Discipline", 
+    subject: "Discipline", 
+    reason: "Extenuating Circumstances", 
+    description: "I was absent due to a medical emergency, and I have the documents to prove it.",
+    submittedDate: "Nov 18, 2025", 
+    status: "Under Review" 
+  },
+  { 
+    id: "3", 
+    type: "Grade", 
+    subject: "Physics", 
+    reason: "Missing Work Not Counted", 
+    description: "My lab experiment #4 was submitted but is marked as missing in the portal.",
+    submittedDate: "Nov 15, 2025", 
+    status: "Approved" 
+  },
+  { 
+    id: "4", 
+    type: "Discipline", 
+    subject: "Discipline", 
+    reason: "Misunderstanding", 
+    description: "The reported incident was a misunderstanding between two students.",
+    submittedDate: "Nov 10, 2025", 
+    status: "Rejected" 
+  },
+  { 
+    id: "5", 
+    type: "Grade", 
+    subject: "Chemistry", 
+    reason: "Data Entry Error", 
+    description: "My mid-term score of 85 was entered as 58.",
+    submittedDate: "Nov 05, 2025", 
+    status: "Approved" 
+  },
+  { 
+    id: "6", 
+    type: "Grade", 
+    subject: "English", 
+    reason: "Late Submission Penalty", 
+    description: "My internet went down during the deadline; I seek a waiver of the 10% penalty.",
+    submittedDate: "Oct 28, 2025", 
+    status: "Rejected" 
+  },
 ];
 
 export default function StudentAppealsPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedAppeal, setSelectedAppeal] = useState<AppealRecord | null>(null);
   const itemsPerPage = 4;
 
   // Filtering
@@ -154,8 +205,14 @@ export default function StudentAppealsPage() {
       key: "action",
       header: "Action",
       align: "center",
-      render: () => (
-        <button className="flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+      render: (_, row) => (
+        <button 
+          onClick={() => {
+            setSelectedAppeal(row);
+            setIsViewModalOpen(true);
+          }}
+          className="flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+        >
           <Eye size={16} />
           View
         </button>
@@ -264,6 +321,167 @@ export default function StudentAppealsPage() {
           </div>
         </div>
       </div>
+
+      {/* View Appeal Modal */}
+      {isViewModalOpen && selectedAppeal && (
+        <ViewAppealModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          appeal={selectedAppeal}
+        />
+      )}
     </div>
   );
-}
+}
+
+// View Appeal Modal Component
+function ViewAppealModal({ 
+  isOpen, 
+  onClose, 
+  appeal 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  appeal: AppealRecord;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        {/* Sidebar area - no blur */}
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        
+        {/* Main content area - lighter blur */}
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        
+        {/* Modal container - centered without top space */}
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
+            {/* Header with black background */}
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Appeal Details</h2>
+              <button
+                onClick={onClose}
+                className="text-white hover:text-gray-300"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Appeal ID */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Appeal ID
+                    </label>
+                    <input
+                      type="text"
+                      value={appeal.id}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-gray-50 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Appeal Type */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Appeal Type
+                    </label>
+                    <input
+                      type="text"
+                      value={appeal.type}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-gray-50 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Submitted Date */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Submitted Date
+                    </label>
+                    <input
+                      type="text"
+                      value={appeal.submittedDate}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-gray-50 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Current Status
+                    </label>
+                    <input
+                      type="text"
+                      value={appeal.status}
+                      readOnly
+                      className={`w-full border border-gray-300 rounded-lg px-3 py-2 font-bold focus:outline-none ${
+                        appeal.status === 'Approved' ? 'bg-green-50 text-green-700' : 
+                        appeal.status === 'Rejected' ? 'bg-red-50 text-red-700' : 
+                        'bg-gray-50 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Subject / Title */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Subject / Title
+                  </label>
+                  <input
+                    type="text"
+                    value={appeal.subject}
+                    readOnly
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-gray-50 focus:outline-none font-bold"
+                  />
+                </div>
+
+                {/* Reason */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Reason for appeal
+                  </label>
+                  <input
+                    type="text"
+                    value={appeal.reason}
+                    readOnly
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-gray-50 focus:outline-none"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Additional Details
+                  </label>
+                  <textarea
+                    value={appeal.description}
+                    readOnly
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 bg-gray-50 focus:outline-none h-32 resize-none"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-center gap-4 pt-4">
+                  <button
+                    onClick={onClose}
+                    className="bg-black text-white px-10 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-800 transition-all shadow-md active:scale-95"
+                  >
+                    Close View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
