@@ -508,9 +508,9 @@ export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: S
 
       {/* User footer */}
       <div className="sidebar-footer">
-        <Link href={`/${role}/profile`} className="sidebar-nav-item sidebar-footer-item">
-          <User size={20} className="sidebar-nav-icon" />
-          <span className="sidebar-nav-label">Profile</span>
+        <Link href={`/${role}/settings`} className="sidebar-nav-item sidebar-footer-item">
+          <Settings size={20} className="sidebar-nav-icon" />
+          <span className="sidebar-nav-label">Settings</span>
         </Link>
         <Link href="/login" className="sidebar-nav-item sidebar-footer-item">
           <LogOut size={20} className="sidebar-nav-icon" />
