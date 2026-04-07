@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/Card";
-import { Sparkles, Share2, MoreVertical, FileText, BookOpen, ClipboardList, PenTool, Image as ImageIcon, Mic, Send, ChevronRight, User, GraduationCap, X, FolderOpen, Check } from "lucide-react";
+import { StatCard } from "@/components/ui/Card";
+import { Sparkles, Share2, MoreVertical, FileText, BookOpen, ClipboardList, PenTool, Image as ImageIcon, Mic, Send, ChevronRight, User, GraduationCap, X, FolderOpen, Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const suggestions = [
@@ -54,7 +54,11 @@ export default function StudentAIPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isNotePickerOpen, setIsNotePickerOpen] = useState(false);
+  const [isOperationPickerOpen, setIsOperationPickerOpen] = useState(false);
+  const [isQuizConfigOpen, setIsQuizConfigOpen] = useState(false);
+  const [quizConfig, setQuizConfig] = useState<{ formats: string[], difficulty: string }>({ formats: ["Multiple Choice"], difficulty: "Medium" });
   const [selectedNoteForAI, setSelectedNoteForAI] = useState<any>(null);
+  const [selectedOperation, setSelectedOperation] = useState<any>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -125,16 +129,21 @@ export default function StudentAIPage() {
     setSelectedImage(null);
     setAudioUrl(null);
     setSelectedNoteForAI(null); // Clear after sending
+    setSelectedOperation(null); // Clear after sending
     setIsTyping(true);
 
     // Simulate AI Response
     setTimeout(() => {
       let responseText = "";
       
+      const lowerText = newUserMsg.text.toLowerCase();
+      
       if (attachment) {
         responseText = `Thanks for sharing this ${attachment.type}. I'm analyzing the ${attachment.type === 'image' ? 'visuals' : 'audio content'} now. I'll provide detailed feedback about it once my systems are fully unlocked!`;
-      } else if (newUserMsg.text.toLowerCase().includes("summarize")) {
-        responseText = "I've analyzed your selected note. Here's a brief summary: This material focuses on the foundational concepts of the subject, highlighting key formulas and theoretical frameworks. Would you like me to create a quick quiz based on this?";
+      } else if (lowerText.includes("quiz")) {
+        responseText = "Here is a 3-question practice quiz based on the material:\n\nQ1: What is the primary focus of the framework?\nA) Static analysis\nB) Synthesizing knowledge\nC) Rote learning\n\nQ2: How are lecture points mapped?\nA) As core services\nB) As isolated modules\nC) As raw data\n\nQ3: What drives maximum retention?\nA) Group study\nB) Focused cycles\nC) Skimming\n\nReply with your answers!";
+      } else if (lowerText.includes("summary") || lowerText.includes("summarize")) {
+        responseText = "Here is the summary of your selected material:\n\n1. Strategic Synthesis\nThe text outlines deconstructing complex topics into actionable and tactical study units.\n\n2. Focused Retention\nBy leveraging targeted study cycles and eliminating distractions, students can improve information retention.\n\n3. Practical Application\nCore concepts should be viewed as active systems rather than static facts, meaning they must be applied through assignments.\n\nWould you like me to create a quiz based on this summary?";
       } else {
         responseText = `I'm your Campus AI assistant! I've received your request: "${text.trim()}". While I am currently operating in demo mode, eventually I will provide personalized study guides, quizzes, and summaries right here.`;
       }
@@ -231,8 +240,12 @@ export default function StudentAIPage() {
                 <button 
                   key={i} 
                   onClick={() => {
-                    setIsNotePickerOpen(true);
-                    setInput(`I want to ${card.title.toLowerCase()} for...`);
+                    setSelectedOperation(card);
+                    if (card.title === "Practice Quiz") {
+                      setIsQuizConfigOpen(true);
+                    } else {
+                      setIsNotePickerOpen(true);
+                    }
                   }}
                   className="group p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-100 flex gap-4 cursor-pointer rounded-xl bg-white text-left w-full shadow-sm"
                 >
@@ -337,15 +350,23 @@ export default function StudentAIPage() {
                 </div>
               )}
               {selectedNoteForAI && (
-                <div className="relative bg-black text-white rounded-xl p-3 flex items-center gap-3 shadow-lg max-w-[280px]">
-                  <div className="w-8 h-8 bg-white/10 rounded flex items-center justify-center">
-                    <FileText size={16} />
+                <div className="relative bg-black text-white rounded-xl p-3 flex items-center gap-3 shadow-lg max-w-full font-medium">
+                  <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                    {selectedOperation ? selectedOperation.icon : <FileText size={18} />}
                   </div>
                   <div className="flex-1 truncate">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Attached Note</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      {selectedOperation ? selectedOperation.title : 'Attached Note'}
+                    </p>
                     <p className="text-xs font-bold truncate">{selectedNoteForAI.title}</p>
                   </div>
-                  <button onClick={() => setSelectedNoteForAI(null)} className="text-gray-400 hover:text-white font-bold p-1">
+                  <button 
+                    onClick={() => {
+                        setSelectedNoteForAI(null);
+                        setSelectedOperation(null);
+                    }} 
+                    className="text-gray-400 hover:text-white font-bold p-1 bg-white/5 rounded-full"
+                  >
                     <X size={14} />
                   </button>
                 </div>
@@ -353,7 +374,53 @@ export default function StudentAIPage() {
             </div>
           )}
 
-          <div className="flex items-end gap-3 bg-white border border-gray-200 rounded-xl p-3 shadow-lg shadow-gray-200/50 transition-all focus-within:border-black focus-within:ring-2 focus-within:ring-black/5">
+          <div className="flex items-end gap-3 bg-white border border-gray-200 rounded-xl p-3 shadow-lg shadow-gray-200/50 transition-all focus-within:border-black focus-within:ring-2 focus-within:ring-black/5 relative z-20">
+            <div className="relative flex items-center">
+              <button 
+                onClick={() => setIsOperationPickerOpen(!isOperationPickerOpen)}
+                className="w-10 h-10 text-white bg-black hover:bg-gray-800 rounded-full transition-colors cursor-pointer shrink-0 shadow-sm flex items-center justify-center group relative z-10"
+                title="Select Action & Note"
+              >
+                <Plus size={20} strokeWidth={2} className={cn("transition-transform duration-300", isOperationPickerOpen && "rotate-45")} />
+              </button>
+              
+              {isOperationPickerOpen && (
+                <>
+                  <div className="fixed inset-0 z-[90]" onClick={() => setIsOperationPickerOpen(false)}></div>
+                  <div className="absolute bottom-full left-0 mb-4 w-[280px] bg-black border border-gray-800 rounded-xl overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200 z-[100] shadow-2xl">
+                    <div className="px-4 py-3 border-b border-gray-800 flex justify-between items-center bg-white/[0.02]">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Select Operation</span>
+                       <button onClick={() => setIsOperationPickerOpen(false)} className="text-gray-400 hover:text-white transition-colors"><X size={14}/></button>
+                    </div>
+                    <div className="p-2 space-y-1">
+                        {actionCards.map((card, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              setSelectedOperation(card);
+                              setIsOperationPickerOpen(false);
+                              if (card.title === "Practice Quiz") {
+                                setIsQuizConfigOpen(true);
+                              } else {
+                                setIsNotePickerOpen(true);
+                              }
+                            }}
+                            className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors rounded-lg text-left group"
+                          >
+                            <div className="shrink-0 w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                                <div className="scale-75">{card.icon}</div>
+                            </div>
+                            <div className="flex-1">
+                                <div className="font-bold text-[13px] text-white tracking-tight">{card.title}</div>
+                                <div className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5 line-clamp-1">{card.description}</div>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
             <input type="file" accept="image/*" id="image-upload" className="hidden" onChange={handleImageUpload} />
             <button 
               onClick={() => document.getElementById('image-upload')?.click()}
@@ -372,13 +439,6 @@ export default function StudentAIPage() {
               title="Voice Note"
             >
               <Mic size={22} strokeWidth={1.5} />
-            </button>
-            <button 
-              onClick={() => setIsNotePickerOpen(true)}
-              className="p-3 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer shrink-0"
-              title="Attach Notes"
-            >
-              <FileText size={22} strokeWidth={1.5} />
             </button>
             
             {micActive ? (
@@ -418,14 +478,35 @@ export default function StudentAIPage() {
         </div>
       </div>
 
-      {/* Note Selection Modal for AI */}
+      <QuizConfigModal
+        isOpen={isQuizConfigOpen}
+        onClose={() => setIsQuizConfigOpen(false)}
+        onContinue={() => {
+          setIsQuizConfigOpen(false);
+          setIsNotePickerOpen(true);
+        }}
+        quizConfig={quizConfig}
+        setQuizConfig={setQuizConfig}
+      />
       <NotePickerModal 
         isOpen={isNotePickerOpen}
-        onClose={() => setIsNotePickerOpen(false)}
+        onClose={() => {
+            setIsNotePickerOpen(false);
+            if (!selectedNoteForAI) setSelectedOperation(null);
+        }}
+        operation={selectedOperation}
         onSelect={(note) => {
           setSelectedNoteForAI(note);
           setIsNotePickerOpen(false);
-          setInput(`Can you help me with this note: "${note.title}"?`);
+          let opPrefix = "Can you help me with";
+          if (selectedOperation) {
+              if (selectedOperation.title === "Practice Quiz") {
+                 opPrefix = `I want a ${quizConfig.difficulty} difficulty ${quizConfig.formats.join(' and ')} practice quiz for`;
+              } else {
+                 opPrefix = `I want to ${selectedOperation.title.toLowerCase()} for`;
+              }
+          }
+          setInput(`${opPrefix}: "${note.title}"?`);
         }}
       />
     </div>
@@ -433,56 +514,199 @@ export default function StudentAIPage() {
 }
 
 // Note Picker Modal
-function NotePickerModal({ isOpen, onClose, onSelect }: { isOpen: boolean; onClose: () => void; onSelect: (note: any) => void }) {
+function NotePickerModal({ 
+    isOpen, 
+    onClose, 
+    onSelect,
+    operation 
+  }: { 
+    isOpen: boolean; 
+    onClose: () => void; 
+    onSelect: (note: any) => void;
+    operation?: any;
+  }) {
+    if (!isOpen) return null;
+  
+    const notes = [
+      { id: "1", title: "Introduction to Calculus", subject: "Math", date: "Nov 20" },
+      { id: "2", title: "Newton's Laws of Motion", subject: "Physics", date: "Nov 19" },
+      { id: "3", title: "Chemical Bonding", subject: "Chemistry", date: "Nov 18" },
+      { id: "4", title: "World War II Overview", subject: "History", date: "Nov 17" }
+    ];
+  
+    return (
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose}></div>
+        <div className="bg-white rounded-[24px] w-full max-w-xl relative z-10 shadow-2xl overflow-hidden shadow-black/20">
+          <div className="bg-black p-6 md:p-8 text-white relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+             <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-black tracking-tight">Select material</h2>
+                  {operation && (
+                    <p className="text-blue-400 font-bold text-xs uppercase tracking-wider">For "{operation.title}"</p>
+                  )}
+                </div>
+                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors -mt-2 -mr-2"><X size={20} /></button>
+             </div>
+             <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[9px] relative z-10">Portal will process content upon selection</p>
+          </div>
+  
+          <div className="p-6 max-h-[350px] overflow-y-auto no-scrollbar space-y-2.5 font-medium border-t border-gray-100">
+             {notes.map((note) => (
+               <button 
+                key={note.id} 
+                onClick={() => onSelect(note)}
+                className="w-full group flex items-center justify-between p-3.5 bg-gray-50 hover:bg-black hover:text-white transition-all rounded-xl border border-gray-100 hover:border-black shadow-sm"
+               >
+                  <div className="flex items-center gap-3">
+                     <div className="w-10 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center text-gray-900 group-hover:scale-110 transition-transform shrink-0">
+                        <FolderOpen size={18} />
+                     </div>
+                     <div className="text-left">
+                        <p className="text-[13px] font-black tracking-tight">{note.title}</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400 mt-0.5">{note.subject} • {note.date}</p>
+                     </div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all bg-white group-hover:border-white shadow-sm shrink-0">
+                     <ChevronRight size={16} />
+                  </div>
+               </button>
+             ))}
+          </div>
+  
+          <div className="p-6 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+             <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">IREMEE AI ENGINE</span>
+             <button onClick={onClose} className="bg-black text-white px-8 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-800 transition-all">DISMISS</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+// Quiz Config Modal
+function QuizConfigModal({
+  isOpen,
+  onClose,
+  onContinue,
+  quizConfig,
+  setQuizConfig
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onContinue: () => void;
+  quizConfig: { formats: string[], difficulty: string };
+  setQuizConfig: (config: { formats: string[], difficulty: string }) => void;
+}) {
   if (!isOpen) return null;
 
-  const notes = [
-    { id: "1", title: "Introduction to Calculus", subject: "Math", date: "Nov 20" },
-    { id: "2", title: "Newton's Laws of Motion", subject: "Physics", date: "Nov 19" },
-    { id: "3", title: "Chemical Bonding", subject: "Chemistry", date: "Nov 18" },
-    { id: "4", title: "World War II Overview", subject: "History", date: "Nov 17" }
-  ];
+  const toggleFormat = (f: string) => {
+    if (quizConfig.formats.includes(f)) {
+      if (quizConfig.formats.length === 1) return; // Must select at least one
+      setQuizConfig({ ...quizConfig, formats: quizConfig.formats.filter(x => x !== f) });
+    } else {
+      setQuizConfig({ ...quizConfig, formats: [...quizConfig.formats, f] });
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose}></div>
-      <div className="bg-white rounded-[32px] w-full max-w-xl relative z-10 shadow-2xl overflow-hidden shadow-black/20">
-        <div className="bg-black p-10 text-white">
-           <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-black tracking-tight">Select academic material</h2>
-              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X size={24} /></button>
+      <div className="bg-white rounded-[24px] w-full max-w-md relative z-10 shadow-2xl overflow-hidden shadow-black/20">
+        
+        {/* Dynamic Header */}
+        <div className="bg-black p-8 text-white relative overflow-hidden flex flex-col items-center text-center">
+           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+           <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+           
+           <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors z-10"><X size={20} /></button>
+           
+           <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-4 relative z-10 shadow-inner">
+             <ClipboardList size={32} />
            </div>
-           <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px]">Neural extraction will begin upon selection</p>
+           
+           <div className="relative z-10 space-y-1 mt-2">
+             <h2 className="text-2xl font-black tracking-tight">Quiz Engine Setup</h2>
+             <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest leading-relaxed max-w-[250px] mx-auto">
+               Select your target domains to generate a custom assessment.
+             </p>
+           </div>
         </div>
 
-        <div className="p-8 max-h-[400px] overflow-y-auto no-scrollbar space-y-4">
-           {notes.map((note) => (
-             <button 
-              key={note.id} 
-              onClick={() => onSelect(note)}
-              className="w-full group flex items-center justify-between p-5 bg-gray-50 hover:bg-black hover:text-white transition-all rounded-2xl border border-gray-100 hover:border-black shadow-sm"
-             >
-                <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-900 group-hover:scale-110 transition-transform">
-                      <FolderOpen size={24} />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-sm font-black tracking-tight">{note.title}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-gray-400">{note.subject} • {note.date}</p>
-                   </div>
-                </div>
-                <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-white group-hover:bg-white group-hover:text-black transition-all">
-                   <ChevronRight size={20} />
-                </div>
-             </button>
-           ))}
+        <div className="p-8 space-y-8">
+           {/* Formats - Multi Select */}
+           <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-[12px] font-black uppercase tracking-widest text-black flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div> Format Types
+                </label>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Multiple allowed</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                 {["Multiple Choice", "True/False", "Short Answer", "Essay", "Fill-in-the-Blank"].map(f => {
+                    const isSelected = quizConfig.formats.includes(f);
+                    return (
+                      <button 
+                        key={f} 
+                        onClick={() => toggleFormat(f)}
+                        className={cn(
+                          "px-4 py-2.5 rounded-full border text-[11px] font-bold transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-black/5 ring-offset-1", 
+                          isSelected 
+                            ? "border-black bg-black text-white shadow-md scale-105" 
+                            : "border-gray-200 bg-gray-50 text-gray-500 hover:border-black/30 hover:bg-white"
+                        )}
+                      >
+                         {isSelected && <Check size={12} strokeWidth={3} />}
+                         {f}
+                      </button>
+                    )
+                 })}
+              </div>
+           </div>
+
+           <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent"></div>
+
+           {/* Difficulty - Single Select */}
+           <div className="space-y-4">
+              <label className="text-[12px] font-black uppercase tracking-widest text-black flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div> Difficulty Level
+              </label>
+              
+              <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100 shadow-inner">
+                 {["Easy", "Medium", "Hard"].map(d => {
+                    const isSelected = quizConfig.difficulty === d;
+                    return (
+                      <button 
+                        key={d} 
+                        onClick={() => setQuizConfig({...quizConfig, difficulty: d})}
+                        className={cn(
+                          "flex-1 py-3 text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all outline-none", 
+                          isSelected 
+                            ? "bg-white text-black shadow-sm border border-gray-200" 
+                            : "text-gray-400 hover:text-black"
+                        )}
+                      >
+                         {d}
+                      </button>
+                    )
+                 })}
+              </div>
+           </div>
         </div>
 
-        <div className="p-8 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-           <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">IREMEE AI PICKER</span>
-           <button onClick={onClose} className="bg-black text-white px-10 py-3 rounded-xl font-bold text-xs hover:bg-gray-800 transition-all">DISMISS</button>
+        <div className="p-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2">Ready to compile</span>
+           <button 
+              onClick={onContinue} 
+              className="bg-black text-white px-8 py-3.5 rounded-full font-black text-[11px] uppercase tracking-[0.2em] hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 group flex items-center gap-3"
+           >
+              Select Material
+              <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors">
+                 <ChevronRight size={14} />
+              </div>
+           </button>
         </div>
       </div>
     </div>
   );
-}
+}
