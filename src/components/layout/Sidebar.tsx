@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -193,7 +193,6 @@ const STUDENT_GROUPS: NavGroup[] = [
     collapsible: true,
     items: [
       { label: "Appeals", href: "/student/appeals", icon: <MessageSquare size={18} /> },
-      { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
       { label: "Elections", href: "/student/elections", icon: <Users size={18} /> },
     ],
   },
@@ -497,13 +496,21 @@ interface SidebarProps {
 
 export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: SidebarProps) {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
   const groups = NAV_MAP[role] ?? ADMIN_GROUPS;
   const roleLabel = ROLE_LABELS[role] ?? role;
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isActive = (href: string) => {
+    if (!mounted) return false;
     if (href === `/${role}`) return pathname === href;
     return pathname.startsWith(href);
   };
+
+  if (!mounted) return <div className="app-sidebar" />; // Render placeholder or empty sidebar during hydration
 
   return (
     <aside className={`app-sidebar ${!isOpen ? 'app-sidebar--hidden' : ''}`}>
