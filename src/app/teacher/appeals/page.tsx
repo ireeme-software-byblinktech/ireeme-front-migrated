@@ -32,11 +32,8 @@ const mockAppeals: Appeal[] = [
   { id: "10", studentName: "Sophia Chen", studentClass: "Grade 12-A", avatarUrl: "", type: "Assignment", subject: "Project Resubmission", priority: "Medium", status: "Approved", date: "Mar 6, 2024" },
 ];
 
-const ITEMS_PER_PAGE = 5;
-
 export default function TeacherAppealsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
   const stats = [
     { label: "Total Appeals", value: mockAppeals.length, icon: <MessageSquare size={20} />, progress: 100 },
@@ -49,10 +46,6 @@ export default function TeacherAppealsPage() {
     appeal.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     appeal.subject.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const totalPages = Math.ceil(filteredAppeals.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedAppeals = filteredAppeals.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const columns: Column<Appeal>[] = [
     {
@@ -133,10 +126,7 @@ export default function TeacherAppealsPage() {
           <SearchInput
             placeholder="Search by student name, ID, or subject..."
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <div className="flex gap-4">
@@ -165,45 +155,12 @@ export default function TeacherAppealsPage() {
       <Card className="overflow-hidden border border-gray-100 rounded-md shadow-sm">
         <DataTable
           columns={columns as any}
-          data={paginatedAppeals as any}
+          data={filteredAppeals as any}
           keyField="id"
           className="appeals-table"
+          pageSize={10}
+          paginationClassName="border-t border-gray-100 bg-white"
         />
-        <div className="border-t border-gray-100 bg-white">
-          <div className="flex items-center justify-between px-6 py-4">
-            <span className="text-sm text-gray-400 font-medium">
-              Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredAppeals.length)} of {filteredAppeals.length} appeals
-            </span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 text-sm font-medium text-gray-400 hover:bg-gray-50 rounded-md transition-colors disabled:opacity-50"
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={cn(
-                    "w-8 h-8 flex items-center justify-center text-sm font-medium rounded-md transition-all",
-                    currentPage === page ? "bg-black text-white" : "text-gray-500 hover:bg-gray-50"
-                  )}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-md transition-colors ml-2 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
       </Card>
     </div>
   );

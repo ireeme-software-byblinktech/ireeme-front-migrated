@@ -2,12 +2,12 @@
 
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 
 // ─── Column Definition ────────────────────────────────────────
 export interface Column<T> {
   key: keyof T | string;
-  header: string;
+  header: ReactNode;
   width?: string;
   align?: "left" | "center" | "right";
   sortable?: boolean;
@@ -25,6 +25,8 @@ interface DataTableProps<T> {
   className?: string;
   onRowClick?: (row: T) => void;
   rowClassName?: (row: T) => string;
+  pageSize?: number;
+  paginationClassName?: string;
 }
 
 // ─── Table User Cell ──────────────────────────────────────────
@@ -85,7 +87,16 @@ export function DataTable<T extends Record<string, unknown>>({
   className,
   onRowClick,
   rowClassName,
+  pageSize,
+  paginationClassName,
 }: DataTableProps<T>) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to page 1 when data changes (e.g. after filtering)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data.length]);
+
   if (loading) {
     return (
       <div className="table-container">
@@ -127,54 +138,76 @@ export function DataTable<T extends Record<string, unknown>>({
     );
   }
 
+  const paginatedData = pageSize
+    ? data.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : data;
+
+  const totalPages = pageSize ? Math.ceil(data.length / pageSize) : 1;
+
   return (
-    <div className={cn("table-container", className)}>
-      <table className="data-table">
-        <thead>
-          <tr>
-            {columns.map((col, i) => (
-              <th
-                key={i}
-                style={{
-                  width: col.width,
-                  textAlign: col.align ?? "left",
-                }}
-              >
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, rowIdx) => {
-            const key = keyField ? String(row[keyField]) : rowIdx;
-            return (
-              <tr
-                key={key}
-                onClick={() => onRowClick?.(row)}
-                className={cn(
-                  onRowClick ? "cursor-pointer" : "",
-                  rowClassName?.(row)
-                )}
-              >
-                {columns.map((col, colIdx) => {
-                  const value = row[col.key as keyof T];
-                  return (
-                    <td
-                      key={colIdx}
-                      style={{ textAlign: col.align ?? "left" }}
-                    >
-                      {col.render
-                        ? col.render(value, row, rowIdx)
-                        : String(value ?? "")}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className={cn("flex flex-col gap-4", className)}>
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              {columns.map((col, i) => (
+                <th
+                  key={i}
+                  style={{
+                    width: col.width,
+                    textAlign: col.align ?? "left",
+                  }}
+                >
+                  {col.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedData.map((row, rowIdx) => {
+              const key = keyField ? String(row[keyField]) : rowIdx;
+              const globalIdx = pageSize ? (currentPage - 1) * pageSize + rowIdx : rowIdx;
+              return (
+                <tr
+                  key={key}
+                  onClick={() => onRowClick?.(row)}
+                  className={cn(
+                    onRowClick ? "cursor-pointer" : "",
+                    rowClassName?.(row)
+                  )}
+                >
+                  {columns.map((col, colIdx) => {
+                    const value = row[col.key as keyof T];
+                    return (
+                      <td
+                        key={colIdx}
+                        style={{ textAlign: col.align ?? "left" }}
+                      >
+                        {col.render
+                          ? col.render(value, row, globalIdx)
+                          : String(value ?? "")}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {pageSize && totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={data.length}
+            pageSize={pageSize}
+            className={paginationClassName}
+          />
+        </div>
+      )}
     </div>
   );
 }

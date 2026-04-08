@@ -16,7 +16,7 @@ const attendanceStats = [
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
   },
   {
-    label: "Days attended", 
+    label: "Days attended",
     value: 128,
     icon: <BookOpen size={18} />,
     progress: 85,
@@ -24,7 +24,7 @@ const attendanceStats = [
   },
   {
     label: "Absent days",
-    value: 30, 
+    value: 30,
     icon: <FileText size={18} />,
     progress: 30,
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
@@ -98,21 +98,13 @@ const attendanceData: AttendanceRecord[] = [
 ];
 
 export default function AttendancePage() {
-  const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("All status");
-  
-  const itemsPerPage = 10;
 
   // Filter data based on status
   const filteredData = attendanceData.filter(record => {
     if (statusFilter === "All status") return true;
     return record.status === statusFilter;
   });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   const columns: Column<AttendanceRecord>[] = [
     {
@@ -180,7 +172,7 @@ export default function AttendancePage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Attendance</h1>
         <p className="text-sm text-gray-500">Manage your class attendance patterns using our platform</p>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="stats-grid">
         {attendanceStats.map((stat, index) => (
@@ -221,26 +213,14 @@ export default function AttendancePage() {
         </div>
         <CardBody>
           {/* Table */}
-          <div className="mb-6">
-            <DataTable
-              columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={paginatedData as unknown as Record<string, unknown>[]}
-              keyField="id"
-              className="assignments-table"
-            />
-          </div>
-
-          {/* Centered Pagination */}
-          <div className="flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              totalItems={filteredData.length}
-              pageSize={itemsPerPage}
-              className="pagination-rounded"
-            />
-          </div>
+          <DataTable
+            columns={columns as unknown as Column<Record<string, unknown>>[]}
+            data={filteredData as unknown as Record<string, unknown>[]}
+            keyField="id"
+            className="assignments-table"
+            pageSize={10}
+            paginationClassName="pagination-rounded"
+          />
         </CardBody>
       </Card>
     </div>

@@ -20,18 +20,13 @@ const STUDENTS = [
 ];
 
 type StudentRow = typeof STUDENTS[number];
-const PAGE_SIZE = 5;
-
 export default function AdminStudentsPage() {
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
 
   const filtered = STUDENTS.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
     s.studentId.toLowerCase().includes(search.toLowerCase())
   );
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const cols: Column<StudentRow>[] = [
     { key: "name", header: "Student", render: (_, row) => <TableUser name={row.name} sub={`ID: ${row.studentId}`} /> },
@@ -69,14 +64,19 @@ export default function AdminStudentsPage() {
 
       <Card>
         <div className="filter-bar" style={{ padding: "16px 20px", borderBottom: "1px solid var(--color-border-light)" }}>
-          <SearchInput placeholder="Search students..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} containerClassName="flex-1" style={{ maxWidth: 320 }} />
+          <SearchInput placeholder="Search students..." value={search} onChange={(e) => setSearch(e.target.value)} containerClassName="flex-1" style={{ maxWidth: 320 }} />
           <Select options={[{ value: "10A", label: "Class 10A" }, { value: "10B", label: "Class 10B" }, { value: "11A", label: "Class 11A" }]} placeholder="All Classes" style={{ width: 150 }} />
           <Select options={[{ value: "active", label: "Active" }, { value: "inactive", label: "Inactive" }]} placeholder="All Status" style={{ width: 140 }} />
         </div>
-        <CardBody style={{ padding: 0 }}>
-          <DataTable columns={cols} data={paginated} keyField="id" />
+        <CardBody className="p-0">
+          <DataTable
+            columns={cols}
+            data={filtered}
+            keyField="id"
+            pageSize={10}
+            paginationClassName="px-6 py-4 border-t border-gray-200"
+          />
         </CardBody>
-        <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} totalItems={filtered.length} pageSize={PAGE_SIZE} />
       </Card>
     </div>
   );

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Download, ChevronDown, ChevronUp, Users, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, Users, Check } from "lucide-react";
 import { StatCard } from "@/components/ui/Card";
+import { DataTable, Column, TableUser } from "@/components/ui/DataTable";
 
 const FilterDropdown = ({ title, options }: { title: string, options: string[] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
-  
+
   const toggle = (opt: string) => {
     if (selected.includes(opt)) setSelected(selected.filter(o => o !== opt));
     else setSelected([...selected, opt]);
@@ -15,11 +16,11 @@ const FilterDropdown = ({ title, options }: { title: string, options: string[] }
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white border-[1.5px] border-gray-200 px-4 py-2.5 rounded-lg text-sm font-semibold text-[#374151] flex items-center gap-6"
       >
-        {selected.length > 0 ? selected[0] : title} 
+        {selected.length > 0 ? selected[0] : title}
         {isOpen ? (
           <ChevronUp size={18} className="text-gray-400" />
         ) : (
@@ -32,14 +33,13 @@ const FilterDropdown = ({ title, options }: { title: string, options: string[] }
           <div className="text-[14px] text-gray-500 mb-2 px-4 font-medium">Select status</div>
           <div className="flex flex-col gap-1">
             {options.map(opt => (
-              <div 
-                key={opt} 
+              <div
+                key={opt}
                 className="flex items-center gap-4 px-4 cursor-pointer py-2 hover:bg-gray-50 transition-colors"
                 onClick={() => toggle(opt)}
               >
-                <div className={`w-[24px] h-[24px] rounded-[6px] border-[2.5px] border-[#CBD5E1] flex items-center justify-center transition-colors flex-shrink-0 ${
-                  selected.includes(opt) ? "bg-black" : "bg-white"
-                }`}>
+                <div className={`w-[24px] h-[24px] rounded-[6px] border-[2.5px] border-[#CBD5E1] flex items-center justify-center transition-colors flex-shrink-0 ${selected.includes(opt) ? "bg-black" : "bg-white"
+                  }`}>
                   {selected.includes(opt) && <Check size={16} strokeWidth={3} className="text-white" />}
                 </div>
                 <span className="text-[16px] font-medium text-[#374151]">{opt}</span>
@@ -58,7 +58,7 @@ const DateDropdown = ({ options }: { options: string[] }) => {
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="bg-white border-[1.5px] border-gray-200 px-4 py-2.5 rounded-lg text-sm font-semibold text-[#374151] flex items-center gap-4"
       >
@@ -74,8 +74,8 @@ const DateDropdown = ({ options }: { options: string[] }) => {
         <div className="absolute right-0 top-full mt-2 w-full min-w-[160px] bg-white border-[1.5px] border-gray-200 rounded-xl shadow-sm z-50 py-2">
           <div className="flex flex-col">
             {options.map(opt => (
-              <div 
-                key={opt} 
+              <div
+                key={opt}
                 className="px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => { setSelected(opt); setIsOpen(false); }}
               >
@@ -99,6 +99,10 @@ export default function TeacherAttendancePage() {
     { id: 6, initials: "FG", name: "Fiona Green", streak: "18 day streak", status: "Present" },
     { id: 7, initials: "GW", name: "George Wilson", streak: "10 day streak", status: "Present" },
     { id: 8, initials: "HL", name: "Hannah Lee", streak: "14 day streak", status: "Excused" },
+    { id: 9, initials: "JK", name: "Jack Knight", streak: "5 day streak", status: "Present" },
+    { id: 10, initials: "LM", name: "Lisa Miller", streak: "22 day streak", status: "Present" },
+    { id: 11, initials: "NP", name: "Nathan Page", streak: "3 day streak", status: "Absent" },
+    { id: 12, initials: "QR", name: "Quinn Reed", streak: "11 day streak", status: "Present" },
   ]);
 
   const updateStatus = (id: number, newStatus: string) => {
@@ -116,6 +120,44 @@ export default function TeacherAttendancePage() {
   const presentCount = students.filter(s => s.status === "Present").length;
   const absentCount = students.filter(s => s.status === "Absent").length;
   const lateCount = students.filter(s => s.status === "Late").length;
+
+  const columns: Column<typeof students[0]>[] = [
+    {
+      key: "name",
+      header: "Student",
+      render: (_, student) => (
+        <TableUser
+          name={student.name}
+          sub={student.streak}
+          initials={student.initials}
+        />
+      )
+    },
+    {
+      key: "status",
+      header: "Status",
+      align: "right",
+      render: (_, student) => (
+        <div className="flex items-center gap-2 justify-end">
+          {["Present", "Absent", "Late", "Excused"].map(statusStr => (
+            <button
+              key={statusStr}
+              onClick={(e) => {
+                e.stopPropagation();
+                updateStatus(student.id, statusStr);
+              }}
+              className={`px-3 py-2 rounded-md text-[13px] font-medium transition-colors ${student.status === statusStr
+                ? "bg-black text-white"
+                : "bg-[#F3F4F6] text-[#374151] hover:bg-gray-200"
+                }`}
+            >
+              {statusStr}
+            </button>
+          ))}
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="pb-10">
@@ -165,20 +207,20 @@ export default function TeacherAttendancePage() {
       {/* Actions and Filters */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <button onClick={markAllPresent} className="bg-black text-white px-6 py-2.5 rounded-lg text-[13px] font-bold hover:opacity-90 transition-opacity">
+          <button onClick={markAllPresent} className="bg-black text-white px-6 py-2.5 rounded-lg text-[13px] font-medium hover:opacity-90 transition-opacity">
             Mark All Present
           </button>
-          <button onClick={clearAll} className="bg-white text-[#374151] border-[1.5px] border-gray-200 px-6 py-2.5 rounded-lg text-[13px] font-bold hover:bg-gray-50 transition-colors">
+          <button onClick={clearAll} className="bg-white text-[#374151] border-[1.5px] border-gray-200 px-6 py-2.5 rounded-lg text-[13px] font-medium hover:bg-gray-50 transition-colors">
             Clear All
           </button>
         </div>
         <div className="flex items-center gap-4">
-          <FilterDropdown 
-            title="Select Class" 
-            options={["All Classes", "Year 2A", "Year 2B", "Year 2C", "Year 1A"]} 
+          <FilterDropdown
+            title="Select Class"
+            options={["All Classes", "Year 2A", "Year 2B", "Year 2C", "Year 1A"]}
           />
-          <DateDropdown 
-            options={["2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15"]} 
+          <DateDropdown
+            options={["2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15"]}
           />
         </div>
       </div>
@@ -186,65 +228,15 @@ export default function TeacherAttendancePage() {
       {/* Attendance List */}
       <div className="bg-white rounded-[20px] border-[1.5px] border-gray-200 p-8 pb-10">
         <h2 className="text-xl font-bold mb-6">Student Attendance</h2>
-        
-        <div className="flex flex-col gap-4">
-          {students.map(student => (
-            <div key={student.id} className="bg-[#FAFAFA] rounded-xl p-4 flex items-center justify-between">
-              
-              {/* Avatar and Name */}
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center text-[15px] font-bold shrink-0">
-                  {student.initials}
-                </div>
-                <div>
-                  <h3 className="font-bold text-[16px] text-black mb-0.5">{student.name}</h3>
-                  <p className="text-[13px] text-gray-400 font-medium">{student.streak}</p>
-                </div>
-              </div>
 
-              {/* Status Pills */}
-              <div className="flex items-center gap-2">
-                {["Present", "Absent", "Late", "Excused"].map(statusStr => (
-                  <button 
-                    key={statusStr}
-                    onClick={() => updateStatus(student.id, statusStr)}
-                    className={`px-5 py-2 rounded-md text-[13px] font-semibold transition-colors ${
-                      student.status === statusStr 
-                        ? "bg-black text-white" 
-                        : "bg-[#F3F4F6] text-[#374151] hover:bg-gray-200"
-                    }`}
-                  >
-                    {statusStr}
-                  </button>
-                ))}
-              </div>
-
-            </div>
-          ))}
-        </div>
-
-        {/* Pagination mimicking the screenshot */}
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <button className="w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm text-gray-400 hover:bg-gray-100 transition-colors">
-            {"<"}
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] font-bold text-sm bg-black text-white">
-            1
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] font-bold text-sm text-gray-500 border border-gray-300 hover:bg-gray-100 transition-colors bg-white">
-            2
-          </button>
-          <span className="w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm text-gray-400">
-            ...
-          </span>
-          <button className="w-8 h-8 flex items-center justify-center rounded-[8px] font-bold text-sm text-gray-500 border border-gray-300 hover:bg-gray-100 transition-colors bg-white">
-            5
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-md font-bold text-sm text-gray-400 hover:bg-gray-100 transition-colors">
-            {">"}
-          </button>
-        </div>
-
+        <DataTable
+          columns={columns as unknown as Column<Record<string, unknown>>[]}
+          data={students as unknown as Record<string, unknown>[]}
+          keyField="id"
+          pageSize={10}
+          paginationClassName="pagination-rounded"
+          className="attendance-table-custom"
+        />
       </div>
 
     </div>

@@ -355,6 +355,8 @@ export default function SuperAdminReportsPage() {
             data={reportTableData as unknown as Record<string, unknown>[]}
             keyField="id"
             className="reports-table border-0 w-full"
+            pageSize={10}
+            paginationClassName="pagination-rounded p-4"
           />
         </Card>
       </div>

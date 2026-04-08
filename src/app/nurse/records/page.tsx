@@ -171,6 +171,8 @@ export default function HealthRecordsPage() {
               data={records}
               keyField="id"
               className="table-header-black"
+              pageSize={10}
+              paginationClassName="pagination-rounded p-6"
             />
           </CardBody>
         </Card>
