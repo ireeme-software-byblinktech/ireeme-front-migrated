@@ -143,7 +143,7 @@ export function StatCard({
         <div className="flex items-center gap-2.5">
           <h3 className="text-[22px] font-bold text-gray-900 leading-none">{value}</h3>
           {trend && (
-            <div className="flex items-center gap-1 shrink-0 whitespace-nowrap pt-1">
+            <div className="grid items-center gap-1 shrink-0 whitespace-nowrap pt-1">
               <svg 
                 className={cn("w-3 h-3", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")} 
                 fill="none" 
@@ -156,7 +156,9 @@ export function StatCard({
               <span className={cn("text-[9px] font-bold", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")}>
                 {trend.value}
               </span>
-              {trend.label && <span className="text-[9px] text-black font-medium">{trend.label}</span>}
+              <div className="flex items-center gap-1">
+                {trend.label && <span className="text-[9px] text-black font-medium">{trend.label}</span>}
+              </div>
             </div>
           )}
         </div>

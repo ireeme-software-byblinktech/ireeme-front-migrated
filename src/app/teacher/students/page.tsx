@@ -17,8 +17,8 @@ export default function TeacherStudentsPage() {
       overall: 87,
       attendance: 94,
       subjects: [
-        { name: "Mathematics", icon: <BookOpen size={14} />, trend: "up", score: 88, color: "text-blue-600" },
-        { name: "Algebra II", icon: <BookOpen size={14} />, trend: "flat", score: 85, color: "text-blue-600" }
+        { name: "Mathematics", icon: <BookOpen size={14} />, trend: "up", score: 88, color: "text-black" },
+        { name: "Algebra II", icon: <BookOpen size={14} />, trend: "flat", score: 85, color: "text-black" }
       ],
       support: null,
       avatar: "AJ"
@@ -192,7 +192,7 @@ export default function TeacherStudentsPage() {
               <div className="flex flex-col gap-4 mb-6">
                 <div className="flex items-center justify-between text-[14px]">
                   <span className="text-gray-500 font-medium">Overall Grade:</span>
-                  <span className={`font-bold ${student.overall >= 80 ? "text-blue-600" : "text-black"}`}>{student.overall}%</span>
+                  <span className={`font-bold ${student.overall >= 80 ? "text-blue-500" : "text-black"}`}>{student.overall}%</span>
                 </div>
                 <div className="flex items-center justify-between text-[14px]">
                   <span className="text-gray-500 font-medium">Attendance:</span>
