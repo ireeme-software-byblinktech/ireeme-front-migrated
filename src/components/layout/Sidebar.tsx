@@ -133,9 +133,9 @@ const ADMIN_GROUPS: NavGroup[] = [
       { label: "Teachers", href: "/admin/teachers", icon: <User size={18} /> },
       { label: "Students", href: "/admin/students", icon: <Users size={18} /> },
       { label: "Timetables", href: "/admin/timetables", icon: <CalendarDays size={18} /> },
-      {label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} />},
-      {label: "Elections", href: "/admin/elections", icon: <FileText size={18} />},
-      {label: "Alumni", href: "/admin/alumni", icon: <GraduationCap size={18} />},
+      { label: "Attendances", href: "/admin/attendances", icon: <UserCheck size={18} /> },
+      { label: "Elections", href: "/admin/elections", icon: <FileText size={18} /> },
+      { label: "Alumni", href: "/admin/alumni", icon: <GraduationCap size={18} /> },
     ],
   },
 ];
@@ -286,26 +286,13 @@ const DISCIPLINE_GROUPS: NavGroup[] = [
     label: "",
     collapsible: false,
     items: [
-      { label: "Dashboard", href: "/discipline", icon: <LayoutDashboard size={18} /> },
-    ],
-  },
-  {
-    id: "discipline",
-    label: "Discipline",
-    icon: <ShieldAlert size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Incidents", href: "/discipline/incidents", icon: <ShieldAlert size={18} /> },
-      { label: "Students", href: "/discipline/students", icon: <Users size={18} /> },
-      { label: "Reports", href: "/discipline/reports", icon: <FileText size={18} /> },
-    ],
-  },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/discipline/settings", icon: <Settings size={18} /> },
+      { label: "Dashboard", href: "/discipline", icon: <LayoutDashboard size={20} /> },
+      { label: "Cases", href: "/discipline/incidents", icon: <Briefcase size={20} /> },
+      { label: "Students", href: "/discipline/students", icon: <Users size={20} /> },
+      { label: "Report", href: "/discipline/reports", icon: <FileText size={20} /> },
+      { label: "Permissions", href: "/discipline/permissions", icon: <ShieldAlert size={20} /> },
+      { label: "Documents", href: "/discipline/documents", icon: <FolderOpen size={20} /> },
+      { label: "Settings", href: "/discipline/settings", icon: <Settings size={20} /> },
     ],
   },
 ];
@@ -316,26 +303,11 @@ const LIBRARIAN_GROUPS: NavGroup[] = [
     label: "",
     collapsible: false,
     items: [
-      { label: "Dashboard", href: "/librarian", icon: <LayoutDashboard size={18} /> },
-    ],
-  },
-  {
-    id: "library",
-    label: "Library",
-    icon: <Library size={18} />,
-    collapsible: true,
-    items: [
-      { label: "Books", href: "/librarian/books", icon: <BookOpen size={18} /> },
-      { label: "Loans", href: "/librarian/loans", icon: <Library size={18} /> },
-      { label: "Members", href: "/librarian/members", icon: <Users size={18} /> },
-    ],
-  },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/librarian/settings", icon: <Settings size={18} /> },
+      { label: "Dashboard", href: "/librarian", icon: <LayoutDashboard size={20} /> },
+      { label: "Books", href: "/librarian/books", icon: <BookOpen size={20} /> },
+      { label: "Issue & Return", href: "/librarian/loans", icon: <ClipboardList size={20} /> },
+      { label: "Members", href: "/librarian/members", icon: <Users size={20} /> },
+      { label: "Reports", href: "/librarian/reports", icon: <FileText size={20} /> },
     ],
   },
 ];
