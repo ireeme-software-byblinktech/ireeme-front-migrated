@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/ui/Card";
-import { Plus, Calendar as CalendarIcon, Pencil, Trash2, Search, Eye } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Pencil, Trash2, Search, Eye, ListFilter } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -13,10 +13,10 @@ import {
 } from "@/components/nurse/HealthRecordModals";
 
 const STATS = [
-    { label: "Today's Appoints", value: "308", icon: <CalendarIcon size={24} />, progress: 75, meta: { male: "61%", female: "39%" } },
-    { label: "Confirmed", value: "308", icon: <CalendarIcon size={24} />, progress: 45, meta: { male: "61%", female: "39%" } },
-    { label: "Pending", value: "308", icon: <CalendarIcon size={24} />, progress: 60, meta: { male: "61%", female: "39%" } },
-    { label: "Cancelled", value: "308", icon: <CalendarIcon size={24} />, progress: 25, meta: { male: "61%", female: "39%" } },
+    { label: "Today's Appoints", value: "308", icon: <CalendarIcon size={24} />, progress: 75, trend: { value: "+12", label: "from yesterday", direction: "up" as const } },
+    { label: "Confirmed", value: "308", icon: <CalendarIcon size={24} />, progress: 45, trend: { value: "-3", label: "from yesterday", direction: "down" as const } },
+    { label: "Pending", value: "308", icon: <CalendarIcon size={24} />, progress: 60, trend: { value: "4", label: "completed", direction: "up" as const } },
+    { label: "Cancelled", value: "308", icon: <CalendarIcon size={24} />, progress: 25, trend: { value: "-1", label: "this week", direction: "down" as const } },
 ];
 
 const SCHEDULE = [
@@ -60,7 +60,7 @@ export default function AppointmentsPage() {
             className="space-y-8 p-1"
         >
             {/* Stats Grid */}
-            <div className="stats-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {STATS.map((stat, i) => (
                     <StatCard
                         key={i}
@@ -68,7 +68,7 @@ export default function AppointmentsPage() {
                         value={stat.value}
                         icon={stat.icon}
                         progress={stat.progress}
-                        meta={stat.meta}
+                        trend={stat.trend}
                     />
                 ))}
             </div>
@@ -103,7 +103,19 @@ export default function AppointmentsPage() {
 
                 {/* Right Column: Today's Schedule */}
                 <div className="lg:col-span-8 bg-white p-8 rounded-[24px] border border-gray-100 shadow-sm">
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight mb-8">Today's Schedule</h2>
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-black text-gray-900 tracking-tight">Today's Schedule</h2>
+                        <div className="relative group flex items-center gap-2 px-6 py-2.5 bg-gray-50/50 border border-transparent hover:border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all cursor-pointer">
+                            <ListFilter size={16} />
+                            <span>Filter Status</span>
+                            <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <option value="">All Status</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div className="space-y-3">
                         {schedule.map((item, i) => (

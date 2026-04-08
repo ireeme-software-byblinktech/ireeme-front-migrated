@@ -117,12 +117,12 @@ export default function HealthRecordsPage() {
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
-      <div className="stats-grid">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Today's Visits", value: "308", icon: <Stethoscope size={28} />, progress: 75 },
-          { label: "Active Cases", value: "308", icon: <BriefcaseMedical size={28} />, progress: 45 },
-          { label: "Appointments", value: "308", icon: <CalendarDays size={28} />, progress: 60 },
-          { label: "Critical Cases", value: "308", icon: <AlertCircle size={28} />, progress: 25 },
+          { label: "Today's Visits", value: "308", icon: <Stethoscope size={28} />, progress: 75, trend: { value: "+12", label: "from yesterday", direction: "up" as const } },
+          { label: "Active Cases", value: "308", icon: <BriefcaseMedical size={28} />, progress: 45, trend: { value: "-3", label: "from yesterday", direction: "down" as const } },
+          { label: "Appointments", value: "308", icon: <CalendarDays size={28} />, progress: 60, trend: { value: "4", label: "completed", direction: "up" as const } },
+          { label: "Critical Cases", value: "308", icon: <AlertCircle size={28} />, progress: 25, trend: { value: "-1", label: "this week", direction: "down" as const } },
         ].map((stat, i) => (
           <StatCard
             key={i}
@@ -130,7 +130,7 @@ export default function HealthRecordsPage() {
             value={stat.value}
             icon={stat.icon}
             progress={stat.progress}
-            meta={{ male: "61%", female: "39%" }}
+            trend={stat.trend}
           />
         ))}
       </div>
@@ -151,9 +151,18 @@ export default function HealthRecordsPage() {
             />
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 border border-gray-200 rounded-xl px-6 py-4 bg-gray-50/30 cursor-pointer hover:bg-gray-100 transition-all font-bold text-gray-600">
+            <div className="relative group flex items-center gap-3 border border-gray-200 rounded-xl px-6 py-4 bg-gray-50/30 cursor-pointer hover:bg-gray-100 transition-all font-bold text-gray-600">
               <Filter size={18} className="text-gray-400" />
-              <span className="text-[13px]">All Classes</span>
+              <span className="text-[13px]">Filter Class</span>
+              <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                <option value="">All Classes</option>
+                <option value="S1">Senior 1</option>
+                <option value="S2">Senior 2</option>
+                <option value="S3">Senior 3</option>
+                <option value="S4">Senior 4</option>
+                <option value="S5">Senior 5</option>
+                <option value="S6">Senior 6</option>
+              </select>
             </div>
             <Button
               onClick={() => setActiveModal("add")}

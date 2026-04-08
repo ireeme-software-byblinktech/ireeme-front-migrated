@@ -13,10 +13,10 @@ import {
 } from "@/components/nurse/HealthRecordModals";
 
 const STATS = [
-    { label: "Today's Appoints", value: "308", icon: <GraduationCap size={28} />, progress: 75, meta: { male: "61%", female: "39%" } },
-    { label: "Confirmed", value: "308", icon: <GraduationCap size={28} />, progress: 45, meta: { male: "61%", female: "39%" } },
-    { label: "Pending", value: "308", icon: <GraduationCap size={28} />, progress: 60, meta: { male: "61%", female: "39%" } },
-    { label: "Cancelled", value: "308", icon: <GraduationCap size={28} />, progress: 25, meta: { male: "61%", female: "39%" } },
+    { label: "Today's Appoints", value: "308", icon: <GraduationCap size={28} />, progress: 75, trend: { value: "+12", label: "from yesterday", direction: "up" as const } },
+    { label: "Confirmed", value: "308", icon: <GraduationCap size={28} />, progress: 45, trend: { value: "-3", label: "from yesterday", direction: "down" as const } },
+    { label: "Pending", value: "308", icon: <GraduationCap size={28} />, progress: 60, trend: { value: "4", label: "completed", direction: "up" as const } },
+    { label: "Cancelled", value: "308", icon: <GraduationCap size={28} />, progress: 25, trend: { value: "-1", label: "this week", direction: "down" as const } },
 ];
 
 const MEDS = [
@@ -121,7 +121,7 @@ export default function MedicationsPage() {
                         value={stat.value}
                         icon={stat.icon}
                         progress={stat.progress}
-                        meta={stat.meta}
+                        trend={stat.trend}
                     />
                 ))}
             </div>
@@ -139,10 +139,16 @@ export default function MedicationsPage() {
                     </div>
                     {/* Filters & Actions */}
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                        <div className="relative group flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all cursor-pointer">
                             <ListFilter size={18} />
-                            Dispense
-                        </button>
+                            <span>Filter Status</span>
+                            <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <option value="">All Status</option>
+                                <option value="In Stock">In Stock</option>
+                                <option value="Low Stock">Low Stock</option>
+                                <option value="Out of Stock">Out of Stock</option>
+                            </select>
+                        </div>
                         <button
                             onClick={() => setActiveModal("add")}
                             className="bg-black text-white px-8 py-3.5 rounded-xl font-black text-sm flex items-center gap-2 shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all"

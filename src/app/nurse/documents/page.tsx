@@ -115,15 +115,27 @@ export default function DocumentsPage() {
                         />
                     </div>
                     {/* Filters */}
-                    <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                    <div className="flex items-center gap-3 font-bold">
+                        <div className="relative group flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-all cursor-pointer">
                             <ListFilter size={18} />
-                            All documents
-                        </button>
-                        <button className="flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                            <span>Documents Type</span>
+                            <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <option value="">All Documents</option>
+                                <option value="Medical">Medical records</option>
+                                <option value="Certificates">Certificates</option>
+                                <option value="Letters">Transfer letters</option>
+                            </select>
+                        </div>
+                        <div className="relative group flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-all cursor-pointer">
                             <Calendar size={18} />
-                            upload date
-                        </button>
+                            <span>Filter Date</span>
+                            <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <option value="">Any Date</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
