@@ -85,8 +85,8 @@ export function StatCard({
   className,
   meta,
 }: StatCardProps) {
-  const circumference = 2 * Math.PI * 35.5; 
-  
+  const circumference = 2 * Math.PI * 35.5;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -123,7 +123,7 @@ export function StatCard({
             cy="40"
             r="35.5"
             fill="none"
-            stroke="#00000080" 
+            stroke="#00000080"
             strokeWidth="3.4"
             strokeDasharray={`${circumference * 0.30} ${circumference * 0.70}`}
             strokeDashoffset={0}
@@ -143,12 +143,12 @@ export function StatCard({
         <div className="flex items-center gap-2.5">
           <h3 className="text-[22px] font-bold text-gray-900 leading-none">{value}</h3>
           {trend && (
-            <div className="grid items-center gap-1 shrink-0 whitespace-nowrap pt-1">
-              <svg 
-                className={cn("w-3 h-3", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor" 
+            <div className="flex items-center gap-1 shrink-0 whitespace-nowrap pt-1">
+              <svg
+                className={cn("w-3 h-3", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
                 strokeWidth={3}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -156,9 +156,7 @@ export function StatCard({
               <span className={cn("text-[9px] font-bold", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")}>
                 {trend.value}
               </span>
-              <div className="flex items-center gap-1">
-                {trend.label && <span className="text-[9px] text-black font-medium">{trend.label}</span>}
-              </div>
+              {trend.label && <span className="text-[9px] text-black font-medium">{trend.label}</span>}
             </div>
           )}
         </div>
