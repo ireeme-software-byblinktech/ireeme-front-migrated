@@ -53,7 +53,7 @@ export function Topbar({
         </button>
 
         {/* Conditional: Page Title for Accountant or Search for others */}
-        {role === "accountant" && title ? (
+        {title ? (
           <div>
             <h1 className="text-xl font-bold text-gray-900">{title}</h1>
           </div>
