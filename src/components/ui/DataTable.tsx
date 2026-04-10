@@ -25,6 +25,7 @@ interface DataTableProps<T> {
   className?: string;
   onRowClick?: (row: T) => void;
   rowClassName?: (row: T) => string;
+  hideHeader?: boolean;
 }
 
 // ─── Table User Cell ──────────────────────────────────────────
@@ -85,6 +86,7 @@ export function DataTable<T extends Record<string, unknown>>({
   className,
   onRowClick,
   rowClassName,
+  hideHeader = false,
 }: DataTableProps<T>) {
   if (loading) {
     return (
@@ -130,21 +132,23 @@ export function DataTable<T extends Record<string, unknown>>({
   return (
     <div className={cn("table-container", className)}>
       <table className="data-table">
-        <thead>
-          <tr>
-            {columns.map((col, i) => (
-              <th
-                key={i}
-                style={{
-                  width: col.width,
-                  textAlign: col.align ?? "left",
-                }}
-              >
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
+        {!hideHeader && (
+          <thead>
+            <tr>
+              {columns.map((col, i) => (
+                <th
+                  key={i}
+                  style={{
+                    width: col.width,
+                    textAlign: col.align ?? "left",
+                  }}
+                >
+                  {col.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
         <tbody>
           {data.map((row, rowIdx) => {
             const key = keyField ? String(row[keyField]) : rowIdx;
