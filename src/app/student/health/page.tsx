@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { 
@@ -8,7 +9,8 @@ import {
   Calendar, 
   AlertCircle, 
   Pill, 
-  GraduationCap
+  GraduationCap,
+  X
 } from "lucide-react";
 
 // Stats data array
@@ -45,6 +47,8 @@ const statsData = [
 ];
 
 export default function StudentHealthPage() {
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+
   return (
     <div className="space-y-8 max-w-[1240px] w-full pb-8">
       {/* Page Title */}
@@ -80,7 +84,10 @@ export default function StudentHealthPage() {
             </div>
             <CardBody className="p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <button className="flex items-center gap-3 bg-black text-white p-5 rounded-xl hover:bg-gray-800 transition-colors shadow-sm">
+                <button 
+                  onClick={() => setIsAppointmentModalOpen(true)}
+                  className="flex items-center gap-3 bg-black text-white p-5 rounded-xl hover:bg-gray-800 transition-colors shadow-sm"
+                >
                   <Calendar size={22} />
                   <span className="font-bold text-base">Book Appointment</span>
                 </button>
@@ -104,7 +111,10 @@ export default function StudentHealthPage() {
           <Card>
             <div className="flex items-center justify-between p-5 border-b border-gray-50 bg-white rounded-t-xl">
               <h3 className="text-lg font-bold text-gray-900">My Appointments</h3>
-              <button className="text-blue-600 text-base font-bold hover:underline">
+              <button 
+                onClick={() => setIsAppointmentModalOpen(true)}
+                className="text-blue-600 text-base font-bold hover:underline"
+              >
                 Book New
               </button>
             </div>
@@ -259,6 +269,130 @@ export default function StudentHealthPage() {
 
         </div>
       </div>
+
+      {/* Book Appointment Modal */}
+      {isAppointmentModalOpen && (
+        <BookAppointmentModal
+          isOpen={isAppointmentModalOpen}
+          onClose={() => setIsAppointmentModalOpen(false)}
+        />
+      )}
     </div>
   );
-}
+}
+
+// Book Appointment Modal Component
+function BookAppointmentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [formData, setFormData] = useState({
+    reason: "",
+    date: "",
+    time: "",
+    type: "General Checkup",
+    description: ""
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onClose();
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Book Appointment</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Reason for appointment *</label>
+                    <input
+                      type="text"
+                      value={formData.reason}
+                      onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                      placeholder="e.g. Fever, Checkup"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Appointment type *</label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
+                    >
+                      <option value="General Checkup">General Checkup</option>
+                      <option value="Specialist">Specialist</option>
+                      <option value="Follow-up">Follow-up</option>
+                      <option value="Emergency">Emergency</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Preferred date *</label>
+                    <input
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Preferred time *</label>
+                    <input
+                      type="time"
+                      value={formData.time}
+                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Short description *</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 h-24 resize-none"
+                    placeholder="Enter short details about your concerns"
+                  />
+                </div>
+
+                <div className="flex items-center justify-center gap-4 pt-4">
+                  <button
+                    type="submit"
+                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                  >
+                    Confirm Booking
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                  >
+                    cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

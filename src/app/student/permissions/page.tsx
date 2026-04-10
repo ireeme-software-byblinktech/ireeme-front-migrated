@@ -89,6 +89,9 @@ export default function StudentPermissionsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const itemsPerPage = 8;
 
   // Filter data based on search and filters
@@ -163,12 +166,24 @@ export default function StudentPermissionsPage() {
       key: "action",
       header: "Action",
       align: "center",
-      render: () => (
+      render: (_, row) => (
         <div className="flex items-center justify-center gap-2">
-          <button className="text-gray-600 hover:text-gray-900 p-1">
+          <button 
+            onClick={() => {
+              setSelectedPermission(row);
+              setIsEditModalOpen(true);
+            }}
+            className="text-gray-600 hover:text-gray-900 p-1"
+          >
             <Edit size={16} />
           </button>
-          <button className="text-gray-600 hover:text-gray-900 p-1">
+          <button 
+            onClick={() => {
+              setSelectedPermission(row);
+              setIsDeleteModalOpen(true);
+            }}
+            className="text-gray-600 hover:text-gray-900 p-1"
+          >
             <Trash2 size={16} />
           </button>
         </div>
@@ -294,7 +309,184 @@ export default function StudentPermissionsPage() {
           onClose={() => setIsRequestModalOpen(false)}
         />
       )}
+
+      {/* Edit Permission Modal */}
+      {isEditModalOpen && selectedPermission && (
+        <EditPermissionModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          permission={selectedPermission}
+        />
+      )}
+
+      {/* Delete Permission Modal */}
+      {isDeleteModalOpen && selectedPermission && (
+        <DeletePermissionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          permission={selectedPermission}
+        />
+      )}
     </div>
+  );
+}
+
+// Edit Permission Modal Component
+function EditPermissionModal({ 
+  isOpen, 
+  onClose, 
+  permission 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  permission: Permission;
+}) {
+  const [formData, setFormData] = useState({
+    reason: permission.reason,
+    departureDate: permission.dateSubmitted,
+    returnDate: permission.returnDate,
+    description: "" // In a real app, this would come from the permission object
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onClose();
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Edit Permission Request</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Reason for permission *</label>
+                  <input
+                    type="text"
+                    value={formData.reason}
+                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Departure date *</label>
+                    <input
+                      type="text"
+                      value={formData.departureDate}
+                      onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Return date *</label>
+                    <input
+                      type="text"
+                      value={formData.returnDate}
+                      onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Additional details</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 h-24 resize-none"
+                    placeholder="Enter additional details about your request"
+                  />
+                </div>
+
+                <div className="flex items-center justify-center gap-4 pt-4">
+                  <button
+                    type="submit"
+                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                  >
+                    cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Delete Permission Modal Component
+function DeletePermissionModal({ 
+  isOpen, 
+  onClose, 
+  permission 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void;
+  permission: Permission;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-md relative z-10 flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Delete Request</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
+            </div>
+
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Deletion</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete the permission request <span className="font-bold text-gray-900">"{permission.reqId}"</span> for "{permission.reason}"?
+              </p>
+
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={onClose}
+                  className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                >
+                  Delete Request
+                </button>
+                <button
+                  onClick={onClose}
+                  className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

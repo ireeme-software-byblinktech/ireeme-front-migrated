@@ -9,6 +9,7 @@ interface FieldProps {
   defaultValue?: string;
   placeholder?: string;
   className?: string;
+  type?: string;
 }
 
 const handleEnterAsTab = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -27,11 +28,11 @@ const handleEnterAsTab = (e: React.KeyboardEvent<HTMLElement>) => {
   }
 };
 
-const InputField = ({ label, defaultValue, placeholder, className }: FieldProps) => {
+const InputField = ({ label, defaultValue, placeholder, className, type }: FieldProps) => {
   return (
     <div className={cn("space-y-2", className)}>
       <input
-        type="text"
+        type={type || "text"}
         defaultValue={defaultValue}
         placeholder={placeholder || label}
         onKeyDown={handleEnterAsTab}
@@ -239,7 +240,7 @@ export function DeleteConfirmationModal({ open, onClose, onConfirm }: RecordModa
 export function AddAppointmentModal({ open, onClose, onConfirm }: RecordModalProps) {
   return (
     <Modal open={open} onClose={onClose} size="xl" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 pt-12">
+      <div className="bg-white p-6 pt-10">
         {/* Header Section */}
         <div className="flex items-center justify-between mb-8 px-2">
           <div className="flex items-center gap-8">
@@ -257,7 +258,7 @@ export function AddAppointmentModal({ open, onClose, onConfirm }: RecordModalPro
         <div className="mx-2 h-0.5 bg-gray-400 mb-12 opacity-50" />
 
         {/* Body */}
-        <div className="space-y-8 px-12">
+        <div className="space-y-8">
           <InputField label="Name" placeholder="Name" />
           <InputField label="Health Issue" placeholder="Health Issue" />
           <div className="grid grid-cols-2 gap-8">
@@ -485,7 +486,7 @@ export function ViewMedicationModal({ open, onClose, record }: RecordModalProps)
           </button>
         </div>
         <div className="mx-4 h-[1px] bg-black mb-10" />
-        <div className="border border-gray-200 rounded-[24px] overflow-hidden flex mx-4 p-8 min-h-[220px]">
+        <div className="border border-gray-200 rounded-[24px] overflow-hidden flex mx-4 p-8  min-h-[220px]">
           <div className="flex-[1.4] border-r border-gray-200 pr-10 flex flex-col justify-center gap-5">
             {[
               { label: "Name", value: record?.name || "Paracetamol" },
@@ -640,40 +641,33 @@ export function ViewMedicalCaseModal({ open, onClose, record }: RecordModalProps
 
 export function UpdatePermissionModal({ open, onClose, record, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="xl" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 pt-12">
-        <div className="flex items-center justify-between mb-8 px-2">
-          <div className="flex items-center gap-8">
+    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
+      <div className="bg-white p-10 space-y-10">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
+          <div className="flex items-center gap-6">
             <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={36} strokeWidth={2.5} />
+              <BookOpen size={32} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[32px] font-black tracking-tight text-gray-900">Update Permission</h2>
+            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Update Permission</h2>
           </div>
-          <button onClick={onClose} className="p-2 border-2 border-gray-300 rounded-xl text-gray-400 hover:text-black transition-colors">
-            <X size={20} strokeWidth={4} />
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="mx-2 h-0.5 bg-gray-400 mb-12 opacity-50" />
-        <div className="space-y-8 px-12">
+        <div className="space-y-6">
           <InputField label="Student Name" defaultValue={record?.name || "John Doe"} />
           <InputField label="Health Issue" defaultValue={record?.issue || "High Fever"} />
-          <div className="grid grid-cols-2 gap-8">
-            <InputField label="Date issued" defaultValue={record?.dateIssued || "02-02-2026"} />
-            <InputField label="Expected Return" defaultValue={record?.expectedReturn || "02-10-2026"} />
+          <div className="grid grid-cols-2 gap-6">
+            <InputField label="Date issued" type="date" defaultValue={record?.dateIssued || "2026-02-02"} />
+            <InputField label="Expected Return" type="date" defaultValue={record?.expectedReturn || "2026-02-10"} />
           </div>
           <InputField label="Parent/Guardian" defaultValue={record?.parent || "Mrs. Jane Doe"} />
         </div>
-        <div className="flex gap-6 mt-16 px-12 pb-6">
-          <button
-            onClick={onClose}
-            className="flex-1 py-6 bg-gray-200 text-black text-[16px] font-black rounded-2xl uppercase tracking-widest hover:bg-gray-300 transition-all active:scale-95"
-          >
+        <div className="flex gap-4 pt-4">
+          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
-          <button
-            onClick={() => { onConfirm?.(); onClose(); }}
-            className="flex-1 py-6 bg-black text-white text-[16px] font-black rounded-2xl uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-2xl shadow-black/20"
-          >
+          <button onClick={() => { onConfirm?.(); onClose(); }} className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
             UPDATE
           </button>
         </div>
@@ -684,45 +678,83 @@ export function UpdatePermissionModal({ open, onClose, record, onConfirm }: Reco
 
 export function ViewPermissionModal({ open, onClose, record }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="xl" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white p-10">
-        <div className="flex items-center justify-between mb-8 px-4">
+    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
+      <div className="bg-white">
+        {/* Header Ribbon */}
+        <div className="bg-gray-50/50 px-10 py-8 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-black">
+            <div className="w-14 h-14 bg-white shadow-sm border border-gray-100 rounded-2xl flex items-center justify-center text-black">
               <BookOpen size={24} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[22px] font-bold text-gray-900 tracking-tight">View Permission</h2>
+            <div>
+              <h2 className="text-[24px] font-black text-gray-900 tracking-tight">Permission Details</h2>
+              <p className="text-gray-400 font-bold text-sm mt-0.5">Home recovery & release</p>
+            </div>
           </div>
-          <button onClick={onClose} className="p-1.5 border border-gray-300 rounded-lg text-gray-400 hover:text-black transition-colors">
-            <X size={16} strokeWidth={3} />
+          <button onClick={onClose} className="p-2 border-2 border-transparent hover:border-gray-200 rounded-xl text-gray-400 hover:text-black hover:bg-white transition-all">
+            <X size={20} strokeWidth={3} />
           </button>
         </div>
-        <div className="mx-4 h-[1px] bg-black mb-10" />
-        <div className="border border-gray-200 rounded-[24px] overflow-hidden flex mx-4 p-8 min-h-[220px]">
-          <div className="flex-[1.4] border-r border-gray-200 pr-10 flex flex-col justify-center gap-5">
-            {[
-              { label: "Student", value: record?.name || "John Doe" },
-              { label: "Health Issue", value: record?.issue || "High Fever" },
-              { label: "Parent", value: record?.parent || "Mrs. Jane Doe" },
-              { label: "Date Issued", value: record?.dateIssued || "02-02-2026" },
-              { label: "Expected Return", value: record?.expectedReturn || "02-02-2026" },
-              { label: "Status", value: record?.status || "Active" }
-            ].map((item, i) => (
-              <div key={i} className="border-b border-gray-100 pb-1.5 flex gap-2 whitespace-nowrap">
-                <span className="text-[14px] font-black text-gray-900 min-w-max">{item.label}:</span>
-                <span className="text-[14px] font-bold text-gray-600">{item.value}</span>
+
+        <div className="p-10 space-y-8">
+          {/* Main Info Card */}
+          <div className="bg-gray-50/50 border border-gray-100 rounded-[28px] p-8 space-y-6 relative overflow-hidden">
+            {/* Status Badge */}
+            <div className="absolute top-6 right-6">
+              <span className={cn(
+                "px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider",
+                (record?.status || "Active") === "Active" ? "bg-black text-white" :
+                  (record?.status || "Active") === "Overdue" ? "bg-red-100 text-red-600" : "bg-gray-200 text-gray-600"
+              )}>
+                {record?.status || "Active"}
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-gray-400 font-bold text-[12px] uppercase tracking-widest mb-1.5">Student</h3>
+              <p className="text-gray-900 font-black text-[22px]">{record?.name || "John Doe"}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-200/60">
+              <div>
+                <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Health Issue</h3>
+                <p className="text-gray-800 font-bold text-[15px]">{record?.issue || "High Fever"}</p>
               </div>
-            ))}
+              <div>
+                <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Parent / Guardian</h3>
+                <p className="text-gray-800 font-bold text-[15px]">{record?.parent || "Mrs. Jane Doe"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-200/60">
+              <div>
+                <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Date Issued</h3>
+                <p className="text-gray-800 font-bold text-[15px]">{record?.dateIssued || "02-02-2026"}</p>
+              </div>
+              <div>
+                <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Expected Return</h3>
+                <p className="text-gray-800 font-bold text-[15px]">{record?.expectedReturn || "02-10-2026"}</p>
+              </div>
+            </div>
           </div>
-          <div className="flex-1 pl-12 flex flex-col justify-center gap-2 whitespace-nowrap">
-            <p className="text-[13px] font-bold text-gray-400 uppercase tracking-tight">Authorized by :</p>
-            <p className="text-[15px] font-black text-gray-900">Moses Byiringiro</p>
+
+          <div className="flex items-center justify-between border border-gray-100 rounded-[20px] p-6 bg-white shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500">
+                MB
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">Authorized By</p>
+                <p className="text-[14px] font-black text-gray-900">Moses Byiringiro</p>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex justify-center mt-10 pb-2">
-          <button onClick={onClose} className="w-[280px] py-4 bg-black text-white rounded-xl text-[14px] font-bold uppercase tracking-[0.1em] shadow-lg shadow-black/10 transition-all hover:opacity-90 active:scale-95">
-            CLOSE
-          </button>
+
+          <div className="flex justify-center pt-2">
+            <button onClick={onClose} className="w-full py-5 bg-black text-white rounded-[20px] text-[15px] font-black uppercase tracking-wider shadow-xl shadow-black/10 transition-all hover:opacity-90 active:scale-95">
+              DONE
+            </button>
+          </div>
         </div>
       </div>
     </Modal>
@@ -821,40 +853,33 @@ export function ViewDocumentModal({ open, onClose, record }: RecordModalProps) {
 
 export function AddPermissionModal({ open, onClose, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="xl" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 pt-12">
-        <div className="flex items-center justify-between mb-8 px-2">
-          <div className="flex items-center gap-8">
+    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
+      <div className="bg-white p-10 space-y-10">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
+          <div className="flex items-center gap-6">
             <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={36} strokeWidth={2.5} />
+              <BookOpen size={32} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[32px] font-black tracking-tight text-gray-900">Add Permission</h2>
+            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Add Permission</h2>
           </div>
-          <button onClick={onClose} className="p-2 border-2 border-gray-300 rounded-xl text-gray-400 hover:text-black transition-colors">
-            <X size={20} strokeWidth={4} />
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="mx-2 h-0.5 bg-gray-400 mb-12 opacity-50" />
-        <div className="space-y-8 px-12">
+        <div className="space-y-6">
           <InputField label="Student Name" placeholder="Student Name" />
           <InputField label="Health Issue" placeholder="Health Issue" />
-          <div className="grid grid-cols-2 gap-8">
-            <InputField label="Date issued" placeholder="Date issued" />
-            <InputField label="Expected Return" placeholder="Expected Return" />
+          <div className="grid grid-cols-2 gap-6">
+            <InputField label="Date issued" placeholder="Date issued" type="date" />
+            <InputField label="Expected Return" placeholder="Expected Return" type="date" />
           </div>
           <InputField label="Parent/Guardian" placeholder="Parent/Guardian" />
         </div>
-        <div className="flex gap-6 mt-16 px-12 pb-6">
-          <button
-            onClick={onClose}
-            className="flex-1 py-6 bg-gray-200 text-black text-[16px] font-black rounded-2xl uppercase tracking-widest hover:bg-gray-300 transition-all active:scale-95"
-          >
+        <div className="flex gap-4 pt-4">
+          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
-          <button
-            onClick={onClose}
-            className="flex-1 py-6 bg-black text-white text-[16px] font-black rounded-2xl uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-2xl shadow-black/20"
-          >
+          <button onClick={() => { onConfirm?.(); onClose(); }} className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
             ADD
           </button>
         </div>

@@ -84,7 +84,7 @@ export default function NurseDashboard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="space-y-6"
+            className="space-y-6 pb-10"
         >
             {/* Custom Welcome Section matching image */}
             <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl border border-gray-50 shadow-sm gap-4">
@@ -101,23 +101,36 @@ export default function NurseDashboard() {
                 </div>
             </div>
 
-            {/* Stat Cards Grid */}
-            <div className="stats-grid">
-                {[
-                    { label: "Today's Visits", value: "308", icon: <Stethoscope size={28} />, progress: 75 },
-                    { label: "Active Cases", value: "308", icon: <BriefcaseMedical size={28} />, progress: 45 },
-                    { label: "Appointments", value: "308", icon: <CalendarDays size={28} />, progress: 60 },
-                    { label: "Critical Cases", value: "308", icon: <AlertCircle size={28} />, progress: 25 },
-                ].map((stat, i) => (
-                    <StatCard
-                        key={i}
-                        label={stat.label}
-                        value={stat.value}
-                        icon={stat.icon}
-                        progress={stat.progress}
-                        meta={{ male: "61%", female: "39%" }}
-                    />
-                ))}
+            {/* Stat Cards Grid - Using Teacher Style layout & trend props */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard
+                    label="Today's Visits"
+                    value="308"
+                    icon={<Stethoscope size={28} />}
+                    progress={75}
+                    trend={{ value: "+12", label: "from yesterday", direction: "up" }}
+                />
+                <StatCard
+                    label="Active Cases"
+                    value="42"
+                    icon={<BriefcaseMedical size={28} />}
+                    progress={45}
+                    trend={{ value: "-3", label: "from yesterday", direction: "down" }}
+                />
+                <StatCard
+                    label="Appointments"
+                    value="15"
+                    icon={<CalendarDays size={28} />}
+                    progress={60}
+                    trend={{ value: "4", label: "completed", direction: "up" }}
+                />
+                <StatCard
+                    label="Critical Cases"
+                    value="2"
+                    icon={<AlertCircle size={28} />}
+                    progress={25}
+                    trend={{ value: "-1", label: "this week", direction: "down" }}
+                />
             </div>
 
             {/* Monthly Visits Chart Container */}
@@ -166,15 +179,25 @@ export default function NurseDashboard() {
                                     d="M0,55 C80,45 160,35 240,40 S320,55 400,85 S480,75 560,65 S640,60 720,55 S800,195 880,185 S960,30 1000,20 L1000,200 L0,200 Z"
                                     fill="url(#areaGradient)"
                                 />
-                                {/* Thick Black Line */}
+                                {/* Double Thick Black Line (Effect from image) */}
                                 <motion.path
                                     initial={{ pathLength: 0 }}
                                     animate={{ pathLength: 1 }}
                                     transition={{ duration: 1.5, ease: "easeInOut" }}
-                                    d="M0,55 C80,45 160,35 240,40 S320,55 400,85 S480,75 560,65 S640,60 720,55 S800,195 880,185 S960,30 1000,20"
+                                    d="M0,53 C80,43 160,33 240,38 S320,53 400,83 S480,73 560,63 S640,58 720,53 S800,193 880,183 S960,28 1000,18"
                                     fill="none"
                                     stroke="black"
-                                    strokeWidth="4"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                />
+                                <motion.path
+                                    initial={{ pathLength: 0 }}
+                                    animate={{ pathLength: 1 }}
+                                    transition={{ duration: 1.5, ease: "easeInOut", delay: 0.1 }}
+                                    d="M0,58 C80,48 160,38 240,43 S320,58 400,88 S480,78 560,68 S640,63 720,58 S800,198 880,188 S960,33 1000,23"
+                                    fill="none"
+                                    stroke="black"
+                                    strokeWidth="1.5"
                                     strokeLinecap="round"
                                 />
                                 {/* Tooltip anchor point at May vertex */}
@@ -313,29 +336,28 @@ export default function NurseDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="pt-8 border-t border-gray-50">
-                <h2 className="text-2xl font-black mb-8 text-gray-900 tracking-tight">Quick Actions</h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+                <div className="dashboard-section-header">
+                    <h2 className="dashboard-section-title">Quick Actions</h2>
+                </div>
+                <div className="quick-actions-grid">
                     {[
-                        { label: "New Visit", icon: <Users size={28} />, href: "/nurse/records" },
-                        { label: "Schedule", icon: <CalendarDays size={28} />, href: "/nurse/appointments" },
-                        { label: "Medications", icon: <Pill size={28} />, href: "/nurse/medications" },
-                        { label: "Reports", icon: <FileText size={28} />, href: "/nurse/reports" },
+                        { label: "New Visit", sub: "Add health record", icon: <Users size={24} className="quick-action-icon" />, href: "/nurse/records" },
+                        { label: "Schedule", sub: "View appointments", icon: <CalendarDays size={24} className="quick-action-icon" />, href: "/nurse/appointments" },
+                        { label: "Medications", sub: "Manage inventory", icon: <Pill size={24} className="quick-action-icon" />, href: "/nurse/medications" },
+                        { label: "Reports", sub: "View analytics", icon: <FileText size={24} className="quick-action-icon" />, href: "/nurse/reports" },
                     ].map((action, i) => (
                         <Link key={i} href={action.href}>
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                whileHover={{ y: -10, scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="bg-white border border-gray-100 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 transition-all hover:bg-black hover:text-white hover:shadow-2xl hover:shadow-black/25 cursor-pointer shadow-xl shadow-gray-100/50"
+                                whileHover={{ y: -5 }}
+                                className="quick-action-card"
                             >
-                                <div className="p-5 rounded-2xl bg-gray-50 text-gray-700 transition-colors shadow-inner group-hover:bg-white/20 group-hover:text-white">
-                                    {action.icon}
-                                </div>
-                                <span className="text-[17px] font-black tracking-tight">{action.label}</span>
+                                {action.icon}
+                                <h3 className="quick-action-title">{action.label}</h3>
+                                <p className="quick-action-desc">{action.sub}</p>
                             </motion.div>
                         </Link>
                     ))}

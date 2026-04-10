@@ -183,13 +183,13 @@ export default function SuperAdminDashboard() {
 
                             <path
                                 d={`
-                                  M 60,68
-                                  C 115,52 185,44 230,44
-                                  C 275,44 330,88 380,87
-                                  C 420,87 480,61 533,67
-                                  C 586,73 628,192 686,178
-                                  C 730,160 778,24 828,35
-                                  L 900,32 L 900,200 L 60,200 Z
+                                  M 60,160
+                                  C 108,170 168,140 210,130
+                                  C 252,120 310,160 360,150
+                                  C 400,140 460,100 510,110
+                                  C 560,120 605,70 660,80
+                                  C 712,90 760,150 810,160
+                                  L 900,150 L 900,200 L 60,200 Z
                                 `}
                                 fill="url(#areaFill2)"
                             />
@@ -209,13 +209,13 @@ export default function SuperAdminDashboard() {
 
                             <path
                                 d={`
-                                  M 60,68
-                                  C 115,52 185,44 230,44
-                                  C 275,44 330,88 380,87
-                                  C 420,87 480,61 533,67
-                                  C 586,73 628,192 686,178
-                                  C 730,160 778,24 828,35
-                                  L 900,32
+                                  M 60,160
+                                  C 108,170 168,140 210,130
+                                  C 252,120 310,160 360,150
+                                  C 400,140 460,100 510,110
+                                  C 560,120 605,70 660,80
+                                  C 712,90 760,150 810,160
+                                  L 900,150
                                 `}
                                 fill="none"
                                 stroke="#111827"
@@ -248,7 +248,7 @@ export default function SuperAdminDashboard() {
                                 <text x="2" y="-29" textAnchor="middle" fill="white" fontSize="12" fontWeight="500">RCA</text>
                             </g>
 
-                            <g transform="translate(700, 152)">
+                            <g transform="translate(660, 80)">
                                 <circle r="4" fill="white" stroke="#111827" strokeWidth="2" />
                                 <line x1="0" y1="-5" x2="0" y2="-20" stroke="#111827" strokeWidth="1.5" />
                                 <rect x="-20" y="-46" width="44" height="24" rx="5" fill="#111827" />
