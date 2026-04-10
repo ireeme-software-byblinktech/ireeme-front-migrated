@@ -27,6 +27,7 @@ interface DataTableProps<T> {
   rowClassName?: (row: T) => string;
   pageSize?: number;
   paginationClassName?: string;
+  hideHeader?: boolean;
 }
 
 // ─── Table User Cell ──────────────────────────────────────────
@@ -89,6 +90,7 @@ export function DataTable<T extends Record<string, unknown>>({
   rowClassName,
   pageSize,
   paginationClassName,
+  hideHeader = false,
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -148,21 +150,23 @@ export function DataTable<T extends Record<string, unknown>>({
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="table-container">
         <table className="data-table">
-          <thead>
-            <tr>
-              {columns.map((col, i) => (
-                <th
-                  key={i}
-                  style={{
-                    width: col.width,
-                    textAlign: col.align ?? "left",
-                  }}
-                >
-                  {col.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
+          {!hideHeader && (
+            <thead>
+              <tr>
+                {columns.map((col, i) => (
+                  <th
+                    key={i}
+                    style={{
+                      width: col.width,
+                      textAlign: col.align ?? "left",
+                    }}
+                  >
+                    {col.header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+          )}
           <tbody>
             {paginatedData.map((row, rowIdx) => {
               const key = keyField ? String(row[keyField]) : rowIdx;

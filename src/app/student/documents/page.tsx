@@ -89,6 +89,9 @@ export default function StudentDocumentsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const itemsPerPage = 8;
 
   // Filter data based on search and filters
@@ -157,15 +160,27 @@ export default function StudentDocumentsPage() {
       key: "action",
       header: "Action",
       align: "center",
-      render: () => (
+      render: (_, row) => (
         <div className="flex items-center justify-center gap-2">
-          <button className="text-gray-600 hover:text-gray-900 p-1">
+          <button 
+            onClick={() => {
+              setSelectedDocument(row);
+              setIsViewModalOpen(true);
+            }}
+            className="text-gray-600 hover:text-gray-900 p-1"
+          >
             <Eye size={16} />
           </button>
           <button className="text-gray-600 hover:text-gray-900 p-1">
             <Download size={16} />
           </button>
-          <button className="text-gray-600 hover:text-gray-900 p-1">
+          <button 
+            onClick={() => {
+              setSelectedDocument(row);
+              setIsDeleteModalOpen(true);
+            }}
+            className="text-gray-600 hover:text-gray-900 p-1"
+          >
             <Trash2 size={16} />
           </button>
         </div>
@@ -291,7 +306,168 @@ export default function StudentDocumentsPage() {
           onClose={() => setIsAddModalOpen(false)}
         />
       )}
+
+      {/* View Document Modal */}
+      {isViewModalOpen && selectedDocument && (
+        <ViewDocumentModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          document={selectedDocument}
+        />
+      )}
+
+      {/* Delete Document Modal */}
+      {isDeleteModalOpen && selectedDocument && (
+        <DeleteDocumentModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          document={selectedDocument}
+        />
+      )}
     </div>
+  );
+}
+
+// View Document Modal Component
+function ViewDocumentModal({ 
+  isOpen, 
+  onClose, 
+  document 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  document: Document;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">View Document</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Document title</label>
+                    <div className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-900">
+                      {document.name}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Document category</label>
+                    <div className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-900">
+                      {document.category}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
+                  <div className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-900 min-h-[80px]">
+                    Academic document for {document.name} uploaded on {document.uploadDate}.
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">File Type</label>
+                    <div className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-900">
+                      {document.fileType}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Upload Date</label>
+                    <div className="w-full border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-900">
+                      {document.uploadDate}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-4 pt-4">
+                  <button
+                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2"
+                  >
+                    <Download size={16} />
+                    Download
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Delete Document Modal Component
+function DeleteDocumentModal({ 
+  isOpen, 
+  onClose, 
+  document 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void;
+  document: Document;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-md relative z-10 flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Delete Document</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
+            </div>
+
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Are you sure?</h3>
+              <p className="text-gray-600 mb-6">
+                You are about to delete <span className="font-bold text-gray-900">"{document.name}"</span>. This action cannot be undone.
+              </p>
+
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={onClose}
+                  className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={onClose}
+                  className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

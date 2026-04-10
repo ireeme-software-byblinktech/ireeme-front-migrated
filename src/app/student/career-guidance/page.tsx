@@ -122,6 +122,8 @@ const careersData: Career[] = [
 export default function CareerGuidancePage() {
   const [activeMainTab, setActiveMainTab] = useState<"Paths" | "Counselors" | "Workshops" | "Resources">("Paths");
   const [activeCareerTab, setActiveCareerTab] = useState<"All" | "Technology" | "Healthcare" | "Engineering" | "Business" | "Creative Arts">("All");
+  const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filter careers based on active tab
   const filteredCareers = careersData.filter(career => 
@@ -252,7 +254,13 @@ export default function CareerGuidancePage() {
               </div>
 
               {/* Learn More Button */}
-              <button className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+              <button 
+                onClick={() => {
+                  setSelectedCareer(career);
+                  setIsModalOpen(true);
+                }}
+                className="w-full bg-black text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+              >
                 Learn More
                 <ExternalLink size={14} />
               </button>
@@ -506,6 +514,102 @@ export default function CareerGuidancePage() {
           </div>
         </div>
       )}
+
+      {/* Career Detail Modal */}
+      {isModalOpen && selectedCareer && (
+        <CareerDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          career={selectedCareer}
+        />
+      )}
     </div>
+  );
+}
+
+// Career Detail Modal Component
+function CareerDetailModal({ 
+  isOpen, 
+  onClose, 
+  career 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  career: Career;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Career Path: {career.title}</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8">
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-20 h-20 bg-black rounded-2xl flex items-center justify-center text-white text-4xl shadow-lg">
+                  {career.icon}
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 font-medium mb-1">{career.category}</div>
+                  <h3 className="text-2xl font-bold text-gray-900">{career.title}</h3>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-sm">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-gray-500 font-bold uppercase tracking-wider mb-2">Description</h4>
+                    <p className="text-gray-700 leading-relaxed text-base">{career.description}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-gray-500 font-bold uppercase tracking-wider mb-2">Required Subjects</h4>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {career.requiredSubjects.map((subject, index) => (
+                        <span key={index} className="px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-100">
+                          {subject}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-2xl p-6 space-y-5">
+                  <div>
+                    <div className="text-gray-500 font-bold mb-1">Minimum Grade Requirement</div>
+                    <div className="text-lg font-extrabold text-gray-900">{career.minGrade}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 font-bold mb-1">Job Market Outlook</div>
+                    <div className="inline-flex px-3 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-full">
+                      {career.jobMarket}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 font-bold mb-1">Expected Annual Salary</div>
+                    <div className="text-xl font-extrabold text-[#000]">{career.expectedSalary}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-8 flex items-center justify-center">
+                <button
+                  onClick={onClose}
+                  className="bg-black text-white px-10 py-3 rounded-xl text-base font-bold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg"
+                >
+                  Close Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

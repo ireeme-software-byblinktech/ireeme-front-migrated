@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardBody } from "@/components/ui/Card";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
 import { GraduationCap, BookOpen, FileText, BarChart2, Edit, Download, Filter } from "lucide-react";
 
-// Stats data array for attendance
 const attendanceStats = [
   {
     label: "Attendance rate",
@@ -99,8 +98,11 @@ const attendanceData: AttendanceRecord[] = [
 
 export default function AttendancePage() {
   const [statusFilter, setStatusFilter] = useState("All status");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
 
-  // Filter data based on status
+  const itemsPerPage = 10;
+
   const filteredData = attendanceData.filter(record => {
     if (statusFilter === "All status") return true;
     return record.status === statusFilter;
@@ -157,8 +159,14 @@ export default function AttendancePage() {
       key: "action",
       header: "Action",
       align: "right",
-      render: () => (
-        <button className="text-gray-600 hover:text-gray-900 p-2">
+      render: (_, row) => (
+        <button
+          onClick={() => {
+            setSelectedRecord(row);
+            setIsEditModalOpen(true);
+          }}
+          className="text-gray-600 hover:text-gray-900 p-2"
+        >
           <Edit size={16} />
         </button>
       )
@@ -223,6 +231,153 @@ export default function AttendancePage() {
           />
         </CardBody>
       </Card>
+
+      {/* Edit Attendance Modal */}
+      {isEditModalOpen && selectedRecord && (
+        <EditAttendanceModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          record={selectedRecord}
+        />
+      )}
     </div>
+  );
+}
+
+// Edit Attendance Modal Component
+function EditAttendanceModal({
+  isOpen,
+  onClose,
+  record
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  record: AttendanceRecord;
+}) {
+  const [formData, setFormData] = useState({
+    date: record.date,
+    subject: record.subject,
+    term: record.term,
+    arrival: record.arrival,
+    arrivalStatus: record.arrivalStatus,
+    status: record.status
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you'd call an API here
+    onClose();
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[9999]">
+        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
+        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
+            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Edit Attendance</h2>
+              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Subject *</label>
+                    <input
+                      type="text"
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Date *</label>
+                    <input
+                      type="text"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Arrival Time *</label>
+                    <input
+                      type="text"
+                      value={formData.arrival}
+                      onChange={(e) => setFormData({ ...formData, arrival: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Term *</label>
+                    <select
+                      value={formData.term}
+                      onChange={(e) => setFormData({ ...formData, term: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
+                    >
+                      <option value="Term 1">Term 1</option>
+                      <option value="Term 2">Term 2</option>
+                      <option value="Term 3">Term 3</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Arrival status *</label>
+                    <select
+                      value={formData.arrivalStatus}
+                      onChange={(e) => setFormData({ ...formData, arrivalStatus: e.target.value as any })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
+                    >
+                      <option value="On Time">On Time</option>
+                      <option value="Late">Late</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Status *</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
+                    >
+                      <option value="Present">Present</option>
+                      <option value="Absent">Absent</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-4 pt-4">
+                  <button
+                    type="submit"
+                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                  >
+                    Save changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                  >
+                    cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
