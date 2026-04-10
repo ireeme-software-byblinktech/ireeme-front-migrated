@@ -74,6 +74,7 @@ interface StatCardProps {
     male: string;
     female: string;
   };
+  onClick?: () => void;
 }
 
 export function StatCard({
@@ -84,6 +85,7 @@ export function StatCard({
   progress = 80,
   className,
   meta,
+  onClick,
 }: StatCardProps) {
   const circumference = 2 * Math.PI * 35.5; 
   
@@ -92,8 +94,10 @@ export function StatCard({
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
+      onClick={onClick}
       className={cn(
         "bg-white py-5 px-4 rounded-[12px] border border-gray-200 h-full min-h-[115px] min-w-[220px] shrink-0 group flex items-center gap-4 shadow-[0_5px_15px_rgba(0,0,0,0.08)] transition-all hover:shadow-[0_8px_25px_rgba(0,0,0,0.12)]",
+        onClick && "cursor-pointer",
         className
       )}
     >

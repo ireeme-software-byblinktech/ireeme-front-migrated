@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { StatCard, Card, CardBody } from "@/components/ui/Card";
@@ -390,6 +391,7 @@ function NoteViewModal({ isOpen, onClose, note }: { isOpen: boolean; onClose: ()
 
 // --- Main Page Component ---
 export default function StudentNotesPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterAll, setFilterAll] = useState("All");
@@ -484,6 +486,12 @@ export default function StudentNotesPage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") router.push("/student/assignments");
+              else if (stat.label === "Total Notes") router.push("/student/notes");
+              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
+              else if (stat.label === "Total Subjects") router.push("/student/timetable");
+            }}
           />
         ))}
       </div>
