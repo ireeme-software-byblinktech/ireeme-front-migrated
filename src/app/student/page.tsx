@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
@@ -175,6 +176,7 @@ const assignmentsData: Assignment[] = [
 ];
 
 export default function StudentDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"Pending" | "To do" | "Done">("Pending");
   const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -259,12 +261,24 @@ export default function StudentDashboard() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") {
+                router.push("/student/assignments");
+              } else if (stat.label === "Total Notes") {
+                router.push("/student/notes");
+              } else if (stat.label === "Total Reports") {
+                router.push("/student/report-card");
+              } else if (stat.label === "Total Subjects") {
+                router.push("/student/timetable");
+              }
+            }}
           />
         ))}
       </div>
 
       {/* Assignments Section */}
-      <Card>
+      <div id="assignments-table-section">
+        <Card>
         <CardHeader
           title="Assignments"
           action={
@@ -301,6 +315,7 @@ export default function StudentDashboard() {
           </div>
         </CardBody>
       </Card>
+      </div>
 
       <ViewSubmissionModal
         isOpen={isModalOpen}

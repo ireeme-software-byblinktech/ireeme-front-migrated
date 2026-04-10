@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
@@ -179,6 +180,7 @@ const assignmentsData: Assignment[] = [
 ];
 
 export default function AssignmentsPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [titleFilter, setTitleFilter] = useState("");
   const [termFilter, setTermFilter] = useState("");
@@ -303,6 +305,12 @@ export default function AssignmentsPage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") router.push("/student/assignments");
+              else if (stat.label === "Total Notes") router.push("/student/notes");
+              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
+              else if (stat.label === "Total Subjects") router.push("/student/timetable");
+            }}
           />
         ))}
       </div>
@@ -394,8 +402,8 @@ export default function AssignmentsPage() {
         onClose={() => setIsModalOpen(false)}
         submission={selectedSubmission ? {
           ...selectedSubmission,
-          teacher: "Dr. Anais Kamal", // Standardizing teacher for assignment records
-          submittedDate: "Today, 10:45 AM", // Mock date for demo
+          teacher: "Dr. Anais Kamal", 
+          submittedDate: "Today, 10:45 AM", 
           fileName: selectedSubmission.status === "Completed" ? `${selectedSubmission.title.replace(/\s+/g, '_')}.pdf` : undefined,
           fileSize: "1.2 MB",
           comments: selectedSubmission.status === "Completed" ? "Excellent work on this assignment. Your methodology is clear and well-documented." : undefined

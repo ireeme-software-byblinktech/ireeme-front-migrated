@@ -211,7 +211,6 @@ const STUDENT_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Messages", href: "/student/messages", icon: <MessageSquare size={18} /> },
-      { label: "Settings", href: "/student/settings", icon: <Settings size={18} /> },
     ],
   },
 ];
@@ -300,14 +299,7 @@ const DISCIPLINE_GROUPS: NavGroup[] = [
       { label: "Reports", href: "/discipline/reports", icon: <FileText size={18} /> },
     ],
   },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/discipline/settings", icon: <Settings size={18} /> },
-    ],
-  },
+
 ];
 
 const LIBRARIAN_GROUPS: NavGroup[] = [
@@ -330,14 +322,7 @@ const LIBRARIAN_GROUPS: NavGroup[] = [
       { label: "Members", href: "/librarian/members", icon: <Users size={18} /> },
     ],
   },
-  {
-    id: "system",
-    label: "",
-    collapsible: false,
-    items: [
-      { label: "Settings", href: "/librarian/settings", icon: <Settings size={18} /> },
-    ],
-  },
+
 ];
 
 const NURSE_GROUPS: NavGroup[] = [
