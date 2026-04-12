@@ -170,21 +170,21 @@ export default function AttendancePage() {
           <StatCard
             label="Attendance Rate"
             value="94.2%"
-            icon={<TrendingUp size={24} className="text-emerald-500" />}
+            icon={<TrendingUp size={24} className="" />}
             progress={94.2}
             trend={{ value: "2.1", direction: "up", label: "Vs last month" }}
           />
           <StatCard
             label="Days Present"
             value="156"
-            icon={<UserCheck size={24} className="text-blue-500" />}
+            icon={<UserCheck size={24} className="" />}
             progress={85}
             trend={{ value: "8", direction: "up", label: "This term" }}
           />
           <StatCard
             label="Days Absent"
             value="04"
-            icon={<UserX size={24} className="text-rose-500" />}
+            icon={<UserX size={24} className="" />}
             progress={15}
             trend={{ value: "1", direction: "down", label: "Vs last term" }}
             className="bg-rose-50/30"
@@ -192,7 +192,7 @@ export default function AttendancePage() {
           <StatCard
             label="Late Arrivals"
             value="02"
-            icon={<Clock size={24} className="text-amber-500" />}
+            icon={<Clock size={24} className="" />}
             progress={5}
             trend={{ value: "0", direction: "up", label: "Steady" }}
           />

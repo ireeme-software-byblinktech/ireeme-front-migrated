@@ -239,7 +239,6 @@ const ALUMNI_GROUPS: NavGroup[] = [
     items: [
       { label: "Dashboard", href: "/alumni", icon: <LayoutDashboard size={18} /> },
       { label: "Alumni Directory", href: "/alumni/directory", icon: <Users size={18} /> },
-      { label: "Academic Docs", href: "/alumni/documents", icon: <FileText size={18} /> },
       { label: "Report Cards", href: "/alumni/report-cards", icon: <GraduationCap size={18} /> },
       { label: "Applications", href: "/alumni/applications", icon: <Globe size={18} /> },
     ],
