@@ -144,26 +144,24 @@ export function StatCard({
 
       <div className="flex flex-col flex-1 pl-1">
         <p className="text-[14px] font-semibold text-black mb-1.5">{label}</p>
-        <div className="flex items-center gap-2.5">
-          <h3 className="text-[22px] font-bold text-gray-900 leading-none">{value}</h3>
-          {trend && (
-            <div className="flex items-center gap-1 shrink-0 whitespace-nowrap pt-1">
-              <svg 
-                className={cn("w-3 h-3", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor" 
-                strokeWidth={3}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-              <span className={cn("text-[9px] font-bold", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")}>
-                {trend.value}
-              </span>
-              {trend.label && <span className="text-[9px] text-black font-medium">{trend.label}</span>}
-            </div>
-          )}
-        </div>
+        <h3 className="text-[22px] font-bold text-gray-900 leading-none">{value}</h3>
+        {trend && (
+          <div className="flex items-center gap-1 shrink-0 whitespace-nowrap mt-1">
+            <svg 
+              className={cn("w-3 h-3", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor" 
+              strokeWidth={3}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <span className={cn("text-[9px] font-bold", trend.direction === "up" ? "text-emerald-600" : "text-rose-500")}>
+              {trend.value}
+            </span>
+            {trend.label && <span className="text-[9px] text-black font-medium">{trend.label}</span>}
+          </div>
+        )}
       </div>
     </motion.div>
   );
