@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
@@ -48,7 +47,6 @@ const statsData = [
 ];
 
 export default function StudentHealthPage() {
-  const router = useRouter();
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
 
   return (
@@ -69,12 +67,6 @@ export default function StudentHealthPage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
-            onClick={() => {
-              if (stat.label === "Total Assignments") router.push("/student/assignments");
-              else if (stat.label === "Total Notes") router.push("/student/notes");
-              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
-              else if (stat.label === "Total Subjects") router.push("/student/timetable");
-            }}
           />
         ))}
       </div>

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Search, Filter, Edit, ToggleLeft, Users } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { EditStudentModal } from "@/components/ui/EditStudentModal";
 
 // Student stats data
@@ -106,7 +105,6 @@ const studentsData: Student[] = [
 ];
 
 export default function AccountantStudentsPage() {
-  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [termFilter, setTermFilter] = useState("all");
@@ -203,13 +201,9 @@ export default function AccountantStudentsPage() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="stats-grid">
         {studentStats.map((stat, index) => (
-          <div 
-            key={index} 
-            className="stat-card-horizontal cursor-pointer flex items-center justify-between transition-all hover:shadow-lg"
-            onClick={() => router.push("/accountant/students")}
-          >
+          <div key={index} className="stat-card-horizontal">
             <div className="stat-card-circle-small">
               <svg width="80" height="80" viewBox="0 0 80 80">
                 <circle

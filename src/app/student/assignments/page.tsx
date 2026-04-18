@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
@@ -180,11 +179,6 @@ const assignmentsData: Assignment[] = [
 ];
 
 export default function AssignmentsPage() {
-<<<<<<< HEAD
-=======
-  const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
->>>>>>> 4dc892198181b7af7824cfd3c925fbe9997c2355
   const [titleFilter, setTitleFilter] = useState("");
   const [termFilter, setTermFilter] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
@@ -310,12 +304,6 @@ export default function AssignmentsPage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
-            onClick={() => {
-              if (stat.label === "Total Assignments") router.push("/student/assignments");
-              else if (stat.label === "Total Notes") router.push("/student/notes");
-              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
-              else if (stat.label === "Total Subjects") router.push("/student/timetable");
-            }}
           />
         ))}
       </div>
