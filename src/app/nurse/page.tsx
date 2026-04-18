@@ -187,17 +187,17 @@ export default function NurseDashboard() {
                                     d="M0,53 C80,43 160,33 240,38 S320,53 400,83 S480,73 560,63 S640,58 720,53 S800,193 880,183 S960,28 1000,18"
                                     fill="none"
                                     stroke="black"
-                                    strokeWidth="1.5"
+                                    strokeWidth="2"
                                     strokeLinecap="round"
                                 />
                                 <motion.path
                                     initial={{ pathLength: 0 }}
                                     animate={{ pathLength: 1 }}
                                     transition={{ duration: 1.5, ease: "easeInOut", delay: 0.1 }}
-                                    d="M0,58 C80,48 160,38 240,43 S320,58 400,88 S480,78 560,68 S640,63 720,58 S800,198 880,188 S960,33 1000,23"
+                                    d="M0,57 C80,47 160,37 240,42 S320,57 400,87 S480,77 560,67 S640,62 720,57 S800,197 880,187 S960,32 1000,22"
                                     fill="none"
                                     stroke="black"
-                                    strokeWidth="1.5"
+                                    strokeWidth="2"
                                     strokeLinecap="round"
                                 />
                                 {/* Tooltip anchor point at May vertex */}
