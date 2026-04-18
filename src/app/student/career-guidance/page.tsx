@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatCard } from "@/components/ui/Card";
 import { GraduationCap, BookOpen, FileText, BarChart2, ExternalLink } from "lucide-react";
@@ -120,6 +121,7 @@ const careersData: Career[] = [
 ];
 
 export default function CareerGuidancePage() {
+  const router = useRouter();
   const [activeMainTab, setActiveMainTab] = useState<"Paths" | "Counselors" | "Workshops" | "Resources">("Paths");
   const [activeCareerTab, setActiveCareerTab] = useState<"All" | "Technology" | "Healthcare" | "Engineering" | "Business" | "Creative Arts">("All");
   const [selectedCareer, setSelectedCareer] = useState<Career | null>(null);
@@ -161,6 +163,12 @@ export default function CareerGuidancePage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") router.push("/student/assignments");
+              else if (stat.label === "Total Notes") router.push("/student/notes");
+              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
+              else if (stat.label === "Total Subjects") router.push("/student/timetable");
+            }}
           />
         ))}
       </div>

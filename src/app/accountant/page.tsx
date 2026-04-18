@@ -4,7 +4,10 @@ import { useState } from "react";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
+import { EditStudentModal } from "@/components/ui/EditStudentModal";
 import { DollarSign, Clock, Edit, ToggleLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 // Stats data array for accountant
 const accountantStats = [
@@ -75,120 +78,17 @@ const paymentsData: Payment[] = [
   }
 ];
 
-// Chart data for different months - with realistic jagged patterns and actual values
-const chartData = {
-  January: [
-    { x: 0, y: 240, value: 23500 }, { x: 83, y: 220, value: 28000 }, { x: 166, y: 200, value: 32000 }, 
-    { x: 249, y: 180, value: 38000 }, { x: 332, y: 160, value: 42000 }, { x: 415, y: 140, value: 48000 }, 
-    { x: 498, y: 120, value: 52000 }, { x: 581, y: 100, value: 58000 }, { x: 664, y: 80, value: 62000 }, 
-    { x: 747, y: 60, value: 68000 }, { x: 830, y: 40, value: 74000 }, { x: 913, y: 80, value: 61000 },
-    { x: 1000, y: 100, value: 57000 }
-  ],
-  February: [
-    { x: 0, y: 220, value: 28000 }, { x: 83, y: 200, value: 32000 }, { x: 166, y: 180, value: 38000 }, 
-    { x: 249, y: 160, value: 42000 }, { x: 332, y: 140, value: 48000 }, { x: 415, y: 120, value: 52000 }, 
-    { x: 498, y: 100, value: 58000 }, { x: 581, y: 80, value: 62000 }, { x: 664, y: 60, value: 68000 }, 
-    { x: 747, y: 40, value: 74000 }, { x: 830, y: 80, value: 61000 }, { x: 913, y: 100, value: 57000 },
-    { x: 1000, y: 120, value: 53000 }
-  ],
-  March: [
-    { x: 0, y: 200, value: 32000 }, { x: 83, y: 180, value: 38000 }, { x: 166, y: 160, value: 42000 }, 
-    { x: 249, y: 140, value: 48000 }, { x: 332, y: 120, value: 52000 }, { x: 415, y: 100, value: 58000 }, 
-    { x: 498, y: 80, value: 62000 }, { x: 581, y: 60, value: 68000 }, { x: 664, y: 40, value: 74000 }, 
-    { x: 747, y: 80, value: 61000 }, { x: 830, y: 100, value: 57000 }, { x: 913, y: 120, value: 53000 },
-    { x: 1000, value: 49000, y: 140 }
-  ],
-  April: [
-    { x: 0, y: 260, value: 18000 }, { x: 83, y: 240, value: 23000 }, { x: 166, y: 220, value: 28000 }, 
-    { x: 249, y: 200, value: 32000 }, { x: 332, y: 180, value: 38000 }, { x: 415, y: 160, value: 42000 }, 
-    { x: 498, y: 140, value: 48000 }, { x: 581, y: 120, value: 52000 }, { x: 664, y: 100, value: 58000 }, 
-    { x: 747, y: 80, value: 62000 }, { x: 830, y: 60, value: 68000 }, { x: 913, y: 40, value: 74000 },
-    { x: 1000, y: 80, value: 61000 }
-  ],
-  May: [
-    { x: 0, y: 240, value: 23500 }, { x: 83, y: 200, value: 32000 }, { x: 166, y: 180, value: 38000 }, 
-    { x: 249, y: 160, value: 42000 }, { x: 332, y: 140, value: 48000 }, { x: 415, y: 120, value: 52000 }, 
-    { x: 498, y: 100, value: 58000 }, { x: 581, y: 80, value: 62000 }, { x: 664, y: 60, value: 68000 }, 
-    { x: 747, y: 40, value: 74000 }, { x: 830, y: 80, value: 61000 }, { x: 913, y: 120, value: 53000 },
-    { x: 1000, y: 140, value: 49000 }
-  ],
-  June: [
-    { x: 0, y: 220, value: 28000 }, { x: 83, y: 180, value: 38000 }, { x: 166, y: 160, value: 42000 }, 
-    { x: 249, y: 140, value: 48000 }, { x: 332, y: 120, value: 52000 }, { x: 415, y: 100, value: 58000 }, 
-    { x: 498, y: 80, value: 62000 }, { x: 581, y: 60, value: 68000 }, { x: 664, y: 40, value: 74000 }, 
-    { x: 747, y: 80, value: 61000 }, { x: 830, y: 120, value: 53000 }, { x: 913, y: 140, value: 49000 },
-    { x: 1000, y: 160, value: 45000 }
-  ],
-  July: [
-    { x: 0, y: 200, value: 32000 }, { x: 83, y: 160, value: 42000 }, { x: 166, y: 140, value: 48000 }, 
-    { x: 249, y: 120, value: 52000 }, { x: 332, y: 100, value: 58000 }, { x: 415, y: 80, value: 62000 }, 
-    { x: 498, y: 60, value: 68000 }, { x: 581, y: 40, value: 74000 }, { x: 664, y: 80, value: 61000 }, 
-    { x: 747, y: 120, value: 53000 }, { x: 830, y: 140, value: 49000 }, { x: 913, y: 160, value: 45000 },
-    { x: 1000, y: 180, value: 41000 }
-  ],
-  August: [
-    { x: 0, y: 260, value: 18000 }, { x: 83, y: 220, value: 28000 }, { x: 166, y: 200, value: 32000 }, 
-    { x: 249, y: 180, value: 38000 }, { x: 332, y: 160, value: 42000 }, { x: 415, y: 140, value: 48000 }, 
-    { x: 498, y: 120, value: 52000 }, { x: 581, y: 100, value: 58000 }, { x: 664, y: 80, value: 62000 }, 
-    { x: 747, y: 60, value: 68000 }, { x: 830, y: 40, value: 74000 }, { x: 913, y: 80, value: 61000 },
-    { x: 1000, y: 120, value: 53000 }
-  ],
-  September: [
-    { x: 0, y: 240, value: 23500 }, { x: 83, y: 200, value: 32000 }, { x: 166, y: 160, value: 42000 }, 
-    { x: 249, y: 140, value: 48000 }, { x: 332, y: 120, value: 52000 }, { x: 415, y: 100, value: 58000 }, 
-    { x: 498, y: 80, value: 62000 }, { x: 581, y: 60, value: 68000 }, { x: 664, y: 40, value: 74000 }, 
-    { x: 747, y: 80, value: 61000 }, { x: 830, y: 120, value: 53000 }, { x: 913, y: 160, value: 45000 },
-    { x: 1000, y: 180, value: 41000 }
-  ],
-  October: [
-    { x: 0, y: 240, value: 23500 }, { x: 83, y: 220, value: 28000 }, { x: 166, y: 180, value: 38000 }, 
-    { x: 249, y: 160, value: 42000 }, { x: 332, y: 140, value: 48000 }, { x: 415, y: 120, value: 52000 }, 
-    { x: 498, y: 100, value: 58000 }, { x: 581, y: 80, value: 62000 }, { x: 664, y: 60, value: 68000 }, 
-    { x: 747, y: 40, value: 74000 }, { x: 830, y: 80, value: 61000 }, { x: 913, y: 120, value: 53000 },
-    { x: 1000, y: 140, value: 49000 }
-  ],
-  November: [
-    { x: 0, y: 220, value: 28000 }, { x: 83, y: 200, value: 32000 }, { x: 166, y: 160, value: 42000 }, 
-    { x: 249, y: 140, value: 48000 }, { x: 332, y: 120, value: 52000 }, { x: 415, y: 100, value: 58000 }, 
-    { x: 498, y: 80, value: 62000 }, { x: 581, y: 60, value: 68000 }, { x: 664, y: 40, value: 74000 }, 
-    { x: 747, y: 80, value: 61000 }, { x: 830, y: 120, value: 53000 }, { x: 913, y: 140, value: 49000 },
-    { x: 1000, y: 160, value: 45000 }
-  ],
-  December: [
-    { x: 0, y: 200, value: 32000 }, { x: 83, y: 180, value: 38000 }, { x: 166, y: 140, value: 48000 }, 
-    { x: 249, y: 120, value: 52000 }, { x: 332, y: 100, value: 58000 }, { x: 415, y: 80, value: 62000 }, 
-    { x: 498, y: 60, value: 68000 }, { x: 581, y: 40, value: 74000 }, { x: 664, y: 80, value: 61000 }, 
-    { x: 747, y: 120, value: 53000 }, { x: 830, y: 140, value: 49000 }, { x: 913, y: 160, value: 45000 },
-    { x: 1000, y: 180, value: 41000 }
-  ]
-};
-
 export default function AccountantDashboard() {
+  const router = useRouter();  
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState("October");
   const [hoveredPoint, setHoveredPoint] = useState<{x: number, y: number, value: number} | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Payment | null>(null);
   const itemsPerPage = 10;
 
-  // Get current month's data
-  const currentData = chartData[selectedMonth as keyof typeof chartData] || chartData.October;
+  // Fetch current data mapping bounds if needed (mocked for visual matching here)
   
-  // Find the highest point for tooltip
-  const highestPoint = currentData.reduce((max, point) => point.y < max.y ? point : max, currentData[0]);
-
-  // Create path strings for jagged lines with sharp angles
-  const createPath = (points: typeof currentData) => {
-    return points.map((point, index) => 
-      `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
-    ).join(' ');
-  };
-
-  const createAreaPath = (points: typeof currentData) => {
-    const linePath = createPath(points);
-    const lastPoint = points[points.length - 1];
-    const firstPoint = points[0];
-    return `${linePath} L ${lastPoint.x} 300 L ${firstPoint.x} 300 Z`;
-  };
-
   // Pagination
   const totalPages = Math.ceil(paymentsData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -247,9 +147,15 @@ export default function AccountantDashboard() {
       key: "action",
       header: "Action",
       align: "center",
-      render: () => (
+      render: (_, row) => (
         <div className="flex items-center justify-center gap-2">
-          <button className="text-gray-600 hover:text-gray-900 p-2">
+          <button 
+            onClick={() => {
+              setSelectedStudent(row);
+              setIsEditModalOpen(true);
+            }}
+            className="text-gray-600 hover:text-gray-900 p-2"
+          >
             <Edit size={16} />
           </button>
           <button className="text-gray-600 hover:text-gray-900 p-2">
@@ -272,15 +178,23 @@ export default function AccountantDashboard() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Pending payments") {
+                router.push("/accountant/students");
+              } else if (stat.label === "Total Income" || stat.label === "Total expenses" || stat.label === "Net balance") {
+                router.push("/accountant/transactions");
+              }
+            }}
           />
         ))}
       </div>
 
       {/* Payment Chart */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between w-full">
-            <h2 className="text-lg font-semibold text-gray-900">Payment per month</h2>
+      <div>
+        <Card>
+        <CardHeader 
+          title="Payment per month"
+          action={
             <Select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -300,108 +214,70 @@ export default function AccountantDashboard() {
               ]}
               className="w-32"
             />
-          </div>
-        </CardHeader>
+          }
+        />
         <CardBody>
-          <div className="relative h-80 w-full">
-            {/* Chart Container */}
-            <div className="absolute inset-0 flex flex-col">
-              {/* Y-axis labels */}
-              <div className="flex-1 flex flex-col justify-between py-4">
-                <div className="text-xs text-gray-500">100%</div>
-                <div className="text-xs text-gray-500">80%</div>
-                <div className="text-xs text-gray-500">60%</div>
-                <div className="text-xs text-gray-500">40%</div>
-                <div className="text-xs text-gray-500">20%</div>
-              </div>
+          <div className="h-[360px] relative mt-4 overflow-visible px-4">
+            {/* Grid Lines */}
+            <div className="absolute inset-0 flex flex-col justify-between py-10 pr-0">
+              {[200, 150, 100, 50, 0].map(y => (
+                <div key={y} className="flex items-center gap-8">
+                  <span className="text-[13px] text-gray-400 w-8 text-right font-black">{y}</span>
+                  <div className="flex-1 h-[1px] bg-gray-100"></div>
+                </div>
+              ))}
             </div>
-            
-            {/* Chart Area */}
-            <div className="ml-8 h-full relative">
-              <svg className="w-full h-full" viewBox="0 0 1000 300" preserveAspectRatio="none">
-                {/* Background grid lines */}
+
+            {/* Months Labels - Uppercase centered per segment */}
+            <div className="absolute bottom-0 left-16 right-0 flex justify-between px-0 pt-8">
+              {['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'].map(month => (
+                <span key={month} className="text-[12px] text-gray-400 font-black tracking-widest uppercase w-[calc(100%/12)] text-center">{month}</span>
+              ))}
+            </div>
+
+            {/* SVG Line Graph - Exact Jagged Profile from Image 2 */}
+            <div className="absolute inset-0 left-16 pt-10 pb-10 pr-0">
+              <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 200">
                 <defs>
-                  <pattern id="grid" width="40" height="60" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 60" fill="none" stroke="#f3f4f6" strokeWidth="1"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-                
-                {/* Chart line and area */}
-                <defs>
-                  <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#e5e7eb" stopOpacity="0.8"/>
-                    <stop offset="100%" stopColor="#e5e7eb" stopOpacity="0.1"/>
+                  <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#27272a" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#f4f4f5" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
-                
-                {/* Area under the curve */}
                 <path
-                  d={createAreaPath(currentData)}
-                  fill="url(#areaGradient)"
+                  d="M5,190 L10,180 L50,180 L80,182 L120,170 L150,120 L180,145 L220,140 L250,110 L300,180 L350,150 L400,165 L430,130 L450,105 L470,25 L490,175 L520,135 L550,150 L580,120 L620,145 L650,115 L680,125 L710,105 L730,185 L780,150 L810,155 L840,140 L880,175 L910,135 L950,120 L1000,100 L1000,200 L0,200 Z"
+                  fill="url(#trendGradient)"
                 />
-                
-                {/* Main line - jagged with sharp angles, not curved */}
-                <path
-                  d={createPath(currentData)}
+                <motion.path
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
+                  d="M5,190 L10,180 L50,180 L80,182 L120,170 L150,120 L180,145 L220,140 L250,110 L300,180 L350,150 L400,165 L430,130 L450,105 L470,25 L490,175 L520,135 L550,150 L580,120 L620,145 L650,115 L680,125 L710,105 L730,185 L780,150 L810,155 L840,140 L880,175 L910,135 L950,120 L1000,100"
                   fill="none"
-                  stroke="#000000"
-                  strokeWidth="2"
-                  strokeLinejoin="miter"
-                  strokeLinecap="square"
+                  stroke="black"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-                
-                {/* Interactive data points */}
-                {currentData.map((point, index) => (
-                  <circle 
-                    key={index}
-                    cx={point.x} 
-                    cy={point.y} 
-                    r="4" 
-                    fill="#000000"
-                    className="cursor-pointer hover:r-6 transition-all"
-                    onMouseEnter={() => setHoveredPoint(point)}
-                    onMouseLeave={() => setHoveredPoint(null)}
-                  />
-                ))}
-                
-                {/* Dynamic tooltip for hovered point */}
-                {hoveredPoint && (
-                  <g transform={`translate(${hoveredPoint.x}, ${hoveredPoint.y - 25})`}>
-                    <rect x="-35" y="-18" width="70" height="24" fill="#000000" rx="4"/>
-                    <text x="0" y="-2" textAnchor="middle" fill="white" fontSize="11" fontWeight="600">
-                      ${hoveredPoint.value.toLocaleString()}
-                    </text>
-                  </g>
-                )}
+                {/* Dots at specific points matching Image 2 profile */}
+                {[5, 120, 150, 250, 300, 470, 490, 710, 730].map((x, i) => {
+                  const map: Record<number, number> = {
+                    5: 190, 120: 170, 150: 120, 250: 110, 300: 180, 470: 25, 490: 175, 710: 105, 730: 185
+                  };
+                  return <circle key={i} cx={x} cy={map[x]} r="4.5" fill="black" stroke="white" strokeWidth="2" />;
+                })}
               </svg>
-              
-              {/* X-axis labels */}
-              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 px-2">
-                <span>5k</span>
-                <span>10k</span>
-                <span>15k</span>
-                <span>20k</span>
-                <span>25k</span>
-                <span>30k</span>
-                <span>35k</span>
-                <span>40k</span>
-                <span>45k</span>
-                <span>50k</span>
-                <span>55k</span>
-                <span>60k</span>
-              </div>
             </div>
           </div>
         </CardBody>
       </Card>
+      </div>
 
       {/* Paid Students Table */}
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Paid Students</h2>
-        </CardHeader>
-        <CardBody>
+      <div>
+        <Card>
+          <CardHeader title="Paid Students" />
+          <CardBody>
           {/* Table */}
           <div className="mb-6">
             <DataTable
@@ -449,6 +325,23 @@ export default function AccountantDashboard() {
           </div>
         </CardBody>
       </Card>
+      </div>
+
+      {/* Edit Student Modal */}
+      <EditStudentModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedStudent(null);
+        }}
+        student={selectedStudent ? {
+          name: selectedStudent.studentName,
+          code: selectedStudent.studentCode,
+          parentName: "Doe Dad",
+          paymentAmount: selectedStudent.amount || "30,000",
+          dateTime: selectedStudent.dateTime
+        } : undefined}
+      />
     </div>
   );
 }

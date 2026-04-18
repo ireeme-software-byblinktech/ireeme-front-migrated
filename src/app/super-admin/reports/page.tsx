@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatCard, Card } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
@@ -93,6 +94,7 @@ const dotIndices = [3, 7, 11, 15, 16, 20, 26, 29, 32, 36, 41, 44];
 const monthBoundaries = monthLabels;
 
 export default function SuperAdminReportsPage() {
+  const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState("October");
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; value: number } | null>(null);
 
@@ -216,10 +218,16 @@ export default function SuperAdminReportsPage() {
           <StatCard
             key={index}
             label={stat.label}
-            value={stat.value}
+            value={stat.value.toString()}
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") router.push("/student/assignments");
+              else if (stat.label === "Total Notes") router.push("/student/notes");
+              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
+              else if (stat.label === "Total Subjects") router.push("/student/timetable");
+            }}
           />
         ))}
       </div>

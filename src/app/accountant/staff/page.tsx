@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Search, Filter, Edit, ToggleLeft, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { EditStaffModal } from "@/components/ui/EditStaffModal";
 
 // Staff stats data
@@ -97,6 +98,7 @@ const staffData: Staff[] = [
 ];
 
 export default function AccountantStaffPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
@@ -192,9 +194,13 @@ export default function AccountantStaffPage() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="stats-grid">
+      <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {staffStats.map((stat, index) => (
-          <div key={index} className="stat-card-horizontal">
+          <div 
+            key={index} 
+            className="stat-card-horizontal cursor-pointer flex items-center justify-between transition-all hover:shadow-lg"
+            onClick={() => router.push("/accountant/staff")}
+          >
             <div className="stat-card-circle-small">
               <svg width="80" height="80" viewBox="0 0 80 80">
                 <circle

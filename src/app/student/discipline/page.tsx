@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatCard, Card, CardBody } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
@@ -59,6 +60,7 @@ const tableData: DisciplineMark[] = [
 ];
 
 export default function StudentDisciplinePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("All Terms");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
@@ -165,6 +167,12 @@ export default function StudentDisciplinePage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") router.push("/student/assignments");
+              else if (stat.label === "Total Notes") router.push("/student/notes");
+              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
+              else if (stat.label === "Total Subjects") router.push("/student/timetable");
+            }}
           />
         ))}
       </div>

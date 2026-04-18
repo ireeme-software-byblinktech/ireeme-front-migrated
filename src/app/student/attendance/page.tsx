@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatCard, Card, CardBody } from "@/components/ui/Card";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
@@ -97,6 +98,11 @@ const attendanceData: AttendanceRecord[] = [
 ];
 
 export default function AttendancePage() {
+<<<<<<< HEAD
+=======
+  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+>>>>>>> 4dc892198181b7af7824cfd3c925fbe9997c2355
   const [statusFilter, setStatusFilter] = useState("All status");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
@@ -191,6 +197,12 @@ export default function AttendancePage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") router.push("/student/assignments");
+              else if (stat.label === "Total Notes") router.push("/student/notes");
+              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
+              else if (stat.label === "Total Subjects") router.push("/student/timetable");
+            }}
           />
         ))}
       </div>
