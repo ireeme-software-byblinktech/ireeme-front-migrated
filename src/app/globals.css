@@ -138,7 +138,7 @@ body {
   .app-sidebar:not(.app-sidebar--hidden) {
     width: var(--sidebar-width);
     transform: translateX(0);
-    box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.1);
   }
 
   .app-sidebar--hidden {
@@ -1431,7 +1431,6 @@ body {
   border-radius: 14px;
   box-shadow: var(--shadow-modal);
   width: 100%;
-  max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -1716,6 +1715,7 @@ body {
 }
 
 @media (max-width: 640px) {
+
   .grid-4,
   .grid-3,
   .grid-2 {
@@ -2298,7 +2298,8 @@ table.assignments-table th {
   color: #111827;
 }
 
-.form-input-v2, .form-select-v2 {
+.form-input-v2,
+.form-select-v2 {
   width: 100%;
   padding: 12px 16px;
   border: 1.5px solid #E5E7EB;
@@ -2308,7 +2309,8 @@ table.assignments-table th {
   transition: border-color 0.2s;
 }
 
-.form-input-v2:focus, .form-select-v2:focus {
+.form-input-v2:focus,
+.form-select-v2:focus {
   border-color: #000000;
 }
 
@@ -2571,8 +2573,13 @@ table.assignments-table th {
   cursor: pointer;
 }
 
-.dual-action-left:hover { opacity: 0.9; }
-.dual-action-right:hover { background: #E5E7EB; }
+.dual-action-left:hover {
+  opacity: 0.9;
+}
+
+.dual-action-right:hover {
+  background: #E5E7EB;
+}
 
 /* Distribution Bars */
 .dist-bar-bg {
@@ -2625,7 +2632,7 @@ table.assignments-table th {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

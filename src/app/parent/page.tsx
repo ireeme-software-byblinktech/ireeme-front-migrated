@@ -39,7 +39,7 @@ export default function ParentDashboard() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const totalDays = daysInMonth(year, month);
-    const firstDay = (firstDayOfMonth(year, month) + 6) % 7; // Adjust for MON start
+    const firstDay = (firstDayOfMonth(year, month) + 6) % 7; 
     
     const days = [];
     
