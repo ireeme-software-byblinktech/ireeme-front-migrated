@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard, Card } from "@/components/ui";
+import { AdminStatCard, Card } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { SearchInput, Select } from "@/components/ui/FormElements";
 import {
@@ -103,33 +103,42 @@ export default function SuperAdminDashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
+                <AdminStatCard
                     label="Total Schools"
-                    value="308"
+                    value="214"
                     icon={<School size={24} />}
                     progress={65}
-                    trend={{ value: "0.5%", direction: "up", label: "Present today" }}
+                    subtext="0.5% Present today"
                 />
-                <StatCard
+                <AdminStatCard
                     label="Total Teachers"
-                    value="308"
+                    value="354"
                     icon={<Users size={24} />}
                     progress={45}
-                    meta={{ male: "61%", female: "39%" }}
+                    subtext={[
+                        { label: "Male (61%)" },
+                        { label: "Female (39%)" }
+                    ]}
                 />
-                <StatCard
+                <AdminStatCard
                     label="Total Accountants"
-                    value="308"
+                    value="17"
                     icon={<UserCheck size={24} />}
                     progress={30}
-                    meta={{ male: "61%", female: "39%" }}
+                    subtext={[
+                        { label: "Male (61%)" },
+                        { label: "Female (39%)" }
+                    ]}
                 />
-                <StatCard
+                <AdminStatCard
                     label="Total Students"
-                    value="308"
+                    value="762"
                     icon={<GraduationCap size={24} />}
                     progress={80}
-                    meta={{ male: "61%", female: "39%" }}
+                    subtext={[
+                        { label: "Male (61%)" },
+                        { label: "Female (39%)" }
+                    ]}
                 />
             </div>
 

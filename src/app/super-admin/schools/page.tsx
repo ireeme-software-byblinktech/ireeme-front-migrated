@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard, Card } from "@/components/ui";
+import { AdminStatCard, Card, Pagination } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { SearchInput } from "@/components/ui/FormElements";
 import { Button } from "@/components/ui/Button";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  ToggleRight, 
+import {
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  ToggleRight,
   ToggleLeft,
   School,
   Users,
@@ -19,6 +19,17 @@ import {
   Download
 } from "lucide-react";
 import { SchoolModal } from "@/components/super-admin/SchoolModals";
+import { SchoolCard } from "@/components/super-admin/SchoolCard";
+
+interface School {
+  id: string;
+  name: string;
+  code: string;
+  dateJoined: string;
+  totalStudents: number;
+  totalStaff: number;
+  status: "Active" | "Inactive";
+}
 
 // Mock data for schools
 const initialSchools = [
@@ -34,7 +45,7 @@ const initialSchools = [
 ];
 
 export default function SuperAdminSchoolsPage() {
-  const [schools, setSchools] = useState(initialSchools);
+  const [schools, setSchools] = useState<School[]>(initialSchools);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"add" | "edit">("add");
@@ -54,11 +65,11 @@ export default function SuperAdminSchoolsPage() {
   };
 
   const handleEditSchool = (data: any) => {
-    setSchools(schools.map(s => s.id === selectedSchool.id ? { ...data, id: s.id } : s));
+    setSchools(schools.map((s: School) => s.id === selectedSchool.id ? { ...data, id: s.id } : s));
   };
 
   const toggleStatus = (id: string) => {
-    setSchools(schools.map(s => s.id === id ? { ...s, status: s.status === "Active" ? "Inactive" : "Active" } : s));
+    setSchools(schools.map((s: School) => s.id === id ? { ...s, status: s.status === "Active" ? "Inactive" : "Active" } : s));
   };
 
   const columns: Column<any>[] = [
@@ -99,7 +110,7 @@ export default function SuperAdminSchoolsPage() {
       align: "center",
       render: (_, row) => (
         <div className="flex items-center gap-3 justify-center">
-          <button 
+          <button
             onClick={() => {
               setSelectedSchool(row);
               setModalMode("edit");
@@ -109,11 +120,11 @@ export default function SuperAdminSchoolsPage() {
           >
             <Edit size={18} />
           </button>
-          <button 
+          <button
             onClick={() => toggleStatus(row.id)}
             className="transition-colors"
           >
-             {row.status === "Active" ? (
+            {row.status === "Active" ? (
               <ToggleRight size={24} className="text-black" />
             ) : (
               <ToggleLeft size={24} className="text-gray-300" />
@@ -124,8 +135,8 @@ export default function SuperAdminSchoolsPage() {
     }
   ];
 
-  const filteredSchools = schools.filter(s => 
-    s.name.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredSchools = schools.filter((s: School) =>
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
     s.code.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -138,13 +149,13 @@ export default function SuperAdminSchoolsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-[28px] font-bold text-gray-900 tracking-tight">Schools Overview</h1>
         <div className="flex items-center bg-[#F3F4F6] rounded-full p-1 border border-gray-200">
-          <button 
+          <button
             onClick={() => setViewMode("Grid")}
             className={`px-6 py-1.5 rounded-full text-[13px] font-bold transition-all ${viewMode === "Grid" ? "bg-black text-white shadow-md" : "text-gray-500 hover:text-black"}`}
           >
             Grid
           </button>
-          <button 
+          <button
             onClick={() => setViewMode("Table")}
             className={`px-6 py-1.5 rounded-full text-[13px] font-bold transition-all ${viewMode === "Table" ? "bg-black text-white shadow-md" : "text-gray-500 hover:text-black"}`}
           >
@@ -155,26 +166,32 @@ export default function SuperAdminSchoolsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
+        <AdminStatCard
           label="Total Schools"
           value={String(schools.length)}
           icon={<School size={24} />}
           progress={75}
-          trend={{ value: "0.5%", direction: "up", label: "Present today" }}
+          subtext="0.5% Present today"
         />
-        <StatCard
+        <AdminStatCard
           label="Total Teachers"
-          value="308"
+          value="214"
           icon={<Users size={24} />}
           progress={55}
-          meta={{ male: "61%", female: "39%" }}
+          subtext={[
+            { label: "Male (61%)" },
+            { label: "Female (39%)" }
+          ]}
         />
-        <StatCard
+        <AdminStatCard
           label="Total Students"
-          value="308"
+          value="354"
           icon={<GraduationCap size={24} />}
           progress={85}
-          meta={{ male: "61%", female: "39%" }}
+          subtext={[
+            { label: "Male (61%)" },
+            { label: "Female (39%)" }
+          ]}
         />
       </div>
 
@@ -182,7 +199,7 @@ export default function SuperAdminSchoolsPage() {
       <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg-white p-4 rounded-[20px] border border-gray-100 shadow-sm">
         <div className="relative w-full lg:w-[450px]">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input 
+          <input
             type="text"
             placeholder="search anything"
             value={search}
@@ -202,7 +219,7 @@ export default function SuperAdminSchoolsPage() {
             Export <Download size={14} className="ml-2" />
           </Button>
 
-          <Button 
+          <Button
             onClick={() => {
               setSelectedSchool(null);
               setModalMode("add");
@@ -230,10 +247,10 @@ export default function SuperAdminSchoolsPage() {
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paginatedGridData.map(school => (
-              <SchoolCard 
+              <SchoolCard
                 key={school.id}
                 school={school}
-                onEdit={(s) => {
+                onEdit={(s: School) => {
                   setSelectedSchool(s);
                   setModalMode("edit");
                   setIsModalOpen(true);
@@ -242,10 +259,10 @@ export default function SuperAdminSchoolsPage() {
               />
             ))}
           </div>
-          
+
           {totalPages > 1 && (
             <div className="flex justify-center bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm">
-              <Pagination 
+              <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
@@ -259,7 +276,7 @@ export default function SuperAdminSchoolsPage() {
       )}
 
       {/* Add/Edit Modal */}
-      <SchoolModal 
+      <SchoolModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         mode={modalMode}
