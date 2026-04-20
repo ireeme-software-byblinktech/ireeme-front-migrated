@@ -1,6 +1,6 @@
 "use client";
 
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";

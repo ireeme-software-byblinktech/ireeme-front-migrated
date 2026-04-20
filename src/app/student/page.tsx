@@ -4,7 +4,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
@@ -337,7 +337,7 @@ export default function StudentDashboard() {
 
 import { useState } from "react";
 import Link from "next/link";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";

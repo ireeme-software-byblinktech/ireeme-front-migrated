@@ -33,7 +33,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Card, CardHeader, CardBody, StatCard } from "@/components/ui/Card";
+import { Card, CardHeader, CardBody, StatCard } from "@/components/ui";
 
 // --- Mock Data ---
 const METRICS = [

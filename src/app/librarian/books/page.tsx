@@ -14,7 +14,7 @@ import {
   Filter,
   StickyNote
 } from "lucide-react";
-import { Card, CardBody, StatCard } from "@/components/ui/Card";
+import { Card, CardBody, StatCard } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";

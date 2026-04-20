@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/Shared";

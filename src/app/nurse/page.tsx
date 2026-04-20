@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/Shared";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, TableUser, Column } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";

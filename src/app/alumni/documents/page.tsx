@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { cn } from "@/lib/utils";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 
 interface DocRequest {
   id: string;

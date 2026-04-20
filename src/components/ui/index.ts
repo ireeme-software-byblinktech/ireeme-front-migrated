@@ -1,7 +1,8 @@
 // UI Components barrel export
 export { Button } from "./Button";
 export { Badge, StatusBadge } from "./Badge";
-export { Card, CardHeader, CardBody, CardFooter, StatCard } from "./Card";
+export { Card, CardHeader, CardBody, CardFooter } from "./Card";
+export { StatCard } from "./StatCard";
 export { DataTable, TableUser, ScoreCell, Pagination } from "./DataTable";
 export type { Column } from "./DataTable";
 export { Modal } from "./Modal";

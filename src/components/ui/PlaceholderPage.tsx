@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/ui/Shared";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { Construction } from "lucide-react";
 import Link from "next/link";

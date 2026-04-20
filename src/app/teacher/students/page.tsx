@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Search, Download, Users, AlertTriangle, Award, CheckCircle, Eye, BookOpen, TrendingUp, TrendingDown, Minus, MessageSquare, Phone } from "lucide-react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 
 export default function TeacherStudentsPage() {
   const [viewMode, setViewMode] = useState<"Grid" | "Table">("Grid");

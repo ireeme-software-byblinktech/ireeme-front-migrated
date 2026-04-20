@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { GraduationCap, BookOpen, FileText, BarChart2, ExternalLink } from "lucide-react";
 
 // Stats data array

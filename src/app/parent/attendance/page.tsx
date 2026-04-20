@@ -15,7 +15,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface AttendanceRecord {

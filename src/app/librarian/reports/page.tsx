@@ -15,7 +15,7 @@ import {
     Clock,
     DollarSign
 } from "lucide-react";
-import { Card, CardBody, StatCard } from "@/components/ui/Card";
+import { Card, CardBody, StatCard } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";

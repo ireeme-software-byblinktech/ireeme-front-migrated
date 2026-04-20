@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { StatCard, Card, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardBody } from "@/components/ui";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { SearchInput, Select } from "@/components/ui/FormElements";
 import {

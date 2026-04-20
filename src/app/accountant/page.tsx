@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
 import { DollarSign, Clock, Edit, ToggleLeft } from "lucide-react";

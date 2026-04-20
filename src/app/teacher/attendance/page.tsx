@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Users, Check } from "lucide-react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { DataTable, Column, TableUser } from "@/components/ui/DataTable";
 
 const FilterDropdown = ({ title, options }: { title: string, options: string[] }) => {

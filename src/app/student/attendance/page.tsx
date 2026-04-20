@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard, Card, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardBody } from "@/components/ui";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
 import { GraduationCap, BookOpen, FileText, BarChart2, Edit, Download, Filter } from "lucide-react";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard, Card, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { 
   GraduationCap, FileText, Eye, Calendar,

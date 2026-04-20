@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { StatCard, Card, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, FileText, SquarePen } from "lucide-react";
 
@@ -401,4 +401,4 @@ function DisciplineActionModal({
       </div>
     </>
   );
-}
+}

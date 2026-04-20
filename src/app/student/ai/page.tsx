@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { Sparkles, Share2, MoreVertical, FileText, BookOpen, ClipboardList, PenTool, Image as ImageIcon, Mic, Send, ChevronRight, User, GraduationCap, X, FolderOpen, Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 

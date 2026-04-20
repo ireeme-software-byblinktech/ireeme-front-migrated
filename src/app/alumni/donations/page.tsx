@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 
 const PROJECTS = [
   {

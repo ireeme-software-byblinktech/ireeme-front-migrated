@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/Shared";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
