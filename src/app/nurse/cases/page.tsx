@@ -138,10 +138,16 @@ export default function MedicalCasesPage() {
                     </div>
                     {/* Filters & Actions */}
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all">
+                        <div className="relative group flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all cursor-pointer">
                             <ListFilter size={18} />
-                            All Status
-                        </button>
+                            <span>Filter Status</span>
+                            <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                <option value="">All Status</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Critical">Critical</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
                         <button
                             onClick={() => setActiveModal("add")}
                             className="bg-black text-white px-8 py-3.5 rounded-xl font-black text-sm flex items-center gap-2 shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all"

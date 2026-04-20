@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const STATS = [
-  { label: "Total Visits", value: "308", icon: <GraduationCap size={28} />, progress: 75, meta: { male: "61%", female: "39%" } },
-  { label: "Cases Treated", value: "308", icon: <GraduationCap size={28} />, progress: 45, meta: { male: "61%", female: "39%" } },
-  { label: "Appointments", value: "308", icon: <GraduationCap size={28} />, progress: 60, meta: { male: "61%", female: "39%" } },
-  { label: "Recovery Rate", value: "308", icon: <GraduationCap size={28} />, progress: 25, meta: { male: "61%", female: "39%" } },
+  { label: "Total Visits", value: "308", icon: <GraduationCap size={28} />, progress: 75, trend: { value: "+12", label: "from yesterday", direction: "up" as const } },
+  { label: "Cases Treated", value: "308", icon: <GraduationCap size={28} />, progress: 45, trend: { value: "-3", label: "from yesterday", direction: "down" as const } },
+  { label: "Appointments", value: "308", icon: <GraduationCap size={28} />, progress: 60, trend: { value: "4", label: "completed", direction: "up" as const } },
+  { label: "Recovery Rate", value: "308", icon: <GraduationCap size={28} />, progress: 25, trend: { value: "-1", label: "this week", direction: "down" as const } },
 ];
 
 const QUICK_REPORTS = [
@@ -21,8 +21,46 @@ const QUICK_REPORTS = [
 
 const TABS = ["Daily", "Weekly", "Monthly", "Yearly"];
 
+// Chart Data — dense sub-monthly points to create the spiky look matching Super Admin
+const denseValues = [
+  8000, 15000, 22000, 28000,
+  38000, 32000, 42000, 34000,
+  26000, 22000, 28000, 24000,
+  32000, 40000, 30000, 79000,
+  64364.77, 50000, 42000, 38000,
+  44000, 34000, 44000, 36000,
+  26000, 16000, 10000, 20000,
+  38000, 56000, 46000, 50000,
+  60000, 48000, 40000, 36000,
+  44000, 50000, 46000, 52000,
+  40000, 34000, 46000, 50000,
+  48000, 52000, 56000, 58000,
+];
+
+const dotIndices = [3, 7, 11, 15, 16, 20, 26, 29, 32, 36, 41, 44];
+const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState("Monthly");
+  const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; value: number } | null>(null);
+
+  const maxVal = 85000;
+  const chartW = 1000;
+  const chartH = 260; // Increased to match Super Admin
+  const padTop = 20;
+  const padBottom = 10;
+  const svgH = chartH + padTop + padBottom;
+  const n = denseValues.length;
+
+  const pts = denseValues.map((value, i) => {
+    const x = (i / (n - 1)) * chartW;
+    const y = padTop + chartH - (value / maxVal) * chartH;
+    return { x, y, value };
+  });
+
+  const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L ${pts[n - 1].x} ${padTop + chartH} L ${pts[0].x} ${padTop + chartH} Z`;
+  const dotPts = dotIndices.filter(i => i < n).map(i => pts[i]);
 
   return (
     <motion.div
@@ -66,7 +104,7 @@ export default function ReportsPage() {
             value={stat.value}
             icon={stat.icon}
             progress={stat.progress}
-            meta={stat.meta}
+            trend={stat.trend}
           />
         ))}
       </div>
@@ -81,56 +119,86 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        <div className="h-[360px] relative mt-4 overflow-visible">
-          {/* Grid Lines - Matching Image 2 */}
-          <div className="absolute inset-0 flex flex-col justify-between py-10 pr-0">
-            {[200, 150, 100, 50, 0].map(y => (
-              <div key={y} className="flex items-center gap-8">
-                <span className="text-[13px] text-gray-400 w-8 text-right font-black">{y}</span>
-                <div className="flex-1 h-[1px] bg-gray-100"></div>
-              </div>
-            ))}
+        <div className="relative mt-8">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 origin-center text-[10px] font-black text-gray-400 tracking-[0.2em] uppercase whitespace-nowrap select-none w-0 flex justify-center items-center">
+            ( Visits Count )
           </div>
-
-          {/* Months Labels - Uppercase centered per segment */}
-          <div className="absolute bottom-0 left-16 right-0 flex justify-between px-0 pt-8">
-            {['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'].map(month => (
-              <span key={month} className="text-[12px] text-gray-400 font-black tracking-widest uppercase w-[calc(100%/12)] text-center">{month}</span>
-            ))}
-          </div>
-
-          {/* SVG Line Graph - Exact Jagged Profile from Image 2 */}
-          <div className="absolute inset-0 left-16 pt-10 pb-10 pr-0">
-            <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 200">
+          
+          <div className="ml-16 relative">
+            <svg
+              viewBox={`0 0 ${chartW} ${svgH}`}
+              preserveAspectRatio="none"
+              className="w-full h-[320px]"
+            >
               <defs>
-                <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#27272a" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#f4f4f5" stopOpacity="0.0" />
+                <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#C9CDD3" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#F9FAFB" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              <path
-                d="M5,190 L10,180 L50,180 L80,182 L120,170 L150,120 L180,145 L220,140 L250,110 L300,180 L350,150 L400,165 L430,130 L450,105 L470,25 L490,175 L520,135 L550,150 L580,120 L620,145 L650,115 L680,125 L710,105 L730,185 L780,150 L810,155 L840,140 L880,175 L910,135 L950,120 L1000,100 L1000,200 L0,200 Z"
-                fill="url(#trendGradient)"
-              />
+
+              {/* Horizontal grid lines */}
+              {[0, 0.25, 0.5, 0.75, 1].map((frac) => (
+                <line
+                  key={frac}
+                  x1={0} y1={padTop + chartH - frac * chartH}
+                  x2={chartW} y2={padTop + chartH - frac * chartH}
+                  stroke="#F3F4F6" strokeWidth="1"
+                />
+              ))}
+
+              {/* Area fill */}
+              <path d={areaPath} fill="url(#fillGrad)" />
+
+              {/* Dense spiky line */}
               <motion.path
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 1.5, ease: "easeInOut" }}
-                d="M5,190 L10,180 L50,180 L80,182 L120,170 L150,120 L180,145 L220,140 L250,110 L300,180 L350,150 L400,165 L430,130 L450,105 L470,25 L490,175 L520,135 L550,150 L580,120 L620,145 L650,115 L680,125 L710,105 L730,185 L780,150 L810,155 L840,140 L880,175 L910,135 L950,120 L1000,100"
+                d={linePath}
                 fill="none"
                 stroke="black"
                 strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeLinejoin="miter"
+                strokeLinecap="butt"
               />
-              {/* Dots at specific points matching Image 2 profile */}
-              {[5, 120, 150, 250, 300, 470, 490, 710, 730].map((x, i) => {
-                const map: Record<number, number> = {
-                  5: 190, 120: 170, 150: 120, 250: 110, 300: 180, 470: 25, 490: 175, 710: 105, 730: 185
-                };
-                return <circle key={i} cx={x} cy={map[x]} r="4.5" fill="black" stroke="white" strokeWidth="2" />;
-              })}
+
+              {/* Key dots */}
+              {dotPts.map((point, i) => (
+                <circle
+                  key={i}
+                  cx={point.x}
+                  cy={point.y}
+                  r="4"
+                  fill="black"
+                  stroke="white"
+                  strokeWidth="2"
+                  className="cursor-pointer"
+                  onMouseEnter={() => setHoveredPoint(point)}
+                  onMouseLeave={() => setHoveredPoint(null)}
+                />
+              ))}
+
+              {/* Tooltip */}
+              {hoveredPoint && (
+                <g transform={`translate(${Math.min(hoveredPoint.x, chartW - 50)},${hoveredPoint.y - 18})`}>
+                  <rect x="-44" y="-22" width="95" height="26" rx="6" fill="black" />
+                  <text x="3" y="-5" textAnchor="middle" fill="white" fontSize="11" fontWeight="900">
+                    {hoveredPoint.value.toLocaleString()}
+                  </text>
+                  <polygon points="-6,5 6,5 0,11" fill="black" />
+                </g>
+              )}
             </svg>
+
+            {/* X-axis labels */}
+            <div className="flex justify-between mt-4">
+              {monthLabels.map((label, i) => (
+                <span key={i} className="text-[11px] font-black text-gray-400 text-center uppercase tracking-widest" style={{ width: `${100 / monthLabels.length}%` }}>
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
