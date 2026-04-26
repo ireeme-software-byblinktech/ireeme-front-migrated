@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { StatCard, Card } from "@/components/ui/Card";
+import { StatCard, Card } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { DollarSign, MoreHorizontal, Filter, Download, ChevronDown } from "lucide-react";
 
@@ -94,7 +93,6 @@ const dotIndices = [3, 7, 11, 15, 16, 20, 26, 29, 32, 36, 41, 44];
 const monthBoundaries = monthLabels;
 
 export default function SuperAdminReportsPage() {
-  const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState("October");
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; value: number } | null>(null);
 
@@ -218,16 +216,10 @@ export default function SuperAdminReportsPage() {
           <StatCard
             key={index}
             label={stat.label}
-            value={stat.value.toString()}
+            value={stat.value}
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
-            onClick={() => {
-              if (stat.label === "Total Assignments") router.push("/student/assignments");
-              else if (stat.label === "Total Notes") router.push("/student/notes");
-              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
-              else if (stat.label === "Total Subjects") router.push("/student/timetable");
-            }}
           />
         ))}
       </div>
@@ -363,6 +355,8 @@ export default function SuperAdminReportsPage() {
             data={reportTableData as unknown as Record<string, unknown>[]}
             keyField="id"
             className="reports-table border-0 w-full"
+            pageSize={10}
+            paginationClassName="pagination-rounded p-4"
           />
         </Card>
       </div>

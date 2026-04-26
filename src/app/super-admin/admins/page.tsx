@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { SearchInput, Select } from "@/components/ui/FormElements";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
 import { Edit, ToggleLeft, ToggleRight, Filter } from "lucide-react";
 
@@ -175,20 +175,12 @@ export default function SuperAdminAdminsPage() {
       <Card className="rounded-none border-b-0 border-x-0 sm:border sm:rounded-lg overflow-hidden">
         <DataTable
           columns={columns as unknown as Column<Record<string, unknown>>[]}
-          data={paginatedData as unknown as Record<string, unknown>[]}
+          data={filteredData as unknown as Record<string, unknown>[]}
           keyField="id"
           className="admins-table border-0 w-full"
+          pageSize={itemsPerPage}
+          paginationClassName="p-4"
         />
-        <div className="border-t border-gray-200">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages || 1}
-            onPageChange={setCurrentPage}
-            totalItems={filteredData.length}
-            pageSize={itemsPerPage}
-            className="ml-auto"
-          />
-        </div>
       </Card>
     </div>
   );

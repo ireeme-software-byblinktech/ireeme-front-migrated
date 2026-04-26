@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Search, Filter, Edit, ToggleLeft } from "lucide-react";
 import { EditSchoolModal } from "@/components/ui/EditSchoolModal";

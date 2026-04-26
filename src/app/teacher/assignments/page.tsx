@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
+import { DataTable, Column } from "@/components/ui/DataTable";
 import {
   ClipboardList, Plus, Clock, CheckCircle, FileText,
   BookOpen, Award, Layers, Search, X, ChevronDown,
@@ -171,7 +172,7 @@ export default function TeacherAssignmentsPage() {
           <h1 className="text-[32px] font-bold text-black mb-1">Assignments</h1>
           <p className="text-[#64748B] text-base">Create and manage assignments across all classes</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsCreateModalOpen(true)}
           className="bg-black text-white px-6 py-4 rounded-lg font-semibold text-md hover:opacity-90 flex items-center gap-2"
         >
@@ -285,7 +286,7 @@ export default function TeacherAssignmentsPage() {
                 </>
               ) : (
                 <>
-                  <div 
+                  <div
                     onClick={() => {
                       setSelectedAssignment(a);
                       setIsSubmissionsModalOpen(true);
@@ -393,7 +394,7 @@ export default function TeacherAssignmentsPage() {
               <label className="form-label-v2">Question Text</label>
               <input type="text" className="form-input-v2" placeholder="Enter Question Text..." />
             </div>
-            
+
             <div className="mcq-options-container">
               {mcqOptions.map((opt) => (
                 <div key={opt.id} className="mcq-option-row">
@@ -456,7 +457,7 @@ export default function TeacherAssignmentsPage() {
           <button className="bg-black text-white px-12 py-3 rounded-xl font-semibold text-base min-w-[200px] hover:opacity-90">
             Create
           </button>
-          <button 
+          <button
             onClick={() => setIsCreateModalOpen(false)}
             className="bg-white text-black border-[1.5px] border-gray-300 px-12 py-3 rounded-xl font-medium text-base min-w-[200px] hover:opacity-75 transition-opacity"
           >
@@ -510,10 +511,10 @@ export default function TeacherAssignmentsPage() {
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {["ALL", "Submitted", "Graded", "Not Submitted"].map(tab => (
-              <button 
-                key={tab} 
+              <button
+                key={tab}
                 onClick={() => setFilterTab(tab)}
-                className={cn("submissions-filter-btn", filterTab === tab && "active")} 
+                className={cn("submissions-filter-btn", filterTab === tab && "active")}
                 style={{ borderRadius: "100px" }}
               >
                 {tab}
@@ -523,77 +524,84 @@ export default function TeacherAssignmentsPage() {
         </div>
 
         <div className="overflow-x-auto min-h-[300px]">
-          <table className="submissions-table">
-            <thead>
-              <tr>
-                <th className="w-10 cursor-pointer" onClick={toggleAllSubmissions}>
-                  <div className={cn("w-5 h-5 border-2 rounded flex items-center justify-center transition-colors", 
-                    selectedSubmissionRows.length === filteredSubmissions.length && filteredSubmissions.length > 0 ? "border-black bg-black" : "border-gray-300"
-                  )}>
-                    {selectedSubmissionRows.length === filteredSubmissions.length && filteredSubmissions.length > 0 && <Check size={14} className="text-white" />}
-                  </div>
-                </th>
-                <th>STUDENT</th>
-                <th>CLASS</th>
-                <th>SUBMISSION DATE</th>
-                <th>ATTACHED FILES</th>
-                <th>STATUS</th>
-                <th>GRADE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSubmissions.map((sub) => {
-                const isSelected = selectedSubmissionRows.includes(sub.id);
-                return (
-                  <tr key={sub.id} className={cn("transition-colors", isSelected && "bg-gray-50")}>
-                    <td className="cursor-pointer" onClick={() => toggleSubmissionRow(sub.id)}>
-                      <div className={cn("w-5 h-5 border-2 rounded flex items-center justify-center transition-colors", 
+          <DataTable
+            columns={[
+              {
+                key: "select",
+                header: "",
+                width: "40px",
+                render: (_, sub: any) => {
+                  const isSelected = selectedSubmissionRows.includes(sub.id);
+                  return (
+                    <div
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSubmissionRow(sub.id);
+                      }}
+                    >
+                      <div className={cn("w-5 h-5 border-2 rounded flex items-center justify-center transition-colors",
                         isSelected ? "border-black bg-black" : "border-gray-300 bg-white"
                       )}>
                         {isSelected && <Check size={14} className="text-white" />}
                       </div>
-                    </td>
-                    <td className="font-bold">{sub.student}</td>
-                    <td>
-                      <span className="class-tag-v2">{sub.class}</span>
-                    </td>
-                    <td>{sub.date}</td>
-                    <td>
-                      {sub.file !== "-" ? (
-                        <div className="file-btn-v2" style={{ display: "inline-flex" }}>
-                          <FileText size={14} />
-                          <span>{sub.file}</span>
-                        </div>
-                      ) : <span className="text-gray-400">-</span>}
-                    </td>
-                    <td>
-                      <div className="status-badge-v2">
-                        <Clock size={14} className="text-gray-400" />
-                        <span>{sub.status}</span>
-                      </div>
-                    </td>
-                    <td className="font-semibold">{/* @ts-ignore */} {sub.grade || "-"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="pagination-v2">
-          <div className="pagination-btn-v2">{"<"}</div>
-          <div className="pagination-btn-v2 active">1</div>
-          <div className="pagination-btn-v2">2</div>
-          <div className="text-gray-400 px-2">....</div>
-          <div className="pagination-btn-v2">5</div>
-          <div className="pagination-btn-v2">{">"}</div>
+                    </div>
+                  );
+                }
+              },
+              {
+                key: "student",
+                header: "STUDENT",
+                render: (val: any) => <span className="font-bold">{val}</span>
+              },
+              {
+                key: "class",
+                header: "CLASS",
+                render: (val: any) => <span className="class-tag-v2">{val}</span>
+              },
+              {
+                key: "date",
+                header: "SUBMISSION DATE"
+              },
+              {
+                key: "file",
+                header: "ATTACHED FILES",
+                render: (val: any) => val !== "-" ? (
+                  <div className="file-btn-v2" style={{ display: "inline-flex" }}>
+                    <FileText size={14} />
+                    <span>{val}</span>
+                  </div>
+                ) : <span className="text-gray-400">-</span>
+              },
+              {
+                key: "status",
+                header: "STATUS",
+                render: (val: any) => (
+                  <div className="status-badge-v2">
+                    <Clock size={14} className="text-gray-400" />
+                    <span>{val}</span>
+                  </div>
+                )
+              },
+              {
+                key: "grade",
+                header: "GRADE",
+                render: (val: any) => <span className="font-semibold">{val || "-"}</span>
+              }
+            ]}
+            data={filteredSubmissions as any}
+            keyField="id"
+            pageSize={10}
+            paginationClassName="pagination-rounded"
+            className="submissions-table"
+          />
         </div>
 
         <div className="flex items-center justify-center gap-6 mt-10 pb-4">
           <button className="bg-black text-white px-10 py-3 rounded-xl font-semibold text-sm min-w-[180px] hover:opacity-90">
             Grade Selected
           </button>
-          <button 
+          <button
             onClick={() => setIsSubmissionsModalOpen(false)}
             className="bg-white text-black border-[1.5px] border-gray-300 px-10 py-3 rounded-xl font-medium text-sm min-w-[180px] hover:opacity-75 transition-opacity"
           >

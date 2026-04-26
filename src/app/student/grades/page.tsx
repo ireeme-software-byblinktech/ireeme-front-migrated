@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2, Edit, X } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -18,7 +17,7 @@ const statsData = [
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
   },
   {
-    label: "Total Assignments", 
+    label: "Total Assignments",
     value: 30,
     icon: <BookOpen size={18} />,
     progress: 80,
@@ -26,7 +25,7 @@ const statsData = [
   },
   {
     label: "Total Notes",
-    value: 30, 
+    value: 30,
     icon: <FileText size={18} />,
     progress: 65,
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
@@ -65,7 +64,7 @@ const gradesData: Grade[] = [
     id: "2",
     date: "Mathematics",
     title: "CAT",
-    term: "Term 1", 
+    term: "Term 1",
     marks: "80%",
     termStatus: "Active",
     status: "Active"
@@ -109,16 +108,8 @@ const gradesData: Grade[] = [
 ];
 
 export default function MyGradesPage() {
-  const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const itemsPerPage = 10;
-
-  // Pagination
-  const totalPages = Math.ceil(gradesData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = gradesData.slice(startIndex, startIndex + itemsPerPage);
 
   const columns: Column<Grade>[] = [
     {
@@ -174,7 +165,7 @@ export default function MyGradesPage() {
       header: "Action",
       align: "right",
       render: (_, row) => (
-        <button 
+        <button
           onClick={() => {
             setSelectedGrade(row);
             setIsEditModalOpen(true);
@@ -199,12 +190,6 @@ export default function MyGradesPage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
-            onClick={() => {
-              if (stat.label === "Total Assignments") router.push("/student/assignments");
-              else if (stat.label === "Total Notes") router.push("/student/notes");
-              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
-              else if (stat.label === "Total Subjects") router.push("/student/timetable");
-            }}
           />
         ))}
       </div>
@@ -213,26 +198,14 @@ export default function MyGradesPage() {
       <Card>
         <CardBody>
           {/* Table */}
-          <div className="mb-6">
-            <DataTable
-              columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={paginatedData as unknown as Record<string, unknown>[]}
-              keyField="id"
-              className="assignments-table"
-            />
-          </div>
-
-          {/* Centered Pagination */}
-          <div className="flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              totalItems={gradesData.length}
-              pageSize={itemsPerPage}
-              className="pagination-rounded"
-            />
-          </div>
+          <DataTable
+            columns={columns as unknown as Column<Record<string, unknown>>[]}
+            data={gradesData as unknown as Record<string, unknown>[]}
+            keyField="id"
+            className="assignments-table"
+            pageSize={10}
+            paginationClassName="pagination-rounded"
+          />
         </CardBody>
       </Card>
 
@@ -276,10 +249,10 @@ function EditGradeModal({ isOpen, onClose, grade }: { isOpen: boolean; onClose: 
     <div className="fixed inset-0 z-[9999]">
       {/* Sidebar area - no blur */}
       <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
-      
+
       {/* Main content area - lighter blur */}
       <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
-      
+
       {/* Modal container */}
       <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg w-full max-w-md relative z-10 shadow-2xl overflow-hidden">
@@ -293,8 +266,8 @@ function EditGradeModal({ isOpen, onClose, grade }: { isOpen: boolean; onClose: 
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <div className="space-y-1.5 bg-gray-50 p-4 rounded-xl border border-gray-100">
-               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Subject Reference</span>
-               <p className="text-sm font-bold text-gray-900">{grade.date} - {grade.title}</p>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Subject Reference</span>
+              <p className="text-sm font-bold text-gray-900">{grade.date} - {grade.title}</p>
             </div>
 
             <div className="space-y-4">

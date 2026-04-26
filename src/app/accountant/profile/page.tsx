@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { Edit, Mail, Plus } from "lucide-react";
 
 export default function AccountantProfilePage() {

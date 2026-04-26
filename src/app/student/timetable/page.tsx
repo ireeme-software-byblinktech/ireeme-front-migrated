@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { Download, Bell } from "lucide-react";
 
 // Timetable data structure

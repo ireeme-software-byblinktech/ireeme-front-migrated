@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Search, Filter, DollarSign, Clock, Edit } from "lucide-react";
 import { EditTransactionModal } from "@/components/ui/EditTransactionModal";
@@ -17,7 +16,7 @@ const transactionStats = [
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
   },
   {
-    label: "Total expenses", 
+    label: "Total expenses",
     value: "30K",
     icon: <DollarSign size={18} />,
     progress: 60,
@@ -25,7 +24,7 @@ const transactionStats = [
   },
   {
     label: "Net balance",
-    value: "30K", 
+    value: "30K",
     icon: <DollarSign size={18} />,
     progress: 85,
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
@@ -100,7 +99,6 @@ const transactionsData: Transaction[] = [
 ];
 
 export default function AccountantTransactionsPage() {
-  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [termFilter, setTermFilter] = useState("all");
@@ -112,7 +110,7 @@ export default function AccountantTransactionsPage() {
   // Filter data based on search and filters
   const filteredData = transactionsData.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.sourceDestination.toLowerCase().includes(searchTerm.toLowerCase());
+      transaction.sourceDestination.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPayment = paymentFilter === "all" || transaction.paymentStatus.toLowerCase() === paymentFilter.toLowerCase();
     return matchesSearch && matchesPayment;
   });
@@ -184,7 +182,7 @@ export default function AccountantTransactionsPage() {
       align: "center",
       render: (_, row) => (
         <div className="flex items-center justify-center gap-2">
-          <button 
+          <button
             onClick={() => {
               setSelectedTransaction(row);
               setIsEditModalOpen(true);
@@ -201,19 +199,9 @@ export default function AccountantTransactionsPage() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="stats-grid">
         {transactionStats.map((stat, index) => (
-          <div 
-            key={index} 
-            className="stat-card-horizontal cursor-pointer flex items-center justify-between transition-all hover:shadow-lg"
-            onClick={() => {
-              if (stat.label === "Pending payments") {
-                router.push("/accountant/students");
-              } else {
-                router.push("/accountant/transactions");
-              }
-            }}
-          >
+          <div key={index} className="stat-card-horizontal">
             <div className="stat-card-circle-small">
               <svg width="80" height="80" viewBox="0 0 80 80">
                 <circle
@@ -267,7 +255,7 @@ export default function AccountantTransactionsPage() {
             className="flex-1 outline-none text-sm"
           />
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 min-w-[120px]">
             <Filter size={16} className="text-gray-400" />
@@ -282,7 +270,7 @@ export default function AccountantTransactionsPage() {
               <option value="term3">Term 3</option>
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 min-w-[120px]">
             <Filter size={16} className="text-gray-400" />
             <select
@@ -305,46 +293,12 @@ export default function AccountantTransactionsPage() {
           <div className="overflow-x-auto">
             <DataTable
               columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={paginatedData as unknown as Record<string, unknown>[]}
+              data={filteredData as unknown as Record<string, unknown>[]}
               keyField="id"
               className="assignments-table"
+              pageSize={itemsPerPage}
+              paginationClassName="pagination-rounded p-6"
             />
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-            <div className="text-sm text-gray-500">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 text-sm rounded ${
-                    currentPage === page
-                      ? "bg-black text-white"
-                      : "border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
           </div>
         </CardBody>
       </Card>

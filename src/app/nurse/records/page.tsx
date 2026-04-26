@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/Shared";
-import { StatCard, Card, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/Button";
 import {
@@ -180,6 +180,8 @@ export default function HealthRecordsPage() {
               data={records}
               keyField="id"
               className="table-header-black"
+              pageSize={10}
+              paginationClassName="pagination-rounded p-6"
             />
           </CardBody>
         </Card>

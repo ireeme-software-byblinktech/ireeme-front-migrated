@@ -13,7 +13,7 @@ import {
   Bell 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 
 const CHILDREN = ["Joel Queen", "Jane Doe", "Jack Peele"];
 

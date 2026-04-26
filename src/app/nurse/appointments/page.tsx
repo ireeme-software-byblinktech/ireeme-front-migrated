@@ -1,6 +1,6 @@
 "use client";
 
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { Plus, Calendar as CalendarIcon, Pencil, Trash2, Search, Eye, ListFilter } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,6 @@
 "use client";
 
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { Download, FileText, ChevronDown, GraduationCap, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

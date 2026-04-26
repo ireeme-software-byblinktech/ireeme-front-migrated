@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { StatCard, Card, CardHeader, CardBody } from "@/components/ui/Card";
+import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
 import { GraduationCap, BookOpen, FileText, BarChart2, Filter } from "lucide-react";
@@ -18,7 +17,7 @@ const statsData = [
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
   },
   {
-    label: "Total Assignments", 
+    label: "Total Assignments",
     value: 30,
     icon: <BookOpen size={18} />,
     progress: 80,
@@ -26,7 +25,7 @@ const statsData = [
   },
   {
     label: "Total Notes",
-    value: 30, 
+    value: 30,
     icon: <FileText size={18} />,
     progress: 65,
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
@@ -63,7 +62,7 @@ const assignmentsData: Assignment[] = [
   },
   {
     id: "2",
-    subject: "Mathematics", 
+    subject: "Mathematics",
     title: "Geometry Assignment",
     date: "10-Nov-2025",
     term: "Term 1",
@@ -180,35 +179,26 @@ const assignmentsData: Assignment[] = [
 ];
 
 export default function AssignmentsPage() {
-  const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
   const [titleFilter, setTitleFilter] = useState("");
   const [termFilter, setTermFilter] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const itemsPerPage = 10;
 
   // Filter data based on filters
   const filteredData = assignmentsData.filter(assignment => {
     const matchesTitle = titleFilter === "" || assignment.title.toLowerCase().includes(titleFilter.toLowerCase());
     const matchesTerm = termFilter === "" || assignment.term === termFilter;
     const matchesGrade = gradeFilter === "" || assignment.grade === gradeFilter;
-    
+
     return matchesTitle && matchesTerm && matchesGrade;
   });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   // Handle checkbox selection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedItems(paginatedData.map(item => item.id));
+      setSelectedItems(filteredData.map(item => item.id));
     } else {
       setSelectedItems([]);
     }
@@ -225,13 +215,23 @@ export default function AssignmentsPage() {
   const columns: Column<Assignment>[] = [
     {
       key: "select",
-      header: "",
+      header: (
+        <input
+          type="checkbox"
+          checked={filteredData.length > 0 && selectedItems.length === filteredData.length}
+          onChange={(e) => handleSelectAll(e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300"
+        />
+      ),
       width: "50px",
       render: (_, row) => (
         <input
           type="checkbox"
           checked={selectedItems.includes(row.id)}
-          onChange={(e) => handleSelectItem(row.id, e.target.checked)}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleSelectItem(row.id, e.target.checked);
+          }}
           className="w-4 h-4 rounded border-gray-300"
         />
       )
@@ -261,11 +261,10 @@ export default function AssignmentsPage() {
       key: "status",
       header: "Status",
       render: (_, row) => (
-        <div className={`font-medium ${
-          row.status === "Completed" ? "text-green-600" :
+        <div className={`font-medium ${row.status === "Completed" ? "text-green-600" :
           row.status === "In Progress" ? "text-blue-600" :
-          row.status === "Late" ? "text-red-600" : "text-gray-600"
-        }`}>
+            row.status === "Late" ? "text-red-600" : "text-gray-600"
+          }`}>
           {row.status}
         </div>
       )
@@ -275,7 +274,7 @@ export default function AssignmentsPage() {
       header: "Action",
       align: "right",
       render: (_, row) => (
-        <button 
+        <button
           onClick={() => {
             setSelectedSubmission(row);
             setIsModalOpen(true);
@@ -294,7 +293,7 @@ export default function AssignmentsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="stats-grid">
         {statsData.map((stat, index) => (
@@ -305,12 +304,6 @@ export default function AssignmentsPage() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
-            onClick={() => {
-              if (stat.label === "Total Assignments") router.push("/student/assignments");
-              else if (stat.label === "Total Notes") router.push("/student/notes");
-              else if (stat.label.toLowerCase() === "total reports") router.push("/student/report-card");
-              else if (stat.label === "Total Subjects") router.push("/student/timetable");
-            }}
           />
         ))}
       </div>
@@ -321,13 +314,13 @@ export default function AssignmentsPage() {
           {/* Header and Filters on same row */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900">Assignment overview</h2>
-            
+
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Filter size={16} className="text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filter By</span>
               </div>
-              
+
               <Select
                 placeholder="Title"
                 value={titleFilter}
@@ -341,7 +334,7 @@ export default function AssignmentsPage() {
                 ]}
                 className="w-32"
               />
-              
+
               <Select
                 placeholder="Term"
                 value={termFilter}
@@ -354,7 +347,7 @@ export default function AssignmentsPage() {
                 ]}
                 className="w-32"
               />
-              
+
               <Select
                 placeholder="Grade"
                 value={gradeFilter}
@@ -374,26 +367,14 @@ export default function AssignmentsPage() {
           </div>
 
           {/* Table */}
-          <div className="mb-6">
-            <DataTable
-              columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={paginatedData as unknown as Record<string, unknown>[]}
-              keyField="id"
-              className="assignments-table"
-            />
-          </div>
-
-          {/* Centered Pagination */}
-          <div className="flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              totalItems={filteredData.length}
-              pageSize={itemsPerPage}
-              className="pagination-rounded"
-            />
-          </div>
+          <DataTable
+            columns={columns as unknown as Column<Record<string, unknown>>[]}
+            data={filteredData as unknown as Record<string, unknown>[]}
+            keyField="id"
+            className="assignments-table"
+            pageSize={10}
+            paginationClassName="pagination-rounded"
+          />
         </CardBody>
       </Card>
 
@@ -412,3 +393,4 @@ export default function AssignmentsPage() {
     </div>
   );
 }
+

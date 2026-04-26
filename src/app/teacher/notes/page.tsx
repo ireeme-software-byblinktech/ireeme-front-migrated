@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Upload, Search, BookOpen, Users, FileText, Eye, Download, EyeOff, Edit2, Trash2, Book, FileImage, Presentation, Video } from "lucide-react";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 
 import { ChevronDown, ChevronUp, Check } from "lucide-react";
 

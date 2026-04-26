@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { SearchInput, Select } from "@/components/ui/FormElements";
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui";
 import { Upload, Eye, Download, Trash2, Filter } from "lucide-react";
 
 interface Document {

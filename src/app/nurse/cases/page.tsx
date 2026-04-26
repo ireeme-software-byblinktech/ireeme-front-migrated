@@ -1,6 +1,6 @@
 "use client";
 
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { DataTable } from "@/components/ui/DataTable";
 import { Search, ListFilter, Plus, Eye, Pencil, Trash2, GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";

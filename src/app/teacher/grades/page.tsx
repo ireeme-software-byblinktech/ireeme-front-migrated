@@ -2,7 +2,7 @@
 
 import { Download, ChevronDown, ChevronUp, CircleDollarSign, Percent, Award, Info, Check } from "lucide-react";
 import Link from "next/link";
-import { StatCard } from "@/components/ui/Card";
+import { StatCard } from "@/components/ui";
 import { useState } from "react";
 
 const FilterDropdown = ({ title, options, isBlack = false }: { title: string, options: string[], isBlack?: boolean }) => {
