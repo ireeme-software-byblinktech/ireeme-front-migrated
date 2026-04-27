@@ -211,7 +211,6 @@ const STUDENT_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Messages", href: "/student/messages", icon: <MessageSquare size={18} /> },
-      { label: "Settings", href: "/student/settings", icon: <Settings size={18} /> },
     ],
   },
 ];
