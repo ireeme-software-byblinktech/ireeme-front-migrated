@@ -1,0 +1,413 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  CloudUpload,
+  Check,
+  BookOpen,
+  LayoutGrid,
+  ShieldCheck,
+  Users,
+  GraduationCap
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const STEPS = [
+  { id: 1, name: "Academic Year" },
+  { id: 2, name: "Profile" },
+  { id: 3, name: "Structure" },
+  { id: 4, name: "Fees" },
+  { id: 5, name: "Invite" },
+  { id: 6, name: "Role" },
+];
+
+export default function SetupPage() {
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [structure, setStructure] = useState<"term" | "continuous">("term");
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const bulkInputRef = useRef<HTMLInputElement>(null);
+
+  const nextStep = () => {
+    if (step < STEPS.length) {
+      setStep(step + 1);
+    } else {
+      handleComplete();
+    }
+  };
+
+  const prevStep = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const handleComplete = async () => {
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setLoading(false);
+    router.push("/setup/success");
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50/20 font-sans py-12 px-4 flex flex-col items-center">
+      <div className="w-full max-w-[800px]">
+
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-[32px] font-bold tracking-tight text-black mb-2">Institution Setup</h1>
+          <p className="text-gray-500 text-lg font-medium">Configure your workspace settings.</p>
+        </div>
+
+        {/* Progress Stepper */}
+        <div className="relative mb-20 px-4">
+          <div className="absolute top-5 left-8 right-8 h-[2px] bg-gray-100 -z-10">
+            <div
+              className="h-full bg-black transition-all duration-500 ease-in-out"
+              style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
+            />
+          </div>
+
+          <div className="flex justify-between">
+            {STEPS.map((s) => (
+              <div key={s.id} className="flex flex-col items-center gap-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300",
+                  step === s.id ? "bg-black text-white scale-110 shadow-lg shadow-black/10" :
+                    step > s.id ? "bg-black text-white" : "bg-white border-2 border-gray-100 text-gray-300"
+                )}>
+                  {step > s.id ? <Check className="w-5 h-5" /> : s.id}
+                </div>
+                <span className={cn(
+                  "text-[10px] font-bold uppercase tracking-widest transition-colors duration-300",
+                  step === s.id ? "text-black" : "text-gray-300"
+                )}>
+                  {s.name}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <div className="bg-white rounded-[32px] border border-gray-100 shadow-2xl shadow-black/[0.03] p-10 md:p-14 min-h-[440px] flex flex-col">
+
+          {step === 1 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Define Academic Year</h2>
+                <p className="text-gray-500 font-medium">When does your institution's year start and end?</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Year Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2024-2025"
+                    className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Start Date</label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      className="w-full h-14 px-4 pr-10 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">End Date</label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      className="w-full h-14 px-4 pr-10 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Institution Profile</h2>
+                <p className="text-gray-500 font-medium">Add some branding to your workspace.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Institution Logo</label>
+                  <div
+                    onClick={() => logoInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-100 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 bg-gray-50/30 hover:bg-gray-50 transition-colors cursor-pointer group"
+                  >
+                    <input
+                      type="file"
+                      ref={logoInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => console.log("Logo selected:", e.target.files?.[0])}
+                    />
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                      <CloudUpload className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-black mb-1">Click to upload or drag and drop</p>
+                      <p className="text-xs text-gray-400 font-medium">PNG, JPG, SVG (Max 5MB)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Official Website</label>
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Contact Phone</label>
+                  <input
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                    className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Academic Structure</h2>
+                <p className="text-gray-500 font-medium">How are your classes or programs organized?</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setStructure("term")}
+                  className={cn(
+                    "relative p-8 rounded-[24px] border-2 text-left transition-all duration-300 group",
+                    structure === "term" ? "border-black bg-white shadow-xl shadow-black/[0.03]" : "border-gray-50 bg-gray-50/30 hover:border-gray-200"
+                  )}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-colors",
+                    structure === "term" ? "bg-black text-white" : "bg-white text-gray-400 shadow-sm"
+                  )}>
+                    <Calendar className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">Term Based</h3>
+                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                    Divided into semesters, trimesters, or quarters.
+                  </p>
+                  {structure === "term" && (
+                    <div className="absolute top-6 right-6 w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setStructure("continuous")}
+                  className={cn(
+                    "relative p-8 rounded-[24px] border-2 text-left transition-all duration-300 group",
+                    structure === "continuous" ? "border-black bg-white shadow-xl shadow-black/[0.03]" : "border-gray-50 bg-gray-50/30 hover:border-gray-200"
+                  )}
+                >
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-colors",
+                    structure === "continuous" ? "bg-black text-white" : "bg-white text-gray-400 shadow-sm"
+                  )}>
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">Continuous</h3>
+                  <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                    Rolling admissions with self-paced progression.
+                  </p>
+                  {structure === "continuous" && (
+                    <div className="absolute top-6 right-6 w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Fee Setup</h2>
+                <p className="text-gray-500 font-medium">Configure base currency and payment terms.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Primary Currency</label>
+                  <select className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base appearance-none cursor-pointer">
+                    <option>USD ($)</option>
+                    <option>EUR (€)</option>
+                    <option>GBP (£)</option>
+                    <option>KES (KSh)</option>
+                    <option>NGN (₦)</option>
+                    <option>ZAR (R)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Tax/VAT Number (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="Enter tax number"
+                    className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Invite Your Team</h2>
+                <p className="text-gray-500 font-medium">Add staff members to help manage the institution.</p>
+              </div>
+
+              <div className="flex flex-col md:flex-row items-end gap-4">
+                <div className="flex-1 space-y-2 w-full">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="staff@school.com"
+                    className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
+                  />
+                </div>
+                <div className="w-full md:w-48 space-y-2">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Role</label>
+                  <select className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base appearance-none cursor-pointer">
+                    <option>Admin</option>
+                    <option>Teacher</option>
+                    <option>Accountant</option>
+                    <option>Registrar</option>
+                  </select>
+                </div>
+                <button type="button" className="h-14 px-8 border border-gray-100 rounded-xl font-bold text-sm text-white bg-black  hover:bg-black/50  transition-colors whitespace-nowrap">
+                  Send Invite
+                </button>
+              </div>
+
+              <div className="relative my-10">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-100"></div>
+                </div>
+                <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+                  <span className="bg-white px-6">OR BULK UPLOAD</span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => bulkInputRef.current?.click()}
+                className="border-2 border-dashed border-gray-100 rounded-2xl p-12 flex flex-col items-center justify-center gap-4 bg-gray-50/30 hover:bg-gray-50 transition-colors cursor-pointer group"
+              >
+                <input
+                  type="file"
+                  ref={bulkInputRef}
+                  className="hidden"
+                  accept=".csv, .xlsx"
+                  onChange={(e) => console.log("Bulk file selected:", e.target.files?.[0])}
+                />
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <CloudUpload className="w-6 h-6 text-gray-400" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-black mb-1">Click to upload or drag and drop</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">XLSX, CSV (Max 5MB)</p>
+                </div>
+              </div>
+            </div>
+          )}
+          {step === 6 && (
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold mb-3 tracking-tight text-black">Choose your role</h2>
+                <p className="text-gray-500 text-lg font-medium">Select how you will be using Blink Campus.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { id: "admin", title: "Administrator", desc: "Manage settings, users, and overall institution data.", icon: ShieldCheck },
+                  { id: "teacher", title: "Teacher", desc: "Manage classes, assignments, and student progress.", icon: Users },
+                  { id: "student", title: "Student", desc: "Access courses, submit assignments, and view grades.", icon: GraduationCap },
+                ].map((role) => {
+                  const Icon = role.icon;
+                  const isSelected = selectedRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      onClick={() => setSelectedRole(role.id)}
+                      className={cn(
+                        "relative flex flex-col p-8 rounded-[32px] border-2 text-left transition-all duration-300 group",
+                        isSelected ? "border-black bg-white shadow-2xl shadow-black/[0.03]" : "border-gray-50 bg-white hover:border-gray-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-colors",
+                        isSelected ? "bg-black text-white" : "bg-gray-50 text-gray-400 group-hover:bg-gray-100"
+                      )}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-bold text-black mb-2">{role.title}</h3>
+                      <p className="text-sm text-gray-500 font-medium leading-relaxed">{role.desc}</p>
+                      <div className={cn(
+                        "absolute top-6 right-6 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                        isSelected ? "bg-black border-black" : "border-gray-100"
+                      )}>
+                        {isSelected && <Check className="w-3 h-3 text-white stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="mt-auto pt-10 flex items-center justify-between border-t border-gray-50">
+            <button
+              onClick={prevStep}
+              className={cn(
+                "flex items-center gap-2 text-gray-400 hover:text-black transition-colors font-bold text-sm px-2",
+                step === 1 && "invisible"
+              )}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+
+            <Button
+              onClick={nextStep}
+              loading={loading}
+              className="h-14 px-10 bg-black text-white rounded-xl hover:bg-gray-900 transition-all flex items-center justify-center gap-2 text-base font-bold"
+            >
+              {step === STEPS.length ? "Complete Setup" : "Continue"}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
