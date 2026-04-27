@@ -10,6 +10,7 @@ interface StatCardProps {
   trend?: { value: string; direction: "up" | "down"; label?: string };
   progress?: number;
   className?: string;
+  onClick?: () => void;
 }
 
 export function StatCard({
@@ -19,6 +20,7 @@ export function StatCard({
   trend,
   progress = 80,
   className,
+  onClick,
 }: StatCardProps) {
   const circumference = 2 * Math.PI * 35.5;
 
@@ -28,8 +30,10 @@ export function StatCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, ease: "easeOut" }}
+      onClick={onClick}
       className={cn(
         "bg-white py-5 px-7 rounded-[16px] border border-[#F1F5F9] h-full min-h-[120px] shrink-0 group flex items-center gap-7 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-500",
+        onClick && "cursor-pointer",
         className
       )}
     >
