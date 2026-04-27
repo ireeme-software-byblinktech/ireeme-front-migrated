@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
@@ -17,7 +18,7 @@ const statsData = [
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
   },
   {
-    label: "Total Assignments", 
+    label: "Total Assignments",
     value: 30,
     icon: <BookOpen size={18} />,
     progress: 80,
@@ -25,7 +26,7 @@ const statsData = [
   },
   {
     label: "Total Notes",
-    value: 30, 
+    value: 30,
     icon: <FileText size={18} />,
     progress: 65,
     trend: { value: "3.6", direction: "up" as const, label: "This month" }
@@ -63,7 +64,7 @@ const assignmentsData: Assignment[] = [
     category: "Done"
   },
   {
-    id: "2", 
+    id: "2",
     title: "Quiz: World Religions",
     subject: "Social Studies",
     teacher: "Mr. Mujesha Jean",
@@ -74,7 +75,7 @@ const assignmentsData: Assignment[] = [
   },
   {
     id: "3",
-    title: "Essay: Climate Change Impact", 
+    title: "Essay: Climate Change Impact",
     subject: "Environmental Science",
     teacher: "Dr. Sarah Wilson",
     progress: 45,
@@ -85,7 +86,7 @@ const assignmentsData: Assignment[] = [
   {
     id: "4",
     title: "Math Problem Set 5",
-    subject: "Mathematics", 
+    subject: "Mathematics",
     teacher: "Prof. Michael Brown",
     progress: 0,
     status: "To do",
@@ -96,7 +97,7 @@ const assignmentsData: Assignment[] = [
     id: "5",
     title: "History Research Paper",
     subject: "History",
-    teacher: "Ms. Jennifer Davis", 
+    teacher: "Ms. Jennifer Davis",
     progress: 85,
     status: "Pending",
     dueDate: "2024-03-18",
@@ -108,7 +109,7 @@ const assignmentsData: Assignment[] = [
     subject: "Chemistry",
     teacher: "Dr. Robert Johnson",
     progress: 100,
-    status: "Submitted", 
+    status: "Submitted",
     dueDate: "2024-03-10",
     category: "Done"
   },
@@ -175,6 +176,7 @@ const assignmentsData: Assignment[] = [
 ];
 
 export default function StudentDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"Pending" | "To do" | "Done">("Pending");
   const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -214,15 +216,14 @@ export default function StudentDashboard() {
       )
     },
     {
-      key: "status", 
+      key: "status",
       header: "",
       align: "center",
       render: (_, row) => (
-        <div className={`text-sm font-medium ${
-          row.status === "Submitted" ? "text-gray-600" : 
-          row.status === "Late" ? "text-red-600" : 
-          row.status === "To do" ? "text-blue-600" : "text-orange-600"
-        }`}>
+        <div className={`text-sm font-medium ${row.status === "Submitted" ? "text-gray-600" :
+            row.status === "Late" ? "text-red-600" :
+              row.status === "To do" ? "text-blue-600" : "text-orange-600"
+          }`}>
           {row.status}
         </div>
       )
@@ -232,7 +233,7 @@ export default function StudentDashboard() {
       header: "",
       align: "right",
       render: (_, row) => (
-        <button 
+        <button
           onClick={() => handleViewSubmission(row)}
           className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition-colors"
         >
@@ -248,7 +249,7 @@ export default function StudentDashboard() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="stats-grid">
         {statsData.map((stat, index) => (
@@ -259,48 +260,60 @@ export default function StudentDashboard() {
             icon={stat.icon}
             progress={stat.progress}
             trend={stat.trend}
+            onClick={() => {
+              if (stat.label === "Total Assignments") {
+                router.push("/student/assignments");
+              } else if (stat.label === "Total Notes") {
+                router.push("/student/notes");
+              } else if (stat.label === "Total Reports") {
+                router.push("/student/report-card");
+              } else if (stat.label === "Total Subjects") {
+                router.push("/student/timetable");
+              }
+            }}
           />
         ))}
       </div>
 
       {/* Assignments Section */}
-      <Card>
-        <CardHeader
-          title="Assignments"
-          action={
-            <Link href="/student/assignments" className="text-sm text-gray-600 hover:text-gray-900 font-medium pt-1">
-              View all
-            </Link>
-          }
-        />
-        <CardBody className="p-0">
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200 px-6">
-            {(["Pending", "To do", "Done"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab
-                    ? "border-black text-black"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          
-          {/* Table */}
-          <div className="px-6 py-4">
-            <DataTable
-              columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={filteredAssignments as unknown as Record<string, unknown>[]}
-              keyField="id"
-            />
-          </div>
-        </CardBody>
-      </Card>
+      <div id="assignments-table-section">
+        <Card>
+          <CardHeader
+            title="Assignments"
+            action={
+              <Link href="/student/assignments" className="text-sm text-gray-600 hover:text-gray-900 font-medium pt-1">
+                View all
+              </Link>
+            }
+          />
+          <CardBody className="p-0">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 px-6">
+              {(["Pending", "To do", "Done"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab
+                      ? "border-black text-black"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Table */}
+            <div className="px-6 py-4">
+              <DataTable
+                columns={columns as unknown as Column<Record<string, unknown>>[]}
+                data={filteredAssignments as unknown as Record<string, unknown>[]}
+                keyField="id"
+              />
+            </div>
+          </CardBody>
+        </Card>
+      </div>
 
       <ViewSubmissionModal
         isOpen={isModalOpen}

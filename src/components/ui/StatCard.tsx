@@ -26,13 +26,13 @@ export function StatCard({
 
   return (
     <motion.div
+      onClick={onClick}
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      onClick={onClick}
       className={cn(
-        "bg-white py-5 px-7 rounded-[16px] border border-[#F1F5F9] h-full min-h-[120px] shrink-0 group flex items-center gap-7 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-500",
+        "bg-white py-5 px-8 rounded-[12px] border border-[#F1F5F9] h-full min-h-[120px] shrink-0 group flex items-center gap-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-500",
         onClick && "cursor-pointer",
         className
       )}
@@ -83,7 +83,7 @@ export function StatCard({
       <div className="flex flex-col flex-1 justify-center">
         <p className="text-[13px] font-medium text-[#1E293B] mb-1.5 tracking-tight leading-none">{label}</p>
         <h3 className="text-[24px] font-bold text-black leading-none mb-2">{value}</h3>
-        
+
         {trend && (
           <div className="flex flex-col items-start gap-1 shrink-0 whitespace-nowrap">
             <span className={cn(
@@ -93,7 +93,7 @@ export function StatCard({
               {trend.value}
               <Activity size={12} className="opacity-80" />
             </span>
-            
+
             {trend.label && (
               <span className="text-[13px] text-[#64748B] font-medium tracking-tight">
                 {trend.label}

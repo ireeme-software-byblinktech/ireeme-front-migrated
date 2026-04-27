@@ -36,7 +36,7 @@ export function AdminStatCard({
             viewport={{ once: true }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             className={cn(
-                "bg-white p-4 px-6 rounded-[16px] border border-[#F1F5F9] h-full flex items-center gap-6 shadow-[0_2px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-500 group min-w-[220px]",
+                "bg-white py-5 px-8 rounded-[12px] border border-[#F1F5F9] h-full flex items-center gap-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-all duration-500 group min-w-[220px]",
                 className
             )}
         >
