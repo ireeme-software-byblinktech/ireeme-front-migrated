@@ -33,6 +33,7 @@ export function StatCard({
       transition={{ duration: 0.4, ease: "easeOut" }}
       className={cn(
         "bg-white py-5 px-8 rounded-[12px] border border-[#F1F5F9] h-full min-h-[120px] shrink-0 group flex items-center gap-7 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-500",
+        onClick && "cursor-pointer",
         className
       )}
     >

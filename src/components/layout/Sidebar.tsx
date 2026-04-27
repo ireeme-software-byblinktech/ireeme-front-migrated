@@ -211,7 +211,6 @@ const STUDENT_GROUPS: NavGroup[] = [
     collapsible: false,
     items: [
       { label: "Messages", href: "/student/messages", icon: <MessageSquare size={18} /> },
-      { label: "Settings", href: "/student/settings", icon: <Settings size={18} /> },
     ],
   },
 ];
@@ -273,6 +272,7 @@ const SUPER_ADMIN_GROUPS: NavGroup[] = [
       { label: "Dashboard", href: "/super-admin", icon: <LayoutDashboard size={18} /> },
       { label: "Schools", href: "/super-admin/schools", icon: <User size={18} /> },
       { label: "Admins", href: "/super-admin/admins", icon: <Users size={18} /> },
+      { label: "Users", href: "/super-admin/users", icon: <UserCheck size={18} /> },
       { label: "Documents", href: "/super-admin/documents", icon: <FileText size={18} /> },
       { label: "Reports", href: "/super-admin/reports", icon: <BarChart2 size={18} /> },
       { label: "Alumni", href: "/super-admin/alumni", icon: <GraduationCap size={18} /> },
