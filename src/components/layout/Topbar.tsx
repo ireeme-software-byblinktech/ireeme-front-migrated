@@ -2,6 +2,7 @@
 
 import { Bell, PanelLeft, Search } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
+import Link from "next/link";
 import { useState } from "react";
 
 
@@ -82,14 +83,16 @@ export function Topbar({
           <Bell size={19} className="text-[#4B5563]" strokeWidth={1.6} />
         </button>
 
-        {/* Name + Role text */}
-        <div className="hidden sm:flex flex-col items-start">
-          <span className="text-[14px] font-medium text-[#111827] leading-snug">{userName}</span>
-          <span className="text-[12px] font-normal text-[#9CA3AF] leading-snug">{roleDisplay}</span>
-        </div>
+        <Link href={`/${role}/profile`} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+          {/* Name + Role text */}
+          <div className="hidden sm:flex flex-col items-start text-left">
+            <span className="text-[14px] font-medium text-[#111827] leading-snug">{userName}</span>
+            <span className="text-[12px] font-normal text-[#9CA3AF] leading-snug">{roleDisplay}</span>
+          </div>
 
-        {/* Avatar */}
-        <Avatar name={userName} size="md" className="w-[42px] h-[42px] rounded-full ring-2 ring-gray-100 shrink-0" />
+          {/* Avatar */}
+          <Avatar name={userName} size="md" className="w-[42px] h-[42px] rounded-full ring-2 ring-gray-100 shrink-0" />
+        </Link>
       </div>
     </header>
   );

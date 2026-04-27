@@ -1,53 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 
-interface EditStudentModalProps {
+interface AddTeacherModalProps {
   isOpen: boolean;
   onClose: () => void;
-  student: any;
 }
 
-export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalProps) {
+export function AddTeacherModal({ isOpen, onClose }: AddTeacherModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    gender: "",
-    studentId: "",
-    contact: "",
-    class: ""
+    gender: "Female",
+    lesson: "Mathematics",
+    status: "Active"
   });
-
-  useEffect(() => {
-    if (student) {
-      setFormData({
-        name: student.name || "",
-        email: student.email || "",
-        gender: student.gender || "Female",
-        studentId: student.studentId || "",
-        contact: student.contact || "",
-        class: student.class || "S1"
-      });
-    }
-  }, [student]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Logic to add teacher would go here
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50">
+      {/* Background overlay excluding sidebar area (64px/16rem or var) */}
       <div className="absolute left-64 top-0 right-0 bottom-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Modal Container */}
       <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center pointer-events-none p-6">
         <div className="bg-black text-white rounded-2xl w-full max-w-xl shadow-2xl pointer-events-auto overflow-hidden">
+          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10">
             <div>
-              <h2 className="text-xl font-bold">Edit Student: {student?.name}</h2>
-              <p className="text-gray-400 text-xs mt-1">Update student records and class assignments.</p>
+              <h2 className="text-xl font-bold">Add New Teacher</h2>
+              <p className="text-gray-400 text-xs mt-1">Enter the details of the new teacher to join the system.</p>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
               <X size={20} />
@@ -57,10 +47,11 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="col-span-2">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Student Name</label>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Teacher Name</label>
                 <input 
                   type="text" 
                   required
+                  placeholder="e.g. John Doe"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
@@ -72,6 +63,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 <input 
                   type="email" 
                   required
+                  placeholder="johndoe@gmail.com"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
@@ -87,35 +79,52 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Student ID</label>
-                <input 
-                  type="text" 
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
-                  value={formData.studentId}
-                  onChange={e => setFormData({...formData, studentId: e.target.value})}
-                />
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Primary Lesson</label>
+                <select 
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all appearance-none"
+                  value={formData.lesson}
+                  onChange={e => setFormData({...formData, lesson: e.target.value})}
+                >
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Physics">Physics</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Biology">Biology</option>
+                  <option value="English">English</option>
+                </select>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Contact Number</label>
-                <input 
-                  type="text" 
-                  required
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
-                  value={formData.contact}
-                  onChange={e => setFormData({...formData, contact: e.target.value})}
-                />
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Account Status</label>
+                <select 
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all appearance-none"
+                  value={formData.status}
+                  onChange={e => setFormData({...formData, status: e.target.value})}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4">
-              <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-lg text-sm font-bold border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
-              <button type="submit" className="px-8 py-2.5 rounded-lg text-sm font-bold bg-white text-black hover:bg-gray-200 transition-all shadow-lg">Save Changes</button>
+              <button 
+                type="button" 
+                onClick={onClose}
+                className="px-6 py-2.5 rounded-lg text-sm font-bold border border-white/10 hover:bg-white/5 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="px-8 py-2.5 rounded-lg text-sm font-bold bg-white text-black hover:bg-gray-200 transition-all shadow-lg"
+              >
+                Add Teacher
+              </button>
             </div>
           </form>
         </div>
