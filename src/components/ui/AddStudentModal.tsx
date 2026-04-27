@@ -1,36 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 
-interface EditStudentModalProps {
+interface AddStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  student: any;
 }
 
-export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalProps) {
+export function AddStudentModal({ isOpen, onClose }: AddStudentModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    gender: "",
+    gender: "Female",
     studentId: "",
     contact: "",
-    class: ""
+    class: "S1"
   });
-
-  useEffect(() => {
-    if (student) {
-      setFormData({
-        name: student.name || "",
-        email: student.email || "",
-        gender: student.gender || "Female",
-        studentId: student.studentId || "",
-        contact: student.contact || "",
-        class: student.class || "S1"
-      });
-    }
-  }, [student]);
 
   if (!isOpen) return null;
 
@@ -46,8 +32,8 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
         <div className="bg-black text-white rounded-2xl w-full max-w-xl shadow-2xl pointer-events-auto overflow-hidden">
           <div className="flex items-center justify-between p-6 border-b border-white/10">
             <div>
-              <h2 className="text-xl font-bold">Edit Student: {student?.name}</h2>
-              <p className="text-gray-400 text-xs mt-1">Update student records and class assignments.</p>
+              <h2 className="text-xl font-bold">Add New Student</h2>
+              <p className="text-gray-400 text-xs mt-1">Enroll a new student into the school system.</p>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
               <X size={20} />
@@ -61,6 +47,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 <input 
                   type="text" 
                   required
+                  placeholder="e.g. John Doe"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
@@ -72,6 +59,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 <input 
                   type="email" 
                   required
+                  placeholder="student@gmail.com"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
                   value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
@@ -95,6 +83,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 <input 
                   type="text" 
                   required
+                  placeholder="STU001"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
                   value={formData.studentId}
                   onChange={e => setFormData({...formData, studentId: e.target.value})}
@@ -106,16 +95,33 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 <input 
                   type="text" 
                   required
+                  placeholder="+250 788 111 111"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all"
                   value={formData.contact}
                   onChange={e => setFormData({...formData, contact: e.target.value})}
                 />
               </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">Assigned Class</label>
+                <select 
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-white/30 transition-all appearance-none"
+                  value={formData.class}
+                  onChange={e => setFormData({...formData, class: e.target.value})}
+                >
+                  <option value="S1">S1</option>
+                  <option value="S2">S2</option>
+                  <option value="S3">S3</option>
+                  <option value="S4">S4</option>
+                  <option value="S5">S5</option>
+                  <option value="S6">S6</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-4">
               <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-lg text-sm font-bold border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
-              <button type="submit" className="px-8 py-2.5 rounded-lg text-sm font-bold bg-white text-black hover:bg-gray-200 transition-all shadow-lg">Save Changes</button>
+              <button type="submit" className="px-8 py-2.5 rounded-lg text-sm font-bold bg-white text-black hover:bg-gray-200 transition-all shadow-lg">Add Student</button>
             </div>
           </form>
         </div>

@@ -1033,6 +1033,13 @@ body {
 }
 
 /* Black header for assignments table */
+.table-black-header thead th {
+  background: #000000 !important;
+  color: #FFFFFF !important;
+  padding-top: 18px !important;
+  padding-bottom: 18px !important;
+  border-bottom: none !important;
+}
 
 .data-table td {
   padding: 14px 16px;
