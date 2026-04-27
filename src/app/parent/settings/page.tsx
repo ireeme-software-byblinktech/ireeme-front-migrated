@@ -199,7 +199,7 @@ export default function ProfilePage() {
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <h3 className="text-2xl font-black text-black uppercase tracking-tight italic">Security Settings</h3>
                 
-                <div className="p-8 rounded-[32px] border-2 border-dashed border-gray-100 bg-gray-50/30">
+                <div className="p-8 rounded-[32px] border-2 border-dashed border-gray-300 bg-gray-50">
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-gray-100">
