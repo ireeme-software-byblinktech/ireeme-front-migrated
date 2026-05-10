@@ -1,15 +1,16 @@
 "use client";
 
-import { X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle, Loader2 } from "lucide-react";
 
 interface DeleteTeacherModalProps {
   isOpen: boolean;
   onClose: () => void;
   teacherName?: string;
   onDelete: () => void;
+  isDeleting?: boolean;
 }
 
-export function DeleteTeacherModal({ isOpen, onClose, teacherName, onDelete }: DeleteTeacherModalProps) {
+export function DeleteTeacherModal({ isOpen, onClose, teacherName, onDelete, isDeleting = false }: DeleteTeacherModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -32,18 +33,18 @@ export function DeleteTeacherModal({ isOpen, onClose, teacherName, onDelete }: D
             <div className="grid grid-cols-2 gap-3">
               <button 
                 onClick={onClose}
-                className="px-6 py-3 rounded-xl text-sm font-bold border border-white/10 hover:bg-white/5 transition-all"
+                disabled={isDeleting}
+                className="px-6 py-3 rounded-xl text-sm font-bold border border-white/10 hover:bg-white/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 No, Keep it
               </button>
               <button 
-                onClick={() => {
-                  onDelete();
-                  onClose();
-                }}
-                className="px-6 py-3 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-600/20"
+                onClick={onDelete}
+                disabled={isDeleting}
+                className="px-6 py-3 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Yes, Delete
+                {isDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isDeleting ? "Deleting..." : "Yes, Delete"}
               </button>
             </div>
           </div>

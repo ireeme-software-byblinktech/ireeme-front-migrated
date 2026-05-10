@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
     DataTable, 
     Column, 
     SearchInput, 
-    Select, 
     Button 
 } from "@/components/ui";
 import { 
@@ -16,37 +16,22 @@ import {
     Printer, 
     Download,
     ChevronDown,
-    Filter
+    Filter,
+    Loader2
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-// Modals
+import { teachersApi, Teacher } from "@/lib/api/teachers";
 import { AddTeacherModal } from "@/components/ui/AddTeacherModal";
 import { ViewTeacherModal } from "@/components/ui/ViewTeacherModal";
 import { EditTeacherModal } from "@/components/ui/EditTeacherModal";
 import { DeleteTeacherModal } from "@/components/ui/DeleteTeacherModal";
-
-interface Teacher {
-    id: number;
-    name: string;
-    email: string;
-    gender: string;
-    lesson: string;
-    status: string;
-}
-
-const teachers: Teacher[] = Array.from({ length: 70 }).map((_, i) => ({
-    id: i + 1,
-    name: i % 3 === 0 ? "Samuel Johnson" : "John Doe",
-    email: i % 3 === 0 ? "samuel@gmail.com" : "johndoe@gmail.com",
-    gender: i % 4 === 0 ? "Male" : "Female",
-    lesson: i % 7 === 0 ? "Physics" : "Mathematics",
-    status: "Active"
-}));
+import { toast } from "@/lib/utils/toast";
 
 export default function AdminTeachersPage() {
+    const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState("");
     const [lessonFilter, setLessonFilter] = useState("");
+    const [page, setPage] = useState(1);
+    const limit = 10;
     
     // Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -55,11 +40,40 @@ export default function AdminTeachersPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
+    // Fetch teachers
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["teachers", page, searchQuery],
+        queryFn: () => teachersApi.getTeachers({ 
+            page, 
+            limit, 
+            search: searchQuery || undefined 
+        }),
+    });
+
+    // Delete mutation
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => teachersApi.deleteTeacher(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["teachers"] });
+            toast.success("Teacher deleted successfully");
+            setIsDeleteModalOpen(false);
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || "Failed to delete teacher");
+        },
+    });
+
     const handleAction = (type: 'view' | 'edit' | 'delete', teacher: Teacher) => {
         setSelectedTeacher(teacher);
         if (type === 'view') setIsViewModalOpen(true);
         if (type === 'edit') setIsEditModalOpen(true);
         if (type === 'delete') setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = () => {
+        if (selectedTeacher) {
+            deleteMutation.mutate(selectedTeacher.id);
+        }
     };
 
     const columns: Column<Teacher>[] = [
@@ -70,31 +84,41 @@ export default function AdminTeachersPage() {
             render: () => <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />
         },
         {
-            key: "name",
+            key: "user",
             header: "Teacher Name",
-            render: (v) => <span className="font-medium text-gray-900">{String(v)}</span>
+            render: (v: any) => (
+                <span className="font-medium text-gray-900">
+                    {v.firstName} {v.lastName}
+                </span>
+            )
         },
         {
-            key: "email",
-            header: "Email adress",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            key: "user",
+            header: "Email address",
+            render: (v: any) => <span className="text-gray-500">{v.email}</span>
         },
         {
-            key: "gender",
-            header: "Gender",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            key: "department",
+            header: "Department",
+            render: (v) => <span className="text-gray-500">{v || "N/A"}</span>
         },
         {
-            key: "lesson",
-            header: "Lesson",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            key: "subjects",
+            header: "Subjects",
+            render: (v: any) => (
+                <span className="text-gray-500">
+                    {v && v.length > 0 
+                        ? v.map((s: any) => s.subject.name).join(", ")
+                        : "No subjects"}
+                </span>
+            )
         },
         {
-            key: "status",
+            key: "isActive",
             header: "Status",
             render: (v) => (
-                <div className="bg-black text-white px-8 py-2 rounded-md text-[11px] font-bold inline-block min-w-[110px] text-center uppercase tracking-wider">
-                    {String(v)}
+                <div className={`${v ? 'bg-black text-white' : 'bg-gray-400 text-white'} px-8 py-2 rounded-md text-[11px] font-bold inline-block min-w-[110px] text-center uppercase tracking-wider`}>
+                    {v ? "ACTIVE" : "INACTIVE"}
                 </div>
             )
         },
@@ -130,10 +154,16 @@ export default function AdminTeachersPage() {
         }
     ];
 
-    const filteredTeachers = teachers.filter(t => 
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <p className="text-red-500 mb-2">Failed to load teachers</p>
+                    <p className="text-sm text-gray-500">{(error as Error).message}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10">
@@ -145,7 +175,11 @@ export default function AdminTeachersPage() {
             {/* Controls Row 1 */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="text-sm font-medium text-gray-500">
-                    Showing 1 - 10 of {teachers.length} teachers
+                    {isLoading ? (
+                        "Loading..."
+                    ) : (
+                        `Showing ${((page - 1) * limit) + 1} - ${Math.min(page * limit, data?.total || 0)} of ${data?.total || 0} teachers`
+                    )}
                 </div>
                 <div className="flex items-center gap-3">
                     <Button variant="outline" className="bg-white border-gray-200 h-9 px-6 font-bold text-[10px] uppercase tracking-widest text-gray-700">
@@ -198,14 +232,43 @@ export default function AdminTeachersPage() {
 
             {/* Data Table */}
             <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
-                <DataTable 
-                    columns={columns} 
-                    data={filteredTeachers} 
-                    pageSize={10}
-                    className="teachers-table border-none table-black-header"
-                    keyField="id"
-                />
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-96">
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                    </div>
+                ) : (
+                    <DataTable 
+                        columns={columns} 
+                        data={data?.data || []} 
+                        pageSize={limit}
+                        className="teachers-table border-none table-black-header"
+                        keyField="id"
+                    />
+                )}
             </div>
+
+            {/* Pagination */}
+            {data && data.pages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-4">
+                    <Button
+                        variant="outline"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm text-gray-600">
+                        Page {page} of {data.pages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        onClick={() => setPage(p => Math.min(data.pages, p + 1))}
+                        disabled={page === data.pages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            )}
 
             {/* Modals Integration */}
             <AddTeacherModal 
@@ -228,11 +291,9 @@ export default function AdminTeachersPage() {
             <DeleteTeacherModal 
                 isOpen={isDeleteModalOpen} 
                 onClose={() => setIsDeleteModalOpen(false)} 
-                teacherName={selectedTeacher?.name} 
-                onDelete={() => {
-                    console.log("Deleted", selectedTeacher?.id);
-                    // Actual delete logic here
-                }}
+                teacherName={selectedTeacher ? `${selectedTeacher.user.firstName} ${selectedTeacher.user.lastName}` : ""}
+                onDelete={handleDelete}
+                isDeleting={deleteMutation.isPending}
             />
         </div>
     );
