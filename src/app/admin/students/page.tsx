@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
     DataTable, 
     Column, 
@@ -14,36 +15,22 @@ import {
     Printer, 
     ChevronDown,
     Filter,
-    Users
+    Users,
+    Loader2
 } from "lucide-react";
-
-// Modals
+import { studentsApi, Student } from "@/lib/api/students";
 import { AddStudentModal } from "@/components/ui/AddStudentModal";
 import { ViewStudentModal } from "@/components/ui/ViewStudentModal";
 import { EditStudentModal } from "@/components/ui/EditStudentModal";
 import { DeleteStudentModal } from "@/components/ui/DeleteStudentModal";
-
-interface Student {
-    id: number;
-    name: string;
-    email: string;
-    gender: string;
-    studentId: string;
-    contact: string;
-}
-
-const students: Student[] = Array.from({ length: 70 }).map((_, i) => ({
-    id: i + 1,
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    gender: "Female",
-    studentId: "STU001",
-    contact: "+250 788 111 111"
-}));
+import { toast } from "@/lib/utils/toast";
 
 export default function AdminStudentsPage() {
+    const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState("");
-    const [classFilter, setClassFilter] = useState("All classes");
+    const [classFilter, setClassFilter] = useState("");
+    const [page, setPage] = useState(1);
+    const limit = 10;
     
     // Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -52,11 +39,41 @@ export default function AdminStudentsPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
+    // Fetch students
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["students", page, searchQuery, classFilter],
+        queryFn: () => studentsApi.getStudents({ 
+            page, 
+            limit, 
+            search: searchQuery || undefined,
+            classId: classFilter || undefined 
+        }),
+    });
+
+    // Delete mutation
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => studentsApi.deleteStudent(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["students"] });
+            toast.success("Student deleted successfully");
+            setIsDeleteModalOpen(false);
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || "Failed to delete student");
+        },
+    });
+
     const handleAction = (type: 'view' | 'edit' | 'delete', student: Student) => {
         setSelectedStudent(student);
         if (type === 'view') setIsViewModalOpen(true);
         if (type === 'edit') setIsEditModalOpen(true);
         if (type === 'delete') setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = () => {
+        if (selectedStudent) {
+            deleteMutation.mutate(selectedStudent.id);
+        }
     };
 
     const columns: Column<Student>[] = [
@@ -67,29 +84,33 @@ export default function AdminStudentsPage() {
             render: () => <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />
         },
         {
-            key: "name",
+            key: "user",
             header: "Student Name",
-            render: (v) => <span className="font-medium text-gray-900">{String(v)}</span>
+            render: (v: any) => (
+                <span className="font-medium text-gray-900">
+                    {v.firstName} {v.lastName}
+                </span>
+            )
         },
         {
-            key: "email",
-            header: "Email adress",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            key: "user",
+            header: "Email address",
+            render: (v: any) => <span className="text-gray-500">{v.email}</span>
         },
         {
             key: "gender",
             header: "Gender",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            render: (v) => <span className="text-gray-500">{v || "N/A"}</span>
         },
         {
-            key: "studentId",
+            key: "studentNumber",
             header: "Student ID",
             render: (v) => <span className="text-gray-500">{String(v)}</span>
         },
         {
-            key: "contact",
+            key: "user",
             header: "Student contact",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            render: (v: any) => <span className="text-gray-500">{v.phoneNumber || "N/A"}</span>
         },
         {
             key: "action",
@@ -123,10 +144,16 @@ export default function AdminStudentsPage() {
         }
     ];
 
-    const filteredStudents = students.filter(s => 
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <div className="text-center">
+                    <p className="text-red-500 mb-2">Failed to load students</p>
+                    <p className="text-sm text-gray-500">{(error as Error).message}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-10">
@@ -138,7 +165,11 @@ export default function AdminStudentsPage() {
             {/* Controls Row 1 */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="text-sm font-medium text-gray-500 text-[13px]">
-                    Showing 1 - 10 of {students.length} students
+                    {isLoading ? (
+                        "Loading..."
+                    ) : (
+                        `Showing ${((page - 1) * limit) + 1} - ${Math.min(page * limit, data?.total || 0)} of ${data?.total || 0} students`
+                    )}
                 </div>
                 <div className="flex items-center gap-3">
                     <Button variant="outline" className="bg-white border-gray-200 h-9 px-6 font-bold text-[10px] uppercase tracking-widest text-gray-700">
@@ -164,7 +195,7 @@ export default function AdminStudentsPage() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="w-full md:w-[450px]">
                     <SearchInput 
-                        placeholder="search stUdent" 
+                        placeholder="search student" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="bg-white border border-gray-200 rounded-lg h-10 text-sm"
@@ -172,7 +203,12 @@ export default function AdminStudentsPage() {
                     />
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
-                    <button className="flex items-center gap-2 bg-black text-white px-6 h-10 rounded-lg text-sm font-medium transition-all whitespace-nowrap">
+                    <button 
+                        onClick={() => setClassFilter("")}
+                        className={`flex items-center gap-2 px-6 h-10 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                            !classFilter ? "bg-black text-white" : "bg-white border border-gray-200 text-gray-600"
+                        }`}
+                    >
                         <Filter size={16} />
                         All classes
                     </button>
@@ -196,14 +232,43 @@ export default function AdminStudentsPage() {
 
             {/* Data Table */}
             <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
-                <DataTable 
-                    columns={columns} 
-                    data={filteredStudents} 
-                    pageSize={10}
-                    className="students-table border-none table-black-header"
-                    keyField="id"
-                />
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-96">
+                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                    </div>
+                ) : (
+                    <DataTable 
+                        columns={columns} 
+                        data={data?.data || []} 
+                        pageSize={limit}
+                        className="students-table border-none table-black-header"
+                        keyField="id"
+                    />
+                )}
             </div>
+
+            {/* Pagination */}
+            {data && data.pages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-4">
+                    <Button
+                        variant="outline"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-sm text-gray-600">
+                        Page {page} of {data.pages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        onClick={() => setPage(p => Math.min(data.pages, p + 1))}
+                        disabled={page === data.pages}
+                    >
+                        Next
+                    </Button>
+                </div>
+            )}
 
             {/* Modals */}
             <AddStudentModal 
@@ -226,8 +291,9 @@ export default function AdminStudentsPage() {
             <DeleteStudentModal 
                 isOpen={isDeleteModalOpen} 
                 onClose={() => setIsDeleteModalOpen(false)} 
-                studentName={selectedStudent?.name} 
-                onDelete={() => console.log("Deleted student", selectedStudent?.id)}
+                studentName={selectedStudent ? `${selectedStudent.user.firstName} ${selectedStudent.user.lastName}` : ""}
+                onDelete={handleDelete}
+                isDeleting={deleteMutation.isPending}
             />
         </div>
     );

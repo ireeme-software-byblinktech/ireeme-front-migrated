@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/FormElements";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Sparkles, Eye, EyeOff, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -13,14 +13,41 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate auth delay
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    router.push("/admin");
+    setError("");
+    
+    try {
+      const response = await fetch("http://localhost:3001/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.message || "Invalid email or password");
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+      
+      // Store the access token in localStorage
+      localStorage.setItem("accessToken", data.accessToken);
+      
+      // Redirect to admin dashboard
+      router.push("/admin");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Unable to connect to server. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,6 +92,13 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 ml-1">Email or Phone</label>
               <input
@@ -147,6 +181,16 @@ export default function LoginPage() {
               Sign up
             </Link>
           </p>
+
+          {/* Test Credentials Hint */}
+          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Test Credentials</p>
+            <div className="space-y-1 text-sm text-gray-700">
+              <p><span className="font-bold">Admin:</span> admin@gmail.com / admin@123</p>
+              <p><span className="font-bold">Teacher:</span> john.smith@blinkacademy.com / Password123!</p>
+              <p><span className="font-bold">Student:</span> alice.williams@student.com / Password123!</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
