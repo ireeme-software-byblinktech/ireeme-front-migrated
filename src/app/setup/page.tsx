@@ -164,9 +164,9 @@ export default function SetupPage() {
       <div className="w-full max-w-[800px]">
 
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-[32px] font-bold tracking-tight text-black mb-2">Institution Setup</h1>
-          <p className="text-gray-500 text-lg font-medium">Configure your workspace settings.</p>
+        <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
+          <h1 className="text-[32px] font-bold tracking-tight text-black mb-2">Welcome to Blink Campus</h1>
+          <p className="text-gray-500 text-lg font-medium">Let's get your institution ready for success.</p>
         </div>
 
         {/* Progress Stepper */}
