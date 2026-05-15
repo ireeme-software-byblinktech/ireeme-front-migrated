@@ -1,17 +1,19 @@
 export type UserRole =
-  | "student"
-  | "teacher"
-  | "admin"
-  | "super-admin"
-  | "nurse"
-  | "discipline"
-  | "accountant"
-  | "parent"
-  | "librarian";
+  | "STUDENT"
+  | "TEACHER"
+  | "SCHOOL_ADMIN"
+  | "SUPER_ADMIN"
+  | "NURSE"
+  | "DISCIPLINE_OFFICER"
+  | "ACCOUNTANT"
+  | "PARENT"
+  | "LIBRARIAN";
 
 export interface User {
   id: string;
-  name: string;
+  schoolId?: string;
   email: string;
+  firstName: string;
+  lastName: string;
   role: UserRole;
 }

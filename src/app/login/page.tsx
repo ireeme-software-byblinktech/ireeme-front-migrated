@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/FormElements";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { apiClient } from "@/lib/api/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,12 +18,23 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate auth delay
-    await new Promise((r) => setTimeout(r, 800));
-    setLoading(false);
-    router.push("/admin");
+    try {
+      const data = await apiClient<{ accessToken: string }>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      localStorage.setItem("access_token", data.accessToken);
+      router.push("/admin");
+    } catch (error: any) {
+      alert(error.message || "Failed to login");
+    } finally {
+      setLoading(true);
+      setTimeout(() => setLoading(false), 500);
+    }
   };
 
+  
   return (
     <div className="flex min-h-screen bg-white font-sans">
       {/* Left Side - Hero Section */}
@@ -30,7 +42,7 @@ export default function LoginPage() {
         {/* Subtle Background Glow */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white opacity-[0.03] rounded-full blur-[120px] -mr-64 -mt-64"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white opacity-[0.02] rounded-full blur-[100px] -ml-32 -mb-32"></div>
-        
+
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-40">
             <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/10">
@@ -99,8 +111,8 @@ export default function LoginPage() {
                 </button>
               </div>
               <div className="flex justify-end pr-1 pt-1">
-                <Link 
-                  href="/forgot-password" 
+                <Link
+                  href="/forgot-password"
                   className="text-sm font-bold text-gray-400 hover:text-black transition-colors"
                 >
                   Forgot password?
@@ -108,8 +120,8 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               loading={loading}
               className="w-full h-14 bg-black text-white rounded-xl hover:bg-gray-900 transition-all flex items-center justify-center gap-2 text-base font-bold shadow-lg shadow-black/5"
             >
@@ -125,14 +137,14 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => router.push("/register")}
                 className="h-14 border border-gray-300 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center text-gray-800"
               >
                 Create School
               </button>
-              <button 
+              <button
                 type="button"
                 className="h-14 border border-transparent bg-gray-100 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors flex items-center justify-center text-black"
               >
