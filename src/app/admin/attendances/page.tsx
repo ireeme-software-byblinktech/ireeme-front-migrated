@@ -1,211 +1,286 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PageHeader } from "@/components/ui/Shared";
-import { Card, CardBody } from "@/components/ui";
-import { Button } from "@/components/ui/Button";
-import { Select, Input } from "@/components/ui/FormElements";
-import { classesApi, subjectsApi, studentsApi, Student } from "@/lib/api/academics";
-import { attendancesApi } from "@/lib/api/attendances";
-import { Check, X, Clock, AlertCircle, Save } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { 
+    AdminStatCard,
+    DataTable,
+    Column
+} from "@/components/ui";
+import { 
+    Pencil, 
+    ChevronDown, 
+    Filter, 
+    Calendar,
+    GraduationCap,
+    Users
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EditAttendanceModal } from "@/components/ui/EditAttendanceModal";
 
+interface AttendanceRecord {
+    id: number;
+    name: string;
+    email: string;
+    dateTime: string;
+    checkInTime: string;
+    status: "Present" | "Absent" | "Late";
+}
+
+const teacherAttendanceData: AttendanceRecord[] = Array.from({ length: 15 }).map((_, i) => ({
+    id: i + 1,
+    name: i % 4 === 0 ? "Samuel Johnson" : "John Doe",
+    email: i % 4 === 0 ? "samuel@gmail.com" : "johndoe@gmail.com",
+    dateTime: "12-06-2025",
+    checkInTime: i % 3 === 0 ? "-" : "09:15 AM",
+    status: i % 3 === 0 ? "Absent" : (i % 4 === 0 ? "Late" : "Present")
+}));
+
+const studentAttendanceData: AttendanceRecord[] = Array.from({ length: 15 }).map((_, i) => ({
+    id: i + 100,
+    name: "John Doe",
+    email: "johndoe@gmail.com",
+    dateTime: "12-06-2025",
+    checkInTime: i % 3 === 0 ? "-" : "09:15 AM",
+    status: i % 3 === 0 ? "Absent" : "Present"
+}));
 
 export default function AdminAttendancesPage() {
-    const [classes, setClasses] = useState<{ value: string; label: string }[]>([]);
-    const [subjects, setSubjects] = useState<{ value: string; label: string }[]>([]);
-    const [students, setStudents] = useState<Student[]>([]);
+    const [viewType, setViewType] = useState<"Teachers" | "Students">("Teachers");
+    const [data, setData] = useState(teacherAttendanceData);
+    const [studentData, setStudentData] = useState(studentAttendanceData);
+    const [filterToday, setFilterToday] = useState(false);
+    const [nameFilter, setNameFilter] = useState("");
 
-    const [selectedClass, setSelectedClass] = useState("");
-    const [selectedSubject, setSelectedSubject] = useState("");
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+    // Modal state
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [activeRecord, setActiveRecord] = useState<any>(null);
 
-    const [attendanceData, setAttendanceData] = useState<Record<string, string>>({});
-    const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
+    const currentData = viewType === "Teachers" ? data : studentData;
 
-    useEffect(() => {
-        async function loadClasses() {
-            try {
-                const data = await classesApi.getAll();
-                setClasses(data.map(c => ({ value: c.id, label: c.name })));
-            } catch (err) {
-                console.error("Failed to load classes", err);
+    const toggleStatus = (id: number) => {
+        const updater = (prev: AttendanceRecord[]): AttendanceRecord[] => prev.map(item => {
+            if (item.id === id) {
+                return {
+                    ...item,
+                    status: (item.status === "Present" ? "Absent" : "Present") as AttendanceRecord['status']
+                };
             }
-        }
-        loadClasses();
-    }, []);
+            return item;
+        });
 
-    useEffect(() => {
-        if (selectedClass) {
-            async function loadSubjectsAndStudents() {
-                setLoading(true);
-                try {
-                    const [subjData, studData] = await Promise.all([
-                        subjectsApi.getByClass(selectedClass),
-                        studentsApi.getByClass(selectedClass)
-                    ]);
-                    setSubjects(subjData.map(s => ({ value: s.id, label: s.name })));
-                    setStudents(studData);
-
-                    // Reset attendance data for new class
-                    const initialData: Record<string, string> = {};
-                    studData.forEach(s => initialData[s.id] = "PRESENT");
-                    setAttendanceData(initialData);
-                } catch (err) {
-                    console.error("Failed to load class details", err);
-                } finally {
-                    setLoading(false);
-                }
-            }
-            loadSubjectsAndStudents();
-        } else {
-            setSubjects([]);
-            setStudents([]);
-        }
-    }, [selectedClass]);
-
-    const handleStatusChange = (studentId: string, status: string) => {
-        setAttendanceData(prev => ({ ...prev, [studentId]: status }));
+        if (viewType === "Teachers") setData(updater);
+        else setStudentData(updater);
     };
 
-    const handleSave = async () => {
-        if (!selectedClass || !selectedSubject || !selectedDate) {
-            alert("Please select class, subject and date");
-            return;
-        }
+    const handleSaveAttendance = (id: number, status: "Present" | "Absent" | "Late", checkIn: string) => {
+        const updater = (prev: AttendanceRecord[]): AttendanceRecord[] => prev.map(item => {
+            if (item.id === id) {
+                return { ...item, status, checkInTime: checkIn } as AttendanceRecord;
+            }
+            return item;
+        });
 
-        setSaving(true);
-        try {
-            const records = Object.entries(attendanceData).map(([studentId, status]) => ({
-                studentId,
-                status,
-            }));
-
-            await attendancesApi.markBulk({
-                classId: selectedClass,
-                subjectId: selectedSubject,
-                date: selectedDate,
-                records
-            });
-
-            alert("Attendance marked successfully");
-        } catch (err: any) {
-            alert(err.message || "Failed to save attendance");
-        } finally {
-            setSaving(false);
-        }
+        if (viewType === "Teachers") setData(updater);
+        else setStudentData(updater);
     };
+
+    const openEditModal = (row: AttendanceRecord) => {
+        setActiveRecord(row);
+        setIsEditOpen(true);
+    };
+
+    const filteredData = useMemo(() => {
+        return currentData.filter(item => {
+            const matchesName = item.name.toLowerCase().includes(nameFilter.toLowerCase());
+            const matchesDate = filterToday ? item.dateTime === "12-06-2025" : true;
+            return matchesName && matchesDate;
+        });
+    }, [currentData, nameFilter, filterToday]);
+
+    const columns: Column<AttendanceRecord>[] = [
+        {
+            key: "select",
+            header: <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />,
+            width: "50px",
+            render: () => <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />
+        },
+        {
+            key: "name",
+            header: viewType === "Teachers" ? "Teacher Name" : "Student Name",
+            render: (v) => <span className="font-medium text-gray-900">{String(v)}</span>
+        },
+        {
+            key: "email",
+            header: "Email-address",
+            render: (v) => <span className="text-gray-500">{String(v)}</span>
+        },
+        {
+            key: "dateTime",
+            header: "Date & Time",
+            render: (v) => <span className="text-gray-500">{String(v)}</span>
+        },
+        {
+            key: "checkInTime",
+            header: "Check-in time",
+            render: (v) => <span className="text-gray-500">{String(v)}</span>
+        },
+        {
+            key: "status",
+            header: "Status",
+            render: (v) => (
+                <div className={cn(
+                    "px-8 py-2 rounded-md text-[11px] font-bold inline-block min-w-[100px] text-center uppercase tracking-wider",
+                    v === "Absent" ? "bg-[#EE1D23] text-white" : (viewType === "Students" ? "bg-[#008A44] text-white" : "bg-black text-white")
+                )}>
+                    {String(v)}
+                </div>
+            )
+        },
+        {
+            key: "action",
+            header: "Action",
+            align: "right",
+            render: (_, row) => (
+                <div className="flex items-center gap-6 justify-end">
+                    <button 
+                        onClick={() => openEditModal(row)}
+                        className="text-gray-900 hover:opacity-70 transition-opacity"
+                    >
+                        <Pencil size={18} />
+                    </button>
+                    <button 
+                        onClick={() => toggleStatus(row.id)}
+                        className={cn(
+                            "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                            row.status === "Present" ? "bg-black" : "bg-gray-200"
+                        )}
+                    >
+                        <span 
+                            className={cn(
+                                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                row.status === "Present" ? "translate-x-5" : "translate-x-0"
+                            )}
+                        />
+                    </button>
+                </div>
+            )
+        }
+    ];
 
     return (
-        <div className="space-y-6">
-            <PageHeader
-                title="Attendance Management"
-                subtitle="Mark and track student attendance for classes and subjects."
-            />
+        <div className="space-y-8 pb-10">
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Attendances</h1>
+            </div>
 
-            <Card>
-                <CardBody>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Select
-                            label="Select Class"
-                            placeholder="Choose a class"
-                            options={classes}
-                            value={selectedClass}
-                            onChange={(e) => setSelectedClass(e.target.value)}
-                        />
-                        <Select
-                            label="Subject"
-                            placeholder="Choose a subject"
-                            options={subjects}
-                            value={selectedSubject}
-                            onChange={(e) => setSelectedSubject(e.target.value)}
-                            disabled={!selectedClass}
-                        />
-                        <Input
-                            label="Date"
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                        />
+            {/* Status Section */}
+            <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-gray-900">{viewType === "Teachers" ? "Teacher" : "Student"} status</h2>
+                    <div className="relative">
+                        <select 
+                            className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-pointer border border-gray-100 px-4 py-2 rounded-md hover:border-black transition-all appearance-none pr-10"
+                            value={viewType}
+                            onChange={(e) => setViewType(e.target.value as any)}
+                        >
+                            <option value="Teachers">Teachers</option>
+                            <option value="Students">Students</option>
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-2 text-gray-400">
+                             <Filter size={14} />
+                             <ChevronDown size={14} />
+                        </div>
                     </div>
-                </CardBody>
-            </Card>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <AdminStatCard 
+                        label={`Total ${viewType.toLowerCase()}`}
+                        value={308}
+                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
+                        subtext={[{ label: "Male (61%)" }, { label: "Female (39%)" }]}
+                        progress={100}
+                    />
+                    <AdminStatCard 
+                        label="Present | Today"
+                        value={308}
+                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
+                        subtext={[{ label: "Male (61%)" }, { label: "Female (39%)" }]}
+                        progress={85}
+                    />
+                    <AdminStatCard 
+                        label="Absent | Today"
+                        value={308}
+                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
+                        subtext={[{ label: "Male (61%)" }, { label: "Female (39%)" }]}
+                        progress={15}
+                    />
+                    <AdminStatCard 
+                        label="Attendance rate"
+                        value={viewType === "Teachers" ? "75%" : "92%"}
+                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
+                        subtext="+2% from last week"
+                        progress={viewType === "Teachers" ? 75 : 92}
+                    />
+                </div>
+            </section>
 
-            {selectedClass && (
-                <Card>
-                    <CardBody className="p-0">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-50 border-bottom">
-                                        <th className="p-4 font-bold text-gray-700">Student Name</th>
-                                        <th className="p-4 font-bold text-gray-700">Student ID</th>
-                                        <th className="p-4 font-bold text-gray-700 text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={3} className="p-8 text-center text-gray-500">Loading students...</td>
-                                        </tr>
-                                    ) : students.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={3} className="p-8 text-center text-gray-500">No students found in this class.</td>
-                                        </tr>
-                                    ) : (
-                                        students.map((student) => (
-                                            <tr key={student.id} className="border-bottom hover:bg-gray-50/50 transition-colors">
-                                                <td className="p-4">
-                                                    <div className="font-medium text-gray-900">
-                                                        {student.user.firstName} {student.user.lastName}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-gray-500 font-mono text-xs">{student.studentNumber}</td>
-                                                <td className="p-4">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        {[
-                                                            { id: "PRESENT", icon: Check, color: "text-green-600", bg: "bg-green-100", activeBg: "bg-green-600", label: "P" },
-                                                            { id: "ABSENT", icon: X, color: "text-red-600", bg: "bg-red-100", activeBg: "bg-red-600", label: "A" },
-                                                            { id: "LATE", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-100", activeBg: "bg-yellow-600", label: "L" },
-                                                            { id: "EXCUSED", icon: AlertCircle, color: "text-blue-600", bg: "bg-blue-100", activeBg: "bg-blue-600", label: "E" }
-                                                        ].map((status) => (
-                                                            <button
-                                                                key={status.id}
-                                                                onClick={() => handleStatusChange(student.id, status.id)}
-                                                                title={status.id}
-                                                                className={cn(
-                                                                    "w-10 h-10 rounded-lg flex items-center justify-center transition-all border",
-                                                                    attendanceData[student.id] === status.id
-                                                                        ? cn(status.activeBg, "text-white border-transparent")
-                                                                        : cn("bg-white text-gray-400 border-gray-200 hover:border-gray-300")
-                                                                )}
-                                                            >
-                                                                <status.icon className="w-5 h-5" />
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+            {/* Attendance List Section */}
+            <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-gray-900">{viewType === "Teachers" ? "Teacher" : "Student"} Attendance list</h2>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-pointer border border-gray-100 px-3 py-2 rounded-md hover:border-black transition-all">
+                            <input 
+                                type="text"
+                                placeholder={`Search ${viewType}...`}
+                                className="bg-transparent border-none outline-none w-32 placeholder:text-gray-400"
+                                value={nameFilter}
+                                onChange={(e) => setNameFilter(e.target.value)}
+                            />
                         </div>
+                        <button 
+                            onClick={() => setFilterToday(!filterToday)}
+                            className={cn(
+                                "flex items-center gap-2 px-8 h-10 rounded-lg text-sm font-bold uppercase tracking-widest transition-all border",
+                                filterToday ? "bg-black text-white border-black" : "bg-white text-gray-600 border-gray-200 hover:border-black"
+                            )}
+                        >
+                            <Calendar size={16} />
+                            Today
+                        </button>
+                    </div>
+                </div>
 
-                        <div className="p-6 border-t flex justify-end">
-                            <Button
-                                onClick={handleSave}
-                                disabled={saving || students.length === 0}
-                                loading={saving}
-                                className="gap-2"
-                            >
-                                <Save className="w-4 h-4" /> Save Attendance
-                            </Button>
-                        </div>
-                    </CardBody>
-                </Card>
-            )}
+                <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
+                    <DataTable 
+                        columns={columns} 
+                        data={filteredData} 
+                        pageSize={10}
+                        showPagination={false}
+                        className="attendance-table border-none table-black-header"
+                        keyField="id"
+                    />
+                </div>
+
+                {/* Pagination matching design */}
+                <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-100 mt-[-16px]">
+                    <span className="text-sm text-gray-500">Showing 1 to {Math.min(filteredData.length, 10)} of {filteredData.length} results</span>
+                    <div className="flex items-center gap-2">
+                        <button className="px-6 py-2 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Previous</button>
+                        <button className="w-9 h-9 bg-black text-white rounded-md text-sm font-medium">1</button>
+                        <button className="w-9 h-9 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors text-gray-600">2</button>
+                        <button className="px-6 py-2 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Next</button>
+                    </div>
+                </div>
+            </section>
+
+            <EditAttendanceModal 
+                isOpen={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                onSave={handleSaveAttendance}
+                data={activeRecord}
+            />
         </div>
     );
 }

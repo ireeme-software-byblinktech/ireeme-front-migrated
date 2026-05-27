@@ -1,22 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Upload, Loader2 } from "lucide-react";
-import { updateStudentSchema, UpdateStudentInput } from "@/lib/validations/student";
-import { studentsApi, Student } from "@/lib/api/students";
+import { createStudentSchema, CreateStudentInput } from "@/lib/validations/student";
+import { studentsApi } from "@/lib/api/students";
 import { uploadToCloudinary } from "@/lib/api/client";
 import { toast } from "@/lib/utils/toast";
 
-interface EditStudentModalProps {
+interface AddStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  student: Student | null;
 }
 
-export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalProps) {
+export function AddStudentModal({ isOpen, onClose }: AddStudentModalProps) {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -27,32 +26,21 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
     formState: { errors },
     reset,
     setValue,
-  } = useForm<UpdateStudentInput>({
-    resolver: zodResolver(updateStudentSchema),
+  } = useForm<CreateStudentInput>({
+    resolver: zodResolver(createStudentSchema),
   });
 
-  useEffect(() => {
-    if (student) {
-      setValue("firstName", student.user.firstName);
-      setValue("lastName", student.user.lastName);
-      setValue("phoneNumber", student.user.phoneNumber || "");
-      setValue("dateOfBirth", student.dateOfBirth || "");
-      setValue("gender", student.gender as any);
-      setValue("avatarUrl", student.user.avatarUrl || "");
-      setAvatarPreview(student.user.avatarUrl || "");
-    }
-  }, [student, setValue]);
-
-  const updateMutation = useMutation({
-    mutationFn: (data: UpdateStudentInput) => 
-      studentsApi.updateStudent(student!.id, data),
+  const createMutation = useMutation({
+    mutationFn: studentsApi.createStudent,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["students"] });
-      toast.success("Student updated successfully");
+      toast.success("Student created successfully");
+      reset();
+      setAvatarPreview("");
       onClose();
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update student");
+      toast.error(error.message || "Failed to create student");
     },
   });
 
@@ -60,11 +48,13 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size must be less than 5MB");
       return;
     }
 
+    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Only image files are allowed");
       return;
@@ -83,18 +73,18 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
     }
   };
 
-  const onSubmit = (data: UpdateStudentInput) => {
-    updateMutation.mutate(data);
+  const onSubmit = (data: CreateStudentInput) => {
+    createMutation.mutate(data);
   };
 
-  if (!isOpen || !student) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">Edit Student</h2>
+          <h2 className="text-xl font-bold text-gray-900">Add New Student</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -116,7 +106,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
             </div>
             <label className="cursor-pointer">
               <span className="text-sm font-medium text-primary hover:underline">
-                {isUploading ? "Uploading..." : "Change Photo"}
+                {isUploading ? "Uploading..." : "Upload Photo"}
               </span>
               <input
                 type="file"
@@ -132,7 +122,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name
+                First Name *
               </label>
               <input
                 {...register("firstName")}
@@ -147,7 +137,7 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name
+                Last Name *
               </label>
               <input
                 {...register("lastName")}
@@ -164,16 +154,36 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
+                Email *
               </label>
               <input
-                {...register("phoneNumber")}
-                type="tel"
+                {...register("email")}
+                type="email"
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
-                placeholder="+250 788 000 000"
+                placeholder="student@example.com"
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+              )}
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Student Number *
+              </label>
+              <input
+                {...register("studentNumber")}
+                type="text"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
+                placeholder="STU001"
+              />
+              {errors.studentNumber && (
+                <p className="text-red-500 text-xs mt-1">{errors.studentNumber.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Gender
@@ -183,22 +193,37 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
               >
                 <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date of Birth
+              </label>
+              <input
+                {...register("dateOfBirth")}
+                type="date"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
+              />
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date of Birth
+              Enrollment Date *
             </label>
             <input
-              {...register("dateOfBirth")}
+              {...register("enrollmentDate")}
               type="date"
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
+              defaultValue={new Date().toISOString().split('T')[0]}
             />
+            {errors.enrollmentDate && (
+              <p className="text-red-500 text-xs mt-1">{errors.enrollmentDate.message}</p>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -212,11 +237,11 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
             </button>
             <button
               type="submit"
-              disabled={updateMutation.isPending || isUploading}
+              disabled={createMutation.isPending || isUploading}
               className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {updateMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              {updateMutation.isPending ? "Updating..." : "Update Student"}
+              {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {createMutation.isPending ? "Creating..." : "Create Student"}
             </button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { ReactNode, useState, useEffect } from "react";
 
 // ─── Column Definition ────────────────────────────────────────
@@ -28,6 +28,7 @@ interface DataTableProps<T> {
   pageSize?: number;
   paginationClassName?: string;
   hideHeader?: boolean;
+  showPagination?: boolean;
 }
 
 // ─── Table User Cell ──────────────────────────────────────────
@@ -78,7 +79,7 @@ export function ScoreCell({ score, total = 100 }: ScoreCellProps) {
 }
 
 // ─── Main DataTable ───────────────────────────────────────────
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends Record<string, any>>({
   columns,
   data,
   keyField,
@@ -91,6 +92,7 @@ export function DataTable<T extends Record<string, unknown>>({
   pageSize,
   paginationClassName,
   hideHeader = false,
+  showPagination = true,
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -200,7 +202,7 @@ export function DataTable<T extends Record<string, unknown>>({
         </table>
       </div>
 
-      {pageSize && totalPages > 1 && (
+      {pageSize && totalPages > 1 && showPagination && (
         <div className="flex justify-center">
           <Pagination
             currentPage={currentPage}
@@ -253,7 +255,7 @@ export function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-between px-5 py-4">
+    <div className="flex items-center justify-between px-5 py-4 w-full">
       {totalItems !== undefined && pageSize !== undefined && !className?.includes('pagination-rounded') && (
         <span className="text-sm text-muted">
           Showing{" "}
@@ -261,7 +263,14 @@ export function Pagination({
           {Math.min(currentPage * pageSize, totalItems)} of {totalItems}
         </span>
       )}
-      <div className={cn("pagination ml-auto", className)}>
+      <div className={cn("pagination mx-auto flex items-center gap-1", className)}>
+        <button
+          className="pagination-btn"
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+        >
+          <ChevronsLeft size={14} />
+        </button>
         <button
           className="pagination-btn"
           onClick={() => onPageChange(currentPage - 1)}
@@ -271,15 +280,15 @@ export function Pagination({
         </button>
         {pages.map((page, i) =>
           page === "..." ? (
-            <span key={i} className="pagination-btn" style={{ cursor: "default" }}>
+            <span key={i} className="px-2 text-gray-400">
               …
             </span>
           ) : (
             <button
               key={i}
               className={cn(
-                "pagination-btn",
-                currentPage === page ? "active" : ""
+                "w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all",
+                currentPage === page ? "bg-black text-white" : "text-gray-500 hover:bg-gray-100"
               )}
               onClick={() => onPageChange(page as number)}
             >
@@ -293,6 +302,13 @@ export function Pagination({
           disabled={currentPage === totalPages}
         >
           <ChevronRight size={14} />
+        </button>
+        <button
+          className="pagination-btn"
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronsRight size={14} />
         </button>
       </div>
     </div>
