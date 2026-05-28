@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { 
     DataTable, 
     Column, 
@@ -19,6 +20,7 @@ import {
     Loader2
 } from "lucide-react";
 import { studentsApi, Student } from "@/lib/api/students";
+import { apiClient } from "@/lib/api/client";
 import { AddStudentModal } from "@/components/ui/AddStudentModal";
 import { ViewStudentModal } from "@/components/ui/ViewStudentModal";
 import { EditStudentModal } from "@/components/ui/EditStudentModal";
@@ -26,6 +28,7 @@ import { DeleteStudentModal } from "@/components/ui/DeleteStudentModal";
 import { toast } from "@/lib/utils/toast";
 
 export default function AdminStudentsPage() {
+    const router = useRouter();
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState("");
     const [classFilter, setClassFilter] = useState("");
@@ -39,15 +42,21 @@ export default function AdminStudentsPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
+    // Fetch classes for filter
+    const { data: classes } = useQuery({
+        queryKey: ["classes"],
+        queryFn: () => apiClient<Array<{ id: string; name: string; stream: string | null }>>("/api/v1/classes"),
+    });
+
     // Fetch students
     const { data, isLoading, error } = useQuery({
         queryKey: ["students", page, searchQuery, classFilter],
-        queryFn: () => studentsApi.getStudents({ 
-            page, 
-            limit, 
-            search: searchQuery || undefined,
-            classId: classFilter || undefined 
-        }),
+        queryFn: () => {
+            const params: any = { page, limit };
+            if (searchQuery) params.search = searchQuery;
+            if (classFilter) params.classId = classFilter;
+            return studentsApi.getStudents(params);
+        },
     });
 
     // Delete mutation
@@ -110,7 +119,7 @@ export default function AdminStudentsPage() {
         {
             key: "user",
             header: "Student contact",
-            render: (v: any) => <span className="text-gray-500">{v.phoneNumber || "N/A"}</span>
+            render: (v: any) => <span className="text-gray-500">{v?.phoneNumber || "N/A"}</span>
         },
         {
             key: "action",
@@ -213,17 +222,30 @@ export default function AdminStudentsPage() {
                         All classes
                     </button>
                     
-                    <div className="flex items-center bg-white border border-gray-200 rounded-lg px-4 h-10 group focus-within:border-black transition-all min-w-[140px]">
-                        <Filter size={16} className="text-gray-400 mr-2" />
-                        <select className="bg-transparent border-none outline-none text-[13px] font-medium text-gray-600 w-full appearance-none cursor-pointer">
-                            <option value="">Intake</option>
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
-                        </select>
-                        <ChevronDown size={14} className="text-gray-400 ml-1" />
-                    </div>
+                    {/* Class Filter Dropdown */}
+                    {classes && classes.length > 0 && (
+                        <div className="flex items-center bg-white border border-gray-200 rounded-lg px-4 h-10 group focus-within:border-black transition-all min-w-[180px]">
+                            <Filter size={16} className="text-gray-400 mr-2" />
+                            <select 
+                                value={classFilter}
+                                onChange={(e) => setClassFilter(e.target.value)}
+                                className="bg-transparent border-none outline-none text-[13px] font-medium text-gray-600 w-full appearance-none cursor-pointer"
+                            >
+                                <option value="">Select Class</option>
+                                {classes.map((cls) => (
+                                    <option key={cls.id} value={cls.id}>
+                                        {cls.name} {cls.stream ? `- ${cls.stream}` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className="text-gray-400 ml-1" />
+                        </div>
+                    )}
 
-                    <button className="flex items-center bg-white border border-gray-200 rounded-lg px-6 h-10 group hover:border-black transition-all whitespace-nowrap">
+                    <button 
+                        onClick={() => router.push('/admin/alumni')}
+                        className="flex items-center bg-white border border-gray-200 rounded-lg px-6 h-10 group hover:border-black transition-all whitespace-nowrap"
+                    >
                         <Users size={16} className="text-gray-400 mr-2" />
                         <span className="text-[13px] font-medium text-gray-600">Alumni students</span>
                     </button>
