@@ -7,7 +7,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Upload, Loader2 } from "lucide-react";
 import { updateStudentSchema, UpdateStudentInput } from "@/lib/validations/student";
 import { studentsApi, Student } from "@/lib/api/students";
-import { uploadToCloudinary } from "@/lib/api/client";
 import { toast } from "@/lib/utils/toast";
 
 interface EditStudentModalProps {
@@ -35,7 +34,6 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
     if (student) {
       setValue("firstName", student.user.firstName);
       setValue("lastName", student.user.lastName);
-      setValue("phoneNumber", student.user.phoneNumber || "");
       setValue("dateOfBirth", student.dateOfBirth || "");
       setValue("gender", student.gender as any);
       setValue("avatarUrl", student.user.avatarUrl || "");
@@ -72,13 +70,23 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
 
     try {
       setIsUploading(true);
-      const url = await uploadToCloudinary(file);
-      setValue("avatarUrl", url);
-      setAvatarPreview(url);
-      toast.success("Image uploaded successfully");
+      
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setValue("avatarUrl", base64String);
+        setAvatarPreview(base64String);
+        toast.success("Image uploaded successfully");
+        setIsUploading(false);
+      };
+      reader.onerror = () => {
+        toast.error("Failed to upload image");
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       toast.error("Failed to upload image");
-    } finally {
       setIsUploading(false);
     }
   };
@@ -164,18 +172,6 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
-              </label>
-              <input
-                {...register("phoneNumber")}
-                type="tel"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
-                placeholder="+250 788 000 000"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Gender
               </label>
               <select
@@ -183,22 +179,22 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
               >
                 <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
               </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date of Birth
-            </label>
-            <input
-              {...register("dateOfBirth")}
-              type="date"
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date of Birth
+              </label>
+              <input
+                {...register("dateOfBirth")}
+                type="date"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black"
+              />
+            </div>
           </div>
 
           {/* Action Buttons */}
