@@ -11,47 +11,62 @@ import {
     MoveRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { dashboardApi } from "@/lib/api/dashboard";
+import { apiClient } from "@/lib/api/client";
 
 export default function AdminDashboard() {
+    // Fetch dashboard stats
+    const { data: statsData, isLoading } = useQuery({
+        queryKey: ["dashboard-stats"],
+        queryFn: dashboardApi.getStats,
+    });
+
+    // Fetch current user
+    const { data: user } = useQuery({
+        queryKey: ["current-user"],
+        queryFn: () => apiClient<{ firstName: string; lastName: string }>("/api/v1/auth/me"),
+    });
+
     const stats = [
         {
             label: "Total Students",
-            value: "308",
+            value: isLoading ? "..." : String(statsData?.totalStudents || 0),
             icon: <GraduationCap />,
-            progress: 65,
+            progress: statsData?.totalStudents ? Math.min((statsData.totalStudents / 500) * 100, 100) : 0,
             subtext: [
-                { label: "Male (61%)" },
-                { label: "Female (39%)" }
+                { label: `Male (${statsData?.totalStudents ? Math.round((statsData.maleStudents / statsData.totalStudents) * 100) : 0}%)` },
+                { label: `Female (${statsData?.totalStudents ? Math.round((statsData.femaleStudents / statsData.totalStudents) * 100) : 0}%)` }
             ]
         },
         {
             label: "Teachers",
-            value: "308",
+            value: isLoading ? "..." : String(statsData?.totalTeachers || 0),
             icon: <Users />,
-            progress: 65,
+            progress: statsData?.totalTeachers ? Math.min((statsData.totalTeachers / 100) * 100, 100) : 0,
             subtext: [
-                { label: "Male (61%)" },
-                { label: "Female (39%)" }
+                { label: `Male (${statsData?.totalTeachers ? Math.round((statsData.maleTeachers / statsData.totalTeachers) * 100) : 0}%)` },
+                { label: `Female (${statsData?.totalTeachers ? Math.round((statsData.femaleTeachers / statsData.totalTeachers) * 100) : 0}%)` }
             ]
         },
         {
             label: "Total Staff",
-            value: "308",
+            value: isLoading ? "..." : String(statsData?.totalStaff || 0),
             icon: <UserCheck />,
-            progress: 65,
+            progress: statsData?.totalStaff ? Math.min((statsData.totalStaff / 100) * 100, 100) : 0,
             subtext: [
-                { label: "Male (61%)" },
-                { label: "Female (39%)" }
+                { label: `Active` },
+                { label: `On Leave` }
             ]
         },
         {
             label: "Total Subjects",
-            value: "308",
+            value: isLoading ? "..." : String(statsData?.totalSubjects || 0),
             icon: <BookOpen />,
-            progress: 65,
+            progress: statsData?.totalSubjects ? Math.min((statsData.totalSubjects / 20) * 100, 100) : 0,
             subtext: [
-                { label: "Male (61%)" },
-                { label: "Female (39%)" }
+                { label: `Core` },
+                { label: `Elective` }
             ]
         }
     ];
@@ -108,7 +123,9 @@ export default function AdminDashboard() {
 
             {/* Welcome Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h2 className="text-xl font-semibold text-gray-800 tracking-tight">Welcome back Admin</h2>
+                <h2 className="text-xl font-semibold text-gray-800 tracking-tight">
+                    Welcome back {user ? `${user.firstName} ${user.lastName}` : 'Admin'}
+                </h2>
                 <div className="w-full md:w-96">
                     <SearchInput placeholder="Search..." />
                 </div>
