@@ -42,8 +42,24 @@ export default function LoginPage() {
       // Store the access token in localStorage
       localStorage.setItem("accessToken", data.accessToken);
 
-      // Redirect to admin dashboard
-      router.push("/admin");
+      // Decode JWT to get user role
+      const decodedToken = JSON.parse(atob(data.accessToken.split('.')[1]));
+      const userRole = decodedToken.roles?.[0];
+      
+      const roleRoutes: Record<string, string> = {
+        TEACHER: "/teacher",
+        STUDENT: "/student",
+        PARENT: "/parent",
+        SCHOOL_ADMIN: "/admin",
+        SUPER_ADMIN: "/super-admin",
+        NURSE: "/nurse",
+        ACCOUNTANT: "/accountant",
+        LIBRARIAN: "/librarian",
+        DISCIPLINE_OFFICER: "/discipline",
+      };
+
+      const redirectPath = roleRoutes[userRole] || "/admin";
+      router.push(redirectPath);
     } catch (error) {
       console.error("Login error:", error);
       setError("Unable to connect to server. Please try again.");
