@@ -64,6 +64,9 @@ export interface UpdateStudentDto {
 }
 
 export const studentsApi = {
+    getMyProfile: () =>
+        apiClient<Student>("/api/v1/students/me/profile"),
+
     getStudents: async (params?: {
         page?: number;
         limit?: number;

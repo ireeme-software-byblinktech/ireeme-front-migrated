@@ -68,6 +68,11 @@ export default function AdminAttendancesPage() {
         }
     }, [classes, selectedClassId]);
 
+    // Show message when date changes and no data exists
+    const hasNoDataForDate = viewType === "Students" 
+        ? (attendanceData?.records?.length === 0 && !loadingAttendance && selectedClassId)
+        : (teacherAttendanceData?.records?.length === 0 && !loadingTeacherAttendance);
+
     // Mark bulk attendance mutation
     const markAttendanceMutation = useMutation({
         mutationFn: attendanceApi.markBulk,
@@ -193,9 +198,9 @@ export default function AdminAttendancesPage() {
             render: (v) => <span className="text-gray-500">{new Date(String(v)).toLocaleDateString()}</span>
         },
         {
-            key: "date",
+            key: "checkInTime",
             header: "Check-in time",
-            render: (v) => <span className="text-gray-500">-</span>
+            render: (v) => <span className="text-gray-500">{v ? new Date(String(v)).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-'}</span>
         },
         {
             key: "status",
@@ -451,7 +456,10 @@ export default function AdminAttendancesPage() {
                 ) : viewType === "Teachers" ? (
                     filteredTeacherData.length === 0 ? (
                         <div className="text-center py-20 text-gray-500">
-                            No teacher attendance records found for selected date
+                            {hasNoDataForDate 
+                                ? `No teacher attendance records found for ${new Date(selectedDate).toLocaleDateString()}`
+                                : "No teacher attendance records found for selected date"
+                            }
                         </div>
                     ) : (
                         <>
@@ -475,7 +483,10 @@ export default function AdminAttendancesPage() {
                     )
                 ) : filteredData.length === 0 ? (
                     <div className="text-center py-20 text-gray-500">
-                        No attendance records found for selected {selectedClassId ? 'class' : 'date'}
+                        {hasNoDataForDate 
+                            ? `No attendance records found for ${new Date(selectedDate).toLocaleDateString()}`
+                            : `No attendance records found for selected ${selectedClassId ? 'class' : 'date'}`
+                        }
                     </div>
                 ) : (
                     <>

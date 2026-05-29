@@ -463,10 +463,11 @@ interface SidebarProps {
   role: string;
   userName?: string;
   userEmail?: string;
+  avatarUrl?: string;
   isOpen?: boolean;
 }
 
-export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: SidebarProps) {
+export function Sidebar({ role, userName = "User", userEmail, avatarUrl, isOpen = true }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const groups = NAV_MAP[role] ?? ADMIN_GROUPS;
@@ -506,6 +507,29 @@ export function Sidebar({ role, userName = "User", userEmail, isOpen = true }: S
           />
         ))}
       </nav>
+
+      {/* User Profile Section */}
+      <div className="px-3 py-3 border-t border-gray-200">
+        <Link href={`/${role}/profile`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={userName}
+              className="w-10 h-10 rounded-full object-cover border-2 border-gray-100"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-black to-gray-700 flex items-center justify-center border-2 border-gray-100">
+              <span className="text-white text-sm font-bold">
+                {userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </span>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900 truncate">{userName}</p>
+            <p className="text-xs text-gray-500 truncate">{roleLabel}</p>
+          </div>
+        </Link>
+      </div>
 
       {/* User footer */}
       <div className="sidebar-footer">
