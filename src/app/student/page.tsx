@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
 import { useStudentProfile, useStudentDashboard } from "@/hooks/api/useStudentAPI";
 import { useSocket } from "@/hooks/useSocket";
-import { studentsApi } from "@/lib/api/students";
+
 
 // Assignment data type
 interface Assignment {
