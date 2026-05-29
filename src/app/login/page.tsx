@@ -46,10 +46,39 @@ export default function LoginPage() {
         localStorage.setItem("refreshToken", data.refreshToken);
       }
 
+      // Store user data
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
       toast.success("Login successful! Redirecting...");
       
-      // Redirect to admin dashboard
-      router.push("/admin");
+      // Decode JWT to get user roles (JWT format: header.payload.signature)
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+      const roles = payload.roles || [];
+      
+      // Role-based routing
+      if (roles.includes('NURSE')) {
+        router.push("/nurse");
+      } else if (roles.includes('LIBRARIAN')) {
+        router.push("/librarian");
+      } else if (roles.includes('DISCIPLINE_OFFICER')) {
+        router.push("/discipline");
+      } else if (roles.includes('ACCOUNTANT')) {
+        router.push("/accountant");
+      } else if (roles.includes('TEACHER')) {
+        router.push("/teacher");
+      } else if (roles.includes('STUDENT')) {
+        router.push("/student");
+      } else if (roles.includes('PARENT')) {
+        router.push("/parent");
+      } else if (roles.includes('SCHOOL_ADMIN')) {
+        router.push("/admin");
+      } else if (roles.includes('SUPER_ADMIN')) {
+        router.push("/super-admin");
+      } else {
+        router.push("/admin"); // Default fallback
+      }
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage = "Unable to connect to server. Please try again.";

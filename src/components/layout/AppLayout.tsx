@@ -10,6 +10,7 @@ interface AppLayoutProps {
   pageTitle?: string;
   userName?: string;
   userEmail?: string;
+  avatarUrl?: string;
   notificationCount?: number;
 }
 
@@ -19,6 +20,7 @@ export function AppLayout({
   pageTitle,
   userName = "User",
   userEmail,
+  avatarUrl,
   notificationCount = 0,
 }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -27,7 +29,8 @@ export function AppLayout({
     <div className="app-layout">
       <Sidebar 
         role={role} 
-        userName={userName} 
+        userName={userName}
+        avatarUrl={avatarUrl} 
         userEmail={userEmail}
         isOpen={sidebarOpen}
       />
@@ -36,6 +39,7 @@ export function AppLayout({
           title={pageTitle}
           role={role}
           userName={userName}
+          avatarUrl={avatarUrl}
           notificationCount={notificationCount}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
