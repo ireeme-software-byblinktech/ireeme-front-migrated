@@ -61,10 +61,19 @@ export const studentsApi = {
         search?: string;
         classId?: string;
         isActive?: boolean;
-    }) =>
-        apiClient<StudentsResponse>(
-            `/api/v1/students?${new URLSearchParams(params as any).toString()}`
-        ),
+    }) => {
+        const searchParams = new URLSearchParams();
+        if (params?.page) searchParams.append("page", params.page.toString());
+        if (params?.limit) searchParams.append("limit", params.limit.toString());
+        if (params?.search) searchParams.append("search", params.search);
+        if (params?.classId) searchParams.append("classId", params.classId);
+        if (params?.isActive !== undefined) searchParams.append("isActive", params.isActive.toString());
+        
+        const query = searchParams.toString();
+        return apiClient<StudentsResponse>(
+            `/api/v1/students${query ? `?${query}` : ""}`
+        );
+    },
 
     getStudent: (id: string) =>
         apiClient<Student>(`/api/v1/students/${id}`),

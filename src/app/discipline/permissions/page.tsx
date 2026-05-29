@@ -71,8 +71,8 @@ export default function PermissionsPage() {
                                 <div className="flex justify-between items-start mb-8">
                                     <div>
                                         <h3 className="font-black text-[18px] text-gray-900 leading-tight">{student.name}</h3>
-                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter mt-1">{student.id}</p>
-                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{student.grade}</p>
+                                        <p className="text-[11px] text-gray-600 mt-1">{student.id}</p>
+                                        <p className="text-[11px] text-gray-600">{student.grade}</p>
                                     </div>
                                     <span className={cn(
                                         "px-4 py-1.5 rounded-full text-[10px] font-black",
@@ -84,23 +84,23 @@ export default function PermissionsPage() {
                                     </span>
                                 </div>
 
-                                <div className="space-y-4 mb-8">
+                                <div className="space-y-2 mb-8">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[13px] text-gray-700 font-bold uppercase tracking-tight">Total Incidents:</span>
-                                        <span className="font-black text-gray-900 text-[14px]">{student.totalIncidents}</span>
+                                        <span className="text-[13px] text-gray-600">Total Incidents:</span>
+                                        <span className="font-bold text-gray-900 text-[14px]">{student.totalIncidents}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[13px] text-gray-700 font-bold uppercase tracking-tight">Recent (30 days):</span>
-                                        <span className="font-black text-gray-900 text-[14px]">{student.recentIncidents}</span>
+                                        <span className="text-[13px] text-gray-600">Recent (30 days):</span>
+                                        <span className="font-bold text-gray-900 text-[14px]">{student.recentIncidents}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[13px] text-gray-700 font-bold uppercase tracking-tight">Last Incident:</span>
-                                        <span className="font-black text-gray-900 text-[14px]">{student.lastIncident}</span>
+                                        <span className="text-[13px] text-gray-600">Last Incident:</span>
+                                        <span className="font-bold text-gray-900 text-[14px]">{student.lastIncident}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[13px] text-gray-700 font-bold uppercase tracking-tight">Behavior Trend:</span>
+                                        <span className="text-[13px] text-gray-600">Behavior Trend:</span>
                                         <span className={cn(
-                                            "flex items-center gap-1 font-black text-[14px]",
+                                            "flex items-center gap-1 font-bold text-[14px]",
                                             student.trend === "up" ? "text-emerald-500" :
                                                 student.trend === "down" ? "text-red-500" :
                                                     "text-gray-400"

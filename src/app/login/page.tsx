@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/FormElements";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Sparkles, Eye, EyeOff, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function LoginPage() {
     setError("");
     
     try {
-      const response = await fetch("http://localhost:3001/api/v1/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,8 +42,32 @@ export default function LoginPage() {
       // Store the access token in localStorage
       localStorage.setItem("accessToken", data.accessToken);
       
-      // Redirect to admin dashboard
-      router.push("/admin");
+      // Decode JWT to get user roles (JWT format: header.payload.signature)
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+      const roles = payload.roles || [];
+      
+      // Role-based routing
+      if (roles.includes('NURSE')) {
+        router.push("/nurse");
+      } else if (roles.includes('LIBRARIAN')) {
+        router.push("/librarian");
+      } else if (roles.includes('DISCIPLINE_OFFICER')) {
+        router.push("/discipline");
+      } else if (roles.includes('ACCOUNTANT')) {
+        router.push("/accountant");
+      } else if (roles.includes('TEACHER')) {
+        router.push("/teacher");
+      } else if (roles.includes('STUDENT')) {
+        router.push("/student");
+      } else if (roles.includes('PARENT')) {
+        router.push("/parent");
+      } else if (roles.includes('SCHOOL_ADMIN')) {
+        router.push("/admin");
+      } else if (roles.includes('SUPER_ADMIN')) {
+        router.push("/super-admin");
+      } else {
+        router.push("/admin"); // Default fallback
+      }
     } catch (error) {
       console.error("Login error:", error);
       setError("Unable to connect to server. Please try again.");

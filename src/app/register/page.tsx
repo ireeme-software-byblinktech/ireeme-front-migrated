@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { CountryAutocomplete } from "@/components/ui/CountryAutocomplete";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Building2, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +11,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [country, setCountry] = useState("");
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,10 +75,10 @@ export default function RegisterPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Country</label>
-                    <input
-                      type="text"
+                    <CountryAutocomplete
+                      value={country}
+                      onChange={setCountry}
                       placeholder="e.g. United States"
-                      className="w-full h-14 px-4 rounded-xl border border-gray-300 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black/5 focus:border-black transition-all outline-none text-base"
                       required
                     />
                   </div>
