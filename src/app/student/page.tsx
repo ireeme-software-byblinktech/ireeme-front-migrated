@@ -11,7 +11,7 @@ import { useStudentProfile, useStudentDashboard } from "@/hooks/api/useStudentAP
 import { useSocket } from "@/hooks/useSocket";
 
 
-// Assignment data type
+
 interface Assignment {
   id: string;
   title: string;
