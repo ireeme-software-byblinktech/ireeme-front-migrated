@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardBody } from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/Shared";
@@ -9,118 +10,101 @@ import {
   Grid,
   List,
   Eye,
-  TrendingDown,
-  TrendingUp,
-  Minus
+  AlertCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { disciplineApi, DisciplineCase } from "@/lib/api/discipline";
 
-// ─── MOCK DATA ────────────────────────────────────────────────
-
-const monitoredStudents = [
-  {
-    id: "STU2024001",
-    name: "John Smith",
-    grade: "Grade 10-A",
-    risk: "Medium",
-    totalIncidents: 5,
-    recentIncidents: 2,
-    lastIncident: "15/03/2024",
-    trend: "down",
-    trendLabel: "Declining"
-  },
-  {
-    id: "STU2024003",
-    name: "Michael Brown",
-    grade: "Grade 11-A",
-    risk: "High",
-    totalIncidents: 8,
-    recentIncidents: 3,
-    lastIncident: "14/03/2024",
-    trend: "down",
-    trendLabel: "Declining"
-  },
-  {
-    id: "STU2024005",
-    name: "David Lee",
-    grade: "Grade 12-B",
-    risk: "Medium",
-    totalIncidents: 6,
-    recentIncidents: 1,
-    lastIncident: "12/03/2024",
-    trend: "up",
-    trendLabel: "Improving"
-  },
-  {
-    id: "STU2024002",
-    name: "Emily Davis",
-    grade: "Grade 9-B",
-    risk: "Low",
-    totalIncidents: 3,
-    recentIncidents: 1,
-    lastIncident: "14/03/2024",
-    trend: "stable",
-    trendLabel: "Stable"
-  },
-  {
-    id: "STU2024006",
-    name: "Sarah Johnson",
-    grade: "Grade 10-C",
-    risk: "Low",
-    totalIncidents: 4,
-    recentIncidents: 2,
-    lastIncident: "13/03/2024",
-    trend: "stable",
-    trendLabel: "Stable"
-  },
-  {
-    id: "STU2024007",
-    name: "Alex Rodriguez",
-    grade: "Grade 11-B",
-    risk: "High",
-    totalIncidents: 7,
-    recentIncidents: 3,
-    lastIncident: "16/03/2024",
-    trend: "down",
-    trendLabel: "Declining"
-  },
-  {
-    id: "STU2024008",
-    name: "Jessica Chen",
-    grade: "Grade 9-A",
-    risk: "Low",
-    totalIncidents: 2,
-    recentIncidents: 1,
-    lastIncident: "10/03/2024",
-    trend: "up",
-    trendLabel: "Improving"
-  },
-  {
-    id: "STU2024012",
-    name: "Sophia Taylor",
-    grade: "Grade 9-C",
-    risk: "Low",
-    totalIncidents: 1,
-    recentIncidents: 1,
-    lastIncident: "08/03/2024",
-    trend: "stable",
-    trendLabel: "Stable"
-  },
-  {
-    id: "STU2024010",
-    name: "Olivia Martinez",
-    grade: "Grade 10-B",
-    risk: "Low",
-    totalIncidents: 3,
-    recentIncidents: 1,
-    lastIncident: "09/03/2024",
-    trend: "stable",
-    trendLabel: "Stable"
-  },
-];
+interface StudentWithCases {
+  studentId: string;
+  studentName: string;
+  studentNumber: string;
+  totalCases: number;
+  openCases: number;
+  totalPointsDeducted: number;
+  lastIncidentDate: string | null;
+  riskLevel: "High" | "Medium" | "Low";
+}
 
 export default function StudentsPage() {
+  const [students, setStudents] = useState<StudentWithCases[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [riskFilter, setRiskFilter] = useState<string>("");
+
+  useEffect(() => {
+    fetchStudentsWithCases();
+  }, []);
+
+  const fetchStudentsWithCases = async () => {
+    try {
+      setLoading(true);
+      // Fetch all cases with proper limit
+      const response = await disciplineApi.getCases({ limit: 50 });
+      
+      // Group by student
+      const studentMap = new Map<string, StudentWithCases>();
+      
+      response.data.forEach((caseItem) => {
+        const studentId = caseItem.studentId;
+        const existing = studentMap.get(studentId);
+        
+        if (existing) {
+          existing.totalCases++;
+          if (caseItem.status === "OPEN") existing.openCases++;
+          existing.totalPointsDeducted += caseItem.pointsDeduct;
+          
+          // Update last incident date
+          const caseDate = new Date(caseItem.createdAt);
+          const lastDate = existing.lastIncidentDate ? new Date(existing.lastIncidentDate) : null;
+          if (!lastDate || caseDate > lastDate) {
+            existing.lastIncidentDate = caseItem.createdAt;
+          }
+        } else {
+          studentMap.set(studentId, {
+            studentId,
+            studentName: `${caseItem.student?.user.firstName} ${caseItem.student?.user.lastName}`,
+            studentNumber: caseItem.student?.studentNumber || "N/A",
+            totalCases: 1,
+            openCases: caseItem.status === "OPEN" ? 1 : 0,
+            totalPointsDeducted: caseItem.pointsDeduct,
+            lastIncidentDate: caseItem.createdAt,
+            riskLevel: "Low",
+          });
+        }
+      });
+      
+      // Calculate risk levels
+      const studentsArray = Array.from(studentMap.values()).map((student) => {
+        if (student.totalPointsDeducted >= 50 || student.openCases >= 3) {
+          student.riskLevel = "High";
+        } else if (student.totalPointsDeducted >= 20 || student.openCases >= 2) {
+          student.riskLevel = "Medium";
+        } else {
+          student.riskLevel = "Low";
+        }
+        return student;
+      });
+      
+      // Sort by total points (highest first)
+      studentsArray.sort((a, b) => b.totalPointsDeducted - a.totalPointsDeducted);
+      
+      setStudents(studentsArray);
+    } catch (error) {
+      console.error("Failed to fetch students:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch = student.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         student.studentNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRisk = !riskFilter || student.riskLevel === riskFilter;
+    return matchesSearch && matchesRisk;
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -128,8 +112,8 @@ export default function StudentsPage() {
       className="space-y-8 p-1"
     >
       <PageHeader
-        title="Monitered students"
-        subtitle="Track and monitor students with significant disciplinary history"
+        title="Monitored Students"
+        subtitle="Track and monitor students with disciplinary history"
       />
 
       {/* Controls */}
@@ -139,88 +123,91 @@ export default function StudentsPage() {
           <input
             type="text"
             placeholder="Search students..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-black transition-all bg-white"
           />
         </div>
         <div className="flex gap-4 w-full md:w-auto">
-          <div className="flex bg-gray-100 p-1 rounded-lg">
-            <button className="bg-white shadow-sm p-2 rounded-md text-black px-4 flex gap-2 items-center font-bold text-sm">
-              <Grid size={16} /> Grid
-            </button>
-            <button className="p-2 px-4 text-gray-400 flex gap-2 items-center font-bold text-sm hover:text-gray-600 transition-colors">
-              <List size={16} /> Table
-            </button>
-          </div>
-          <Button variant="outline" className="flex gap-2 items-center font-medium border-gray-200 text-gray-600">
-            <Filter size={16} /> All Risk levels
-          </Button>
+          <select
+            value={riskFilter}
+            onChange={(e) => setRiskFilter(e.target.value)}
+            className="py-3 px-6 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
+          >
+            <option value="">All Risk Levels</option>
+            <option value="High">High Risk</option>
+            <option value="Medium">Medium Risk</option>
+            <option value="Low">Low Risk</option>
+          </select>
         </div>
       </div>
 
       {/* Students Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {monitoredStudents.map((student, i) => (
-          <motion.div
-            key={student.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <Card className="border-none shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
-              <CardBody className="p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900 leading-tight">{student.name}</h3>
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter mt-1">{student.id}</p>
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{student.grade}</p>
-                  </div>
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-[10px] font-bold",
-                    student.risk === "High" ? "bg-red-50 text-red-500" :
-                      student.risk === "Medium" ? "bg-amber-50 text-amber-500" :
-                        "bg-emerald-50 text-emerald-500"
-                  )}>
-                    {student.risk} Risk
-                  </span>
-                </div>
-
-                <div className="space-y-3 mb-8">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-700 font-bold uppercase tracking-tight text-[12px]">Total Incidents:</span>
-                    <span className="font-black text-gray-900">{student.totalIncidents}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-700 font-bold uppercase tracking-tight text-[12px]">Recent (30 days):</span>
-                    <span className="font-black text-gray-900">{student.recentIncidents}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-700 font-bold uppercase tracking-tight text-[12px]">Last Incident:</span>
-                    <span className="font-black text-gray-900">{student.lastIncident}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-700 font-bold uppercase tracking-tight text-[12px]">Behavior Trend:</span>
+      {loading ? (
+        <div className="text-center py-12 text-gray-500">Loading students...</div>
+      ) : filteredStudents.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          {searchQuery || riskFilter ? "No students match your filters" : "No students with discipline cases found"}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStudents.map((student, i) => (
+            <motion.div
+              key={student.studentId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <Card className="border-none shadow-sm rounded-2xl bg-white hover:shadow-md transition-shadow">
+                <CardBody className="p-6">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-900 leading-tight">{student.studentName}</h3>
+                      <p className="text-[11px] text-gray-600 mt-1">{student.studentNumber}</p>
+                    </div>
                     <span className={cn(
-                      "flex items-center gap-1 font-black",
-                      student.trend === "up" ? "text-emerald-500" :
-                        student.trend === "down" ? "text-red-500" :
-                          "text-gray-400"
+                      "px-3 py-1 rounded-full text-[10px] font-bold",
+                      student.riskLevel === "High" ? "bg-red-50 text-red-500" :
+                        student.riskLevel === "Medium" ? "bg-amber-50 text-amber-500" :
+                          "bg-emerald-50 text-emerald-500"
                     )}>
-                      {student.trend === "up" && <TrendingUp size={14} />}
-                      {student.trend === "down" && <TrendingDown size={14} />}
-                      {student.trend === "stable" && <Minus size={14} />}
-                      {student.trendLabel}
+                      {student.riskLevel} Risk
                     </span>
                   </div>
-                </div>
 
-                <Button className="w-full bg-black text-white hover:bg-gray-900 rounded-xl py-6 h-auto font-bold flex gap-2 items-center justify-center transition-transform hover:scale-[1.02]">
-                  <Eye size={18} /> View Details
-                </Button>
-              </CardBody>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+                  <div className="space-y-2 mb-8">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 text-[12px]">Total Cases:</span>
+                      <span className="font-bold text-gray-900">{student.totalCases}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 text-[12px]">Open Cases:</span>
+                      <span className="font-bold text-red-600">{student.openCases}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 text-[12px]">Points Deducted:</span>
+                      <span className="font-bold text-red-600">-{student.totalPointsDeducted}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 text-[12px]">Last Incident:</span>
+                      <span className="font-bold text-gray-900">
+                        {student.lastIncidentDate ? new Date(student.lastIncidentDate).toLocaleDateString() : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    className="w-full bg-black text-white hover:bg-gray-900 rounded-xl py-6 h-auto font-bold flex gap-2 items-center justify-center transition-transform hover:scale-[1.02]"
+                    onClick={() => window.location.href = `/discipline/students/${student.studentId}`}
+                  >
+                    <Eye size={18} /> View Details
+                  </Button>
+                </CardBody>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }

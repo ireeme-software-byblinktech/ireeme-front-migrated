@@ -53,41 +53,31 @@ export default function LoginPage() {
 
       toast.success("Login successful! Redirecting...");
       
-      // Redirect based on user role
-      const userRole = data.user?.roles?.[0]?.role;
+      // Decode JWT to get user roles (JWT format: header.payload.signature)
+      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+      const roles = payload.roles || [];
       
-      switch (userRole) {
-        case "STUDENT":
-          router.push("/student");
-          break;
-        case "TEACHER":
-          router.push("/teacher");
-          break;
-        case "PARENT":
-          router.push("/parent");
-          break;
-        case "SCHOOL_ADMIN":
-          router.push("/admin");
-          break;
-        case "SUPER_ADMIN":
-          router.push("/super-admin");
-          break;
-        case "ACCOUNTANT":
-          router.push("/accountant");
-          break;
-        case "LIBRARIAN":
-          router.push("/librarian");
-          break;
-        case "NURSE":
-          router.push("/nurse");
-          break;
-        case "DISCIPLINE_MASTER":
-          router.push("/discipline");
-          break;
-        default:
-          // If no role or unknown role, go to role selection
-          router.push("/choose-role");
-          break;
+      // Role-based routing
+      if (roles.includes('NURSE')) {
+        router.push("/nurse");
+      } else if (roles.includes('LIBRARIAN')) {
+        router.push("/librarian");
+      } else if (roles.includes('DISCIPLINE_OFFICER')) {
+        router.push("/discipline");
+      } else if (roles.includes('ACCOUNTANT')) {
+        router.push("/accountant");
+      } else if (roles.includes('TEACHER')) {
+        router.push("/teacher");
+      } else if (roles.includes('STUDENT')) {
+        router.push("/student");
+      } else if (roles.includes('PARENT')) {
+        router.push("/parent");
+      } else if (roles.includes('SCHOOL_ADMIN')) {
+        router.push("/admin");
+      } else if (roles.includes('SUPER_ADMIN')) {
+        router.push("/super-admin");
+      } else {
+        router.push("/admin"); // Default fallback
       }
     } catch (error) {
       console.error("Login error:", error);
