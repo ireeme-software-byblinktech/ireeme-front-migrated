@@ -46,10 +46,49 @@ export default function LoginPage() {
         localStorage.setItem("refreshToken", data.refreshToken);
       }
 
+      // Store user data
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
       toast.success("Login successful! Redirecting...");
       
-      // Redirect to admin dashboard
-      router.push("/admin");
+      // Redirect based on user role
+      const userRole = data.user?.roles?.[0]?.role;
+      
+      switch (userRole) {
+        case "STUDENT":
+          router.push("/student");
+          break;
+        case "TEACHER":
+          router.push("/teacher");
+          break;
+        case "PARENT":
+          router.push("/parent");
+          break;
+        case "SCHOOL_ADMIN":
+          router.push("/admin");
+          break;
+        case "SUPER_ADMIN":
+          router.push("/super-admin");
+          break;
+        case "ACCOUNTANT":
+          router.push("/accountant");
+          break;
+        case "LIBRARIAN":
+          router.push("/librarian");
+          break;
+        case "NURSE":
+          router.push("/nurse");
+          break;
+        case "DISCIPLINE_MASTER":
+          router.push("/discipline");
+          break;
+        default:
+          // If no role or unknown role, go to role selection
+          router.push("/choose-role");
+          break;
+      }
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage = "Unable to connect to server. Please try again.";

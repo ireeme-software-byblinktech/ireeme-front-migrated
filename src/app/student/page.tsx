@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
+import { studentsApi } from "@/lib/api/students";
 
 // Stats data array
 const statsData = [
@@ -181,6 +183,12 @@ export default function StudentDashboard() {
   const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Fetch student profile
+  const { data: student } = useQuery({
+    queryKey: ["student-profile"],
+    queryFn: studentsApi.getMyProfile,
+  });
+
   const handleViewSubmission = (submission: Assignment) => {
     setSelectedSubmission(submission);
     setIsModalOpen(true);
@@ -188,6 +196,16 @@ export default function StudentDashboard() {
 
   // Filter assignments based on active tab
   const filteredAssignments = assignmentsData.filter(assignment => assignment.category === activeTab);
+
+  // Get current time of day for greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const firstName = student?.user.firstName || "Student";
 
   const columns: Column<Assignment>[] = [
     {
@@ -245,9 +263,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
+      {/* Welcome Message */}
+      <div className="bg-gradient-to-r from-black to-gray-800 rounded-xl p-6 md:p-8 text-white shadow-lg">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">
+          {getGreeting()}, {firstName}! 👋
+        </h1>
+        <p className="text-gray-300 text-sm md:text-base">
+          {student?.class ? `${student.class.name} • ` : ""}
+          {student?.studentNumber ? `Student ID: ${student.studentNumber}` : "Welcome back to your dashboard"}
+        </p>
       </div>
 
       {/* Stats Cards */}
