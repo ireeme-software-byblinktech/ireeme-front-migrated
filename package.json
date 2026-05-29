@@ -25,7 +25,11 @@
     "react-hook-form": "^7.51.0",
     "react-hot-toast": "^2.6.0",
     "react-international-phone": "^4.8.0",
+<<<<<<< HEAD
+    "socket.io-client": "^4.8.3",
+=======
     "recharts": "^3.8.1",
+>>>>>>> a0a2acf46a584eaf8758c7aef42b49373441bbcb
     "tailwind-merge": "^3.5.0",
     "zod": "^3.22.4"
   },

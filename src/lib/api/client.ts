@@ -1,9 +1,9 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 // Get auth token from storage
 const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("accessToken");
+  return localStorage.getItem("access_token") || localStorage.getItem("accessToken");
 };
 
 // Get refresh token from storage
@@ -61,9 +61,10 @@ export async function apiClient<T>(
   options?: RequestInit
 ): Promise<T> {
   let token = getAuthToken();
+  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
   const makeRequest = async (authToken: string | null) => {
-    return fetch(`${API_BASE_URL}${endpoint}`, {
+    return fetch(url, {
       ...options,
       credentials: "include", // Important: send cookies with every request
       headers: {
@@ -76,13 +77,11 @@ export async function apiClient<T>(
 
   let response = await makeRequest(token);
 
-  // If 401, try to refresh token and retry once
   if (response.status === 401 && !endpoint.includes("/auth/")) {
     const newToken = await refreshAccessToken();
     if (newToken) {
       response = await makeRequest(newToken);
     } else {
-      // Refresh failed, redirect to login
       if (typeof window !== "undefined") {
         clearTokens();
         window.location.href = "/login";
@@ -91,7 +90,6 @@ export async function apiClient<T>(
     }
   }
 
-  // Still 401 after refresh attempt
   if (response.status === 401) {
     if (typeof window !== "undefined") {
       clearTokens();
@@ -101,8 +99,9 @@ export async function apiClient<T>(
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(error.message || `API Error: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.message || response.statusText || "Unknown Error";
+    throw new Error(errorMessage);
   }
 
   // Handle 204 No Content (e.g., DELETE operations)

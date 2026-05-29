@@ -133,4 +133,8 @@ export const electionsApi = {
             votedPositions: number;
             totalPositions: number;
         }>(`/api/v1/elections/${electionId}/voting-status`),
+
+    // Remote fallback methods mapping for compatibility
+    getAll: () => apiClient<Election[]>("/api/v1/elections"),
+    getById: (id: string) => apiClient<Election>(`/api/v1/elections/${id}`),
 };

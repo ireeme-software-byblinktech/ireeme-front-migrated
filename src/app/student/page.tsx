@@ -1,48 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { GraduationCap, BookOpen, FileText, BarChart2 } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
-import { studentsApi } from "@/lib/api/students";
+import { useStudentProfile, useStudentDashboard } from "@/hooks/api/useStudentAPI";
+import { useSocket } from "@/hooks/useSocket";
 
-// Stats data array
-const statsData = [
-  {
-    label: "Total Subjects",
-    value: 15,
-    icon: <GraduationCap size={18} />,
-    progress: 75,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Assignments",
-    value: 30,
-    icon: <BookOpen size={18} />,
-    progress: 80,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Notes",
-    value: 30,
-    icon: <FileText size={18} />,
-    progress: 65,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Reports",
-    value: 30,
-    icon: <BarChart2 size={18} />,
-    progress: 90,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  }
-];
 
-// Assignment data
+
 interface Assignment {
   id: string;
   title: string;
@@ -54,140 +23,80 @@ interface Assignment {
   category: "Pending" | "To do" | "Done";
 }
 
-const assignmentsData: Assignment[] = [
-  {
-    id: "1",
-    title: "Lab Report: Kinematics",
-    subject: "Physics",
-    teacher: "Dr. Anais Kamal",
-    progress: 100,
-    status: "Submitted",
-    dueDate: "2024-03-15",
-    category: "Done"
-  },
-  {
-    id: "2",
-    title: "Quiz: World Religions",
-    subject: "Social Studies",
-    teacher: "Mr. Mujesha Jean",
-    progress: 67,
-    status: "Late",
-    dueDate: "2024-03-12",
-    category: "Pending"
-  },
-  {
-    id: "3",
-    title: "Essay: Climate Change Impact",
-    subject: "Environmental Science",
-    teacher: "Dr. Sarah Wilson",
-    progress: 45,
-    status: "Pending",
-    dueDate: "2024-03-20",
-    category: "Pending"
-  },
-  {
-    id: "4",
-    title: "Math Problem Set 5",
-    subject: "Mathematics",
-    teacher: "Prof. Michael Brown",
-    progress: 0,
-    status: "To do",
-    dueDate: "2024-03-25",
-    category: "To do"
-  },
-  {
-    id: "5",
-    title: "History Research Paper",
-    subject: "History",
-    teacher: "Ms. Jennifer Davis",
-    progress: 85,
-    status: "Pending",
-    dueDate: "2024-03-18",
-    category: "Pending"
-  },
-  {
-    id: "6",
-    title: "Chemistry Lab Report",
-    subject: "Chemistry",
-    teacher: "Dr. Robert Johnson",
-    progress: 100,
-    status: "Submitted",
-    dueDate: "2024-03-10",
-    category: "Done"
-  },
-  {
-    id: "7",
-    title: "Literature Analysis",
-    subject: "English",
-    teacher: "Mrs. Emily Clark",
-    progress: 30,
-    status: "Pending",
-    dueDate: "2024-03-22",
-    category: "Pending"
-  },
-  {
-    id: "8",
-    title: "Biology Presentation",
-    subject: "Biology",
-    teacher: "Dr. Lisa Anderson",
-    progress: 0,
-    status: "To do",
-    dueDate: "2024-03-28",
-    category: "To do"
-  },
-  {
-    id: "9",
-    title: "Spanish Vocabulary Test",
-    subject: "Spanish",
-    teacher: "Señora Maria Rodriguez",
-    progress: 100,
-    status: "Submitted",
-    dueDate: "2024-03-08",
-    category: "Done"
-  },
-  {
-    id: "10",
-    title: "Physics Problem Set",
-    subject: "Physics",
-    teacher: "Dr. Anais Kamal",
-    progress: 75,
-    status: "Pending",
-    dueDate: "2024-03-19",
-    category: "Pending"
-  },
-  {
-    id: "11",
-    title: "Art Portfolio Review",
-    subject: "Art",
-    teacher: "Mr. David Thompson",
-    progress: 0,
-    status: "To do",
-    dueDate: "2024-03-30",
-    category: "To do"
-  },
-  {
-    id: "12",
-    title: "Computer Science Project",
-    subject: "Computer Science",
-    teacher: "Prof. Alex Kumar",
-    progress: 100,
-    status: "Submitted",
-    dueDate: "2024-03-05",
-    category: "Done"
-  }
-];
-
 export default function StudentDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"Pending" | "To do" | "Done">("Pending");
   const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch student profile
-  const { data: student } = useQuery({
-    queryKey: ["student-profile"],
-    queryFn: studentsApi.getMyProfile,
-  });
+  const { data: profile } = useStudentProfile();
+  const { data: dashboardData, isLoading, refetch } = useStudentDashboard(profile?.id);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('grade.posted', () => refetch());
+      socket.on('assignment.created', () => refetch());
+    }
+    return () => {
+      if (socket) {
+        socket.off('grade.posted');
+        socket.off('assignment.created');
+      }
+    };
+  }, [socket, refetch]);
+
+  if (isLoading || !dashboardData) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      </div>
+    );
+  }
+
+  // Derived dynamic stats
+  const statsData = dashboardData ? [
+    {
+      label: "Total Subjects",
+      value: dashboardData.overview.totalSubjects,
+      icon: <GraduationCap size={18} />,
+      progress: 75,
+      trend: { value: "3.6", direction: "up" as const, label: "This month" }
+    },
+    {
+      label: "Total Assignments",
+      value: dashboardData.overview.totalAssignments,
+      icon: <BookOpen size={18} />,
+      progress: dashboardData.overview.assignmentsProgress || 80,
+      trend: { value: "2.1", direction: "up" as const, label: "This month" }
+    },
+    {
+      label: "Completed Assignments",
+      value: dashboardData.overview.completedAssignments,
+      icon: <FileText size={18} />,
+      progress: dashboardData.overview.assignmentsProgress || 65,
+      trend: { value: "1.4", direction: "up" as const, label: "This month" }
+    },
+    {
+      label: "Avg. Attendance",
+      value: `${dashboardData.overview.averageAttendance}%`,
+      icon: <BarChart2 size={18} />,
+      progress: dashboardData.overview.averageAttendance || 90,
+      trend: { value: "0.5", direction: "up" as const, label: "This month" }
+    }
+  ] : [];
+
+  // Derived assignments data
+  const assignmentsData: Assignment[] = dashboardData?.upcomingAssignments.map((a: any) => ({
+    id: a.id,
+    title: a.title,
+    subject: a.subjectName,
+    teacher: a.teacherName,
+    progress: a.progress,
+    status: a.status as Assignment['status'],
+    dueDate: a.dueDate,
+    category: a.status === 'Submitted' ? 'Done' : (a.progress > 0 ? 'Pending' : 'To do')
+  })) || [];
 
   const handleViewSubmission = (submission: Assignment) => {
     setSelectedSubmission(submission);
@@ -205,7 +114,7 @@ export default function StudentDashboard() {
     return "Good evening";
   };
 
-  const firstName = student?.user.firstName || "Student";
+  const firstName = profile?.user.firstName || "Student";
 
   const columns: Column<Assignment>[] = [
     {
@@ -239,8 +148,8 @@ export default function StudentDashboard() {
       align: "center",
       render: (_, row) => (
         <div className={`text-sm font-medium ${row.status === "Submitted" ? "text-gray-600" :
-            row.status === "Late" ? "text-red-600" :
-              row.status === "To do" ? "text-blue-600" : "text-orange-600"
+          row.status === "Late" ? "text-red-600" :
+            row.status === "To do" ? "text-blue-600" : "text-orange-600"
           }`}>
           {row.status}
         </div>
@@ -269,8 +178,8 @@ export default function StudentDashboard() {
           {getGreeting()}, {firstName}! 👋
         </h1>
         <p className="text-gray-300 text-sm md:text-base">
-          {student?.class ? `${student.class.name} • ` : ""}
-          {student?.studentNumber ? `Student ID: ${student.studentNumber}` : "Welcome back to your dashboard"}
+          {(profile as any)?.class ? `${(profile as any).class.name} • ` : ""}
+          {(profile as any)?.studentNumber || (profile as any)?.admissionNumber ? `Student ID: ${(profile as any).studentNumber || (profile as any).admissionNumber}` : "Welcome back to your dashboard"}
         </p>
       </div>
 
@@ -318,8 +227,8 @@ export default function StudentDashboard() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab
-                      ? "border-black text-black"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-black text-black"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
                     }`}
                 >
                   {tab}
