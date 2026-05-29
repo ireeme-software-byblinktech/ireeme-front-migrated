@@ -13,6 +13,15 @@ export interface Election {
     updatedAt: string;
 }
 
+export interface Position {
+    id: string;
+    electionId: string;
+    name: string;
+    minVotes: number;
+    maxVotes: number;
+    candidates: Candidate[];
+}
+
 export interface Candidate {
     id: string;
     positionId: string;
