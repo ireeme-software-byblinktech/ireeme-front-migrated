@@ -12,12 +12,13 @@ export function ViewTeacherModal({ isOpen, onClose, teacher }: ViewTeacherModalP
   if (!isOpen || !teacher) return null;
 
   const details = [
-    { label: "Teacher Name", value: teacher.name },
-    { label: "Email Address", value: teacher.email },
-    { label: "Gender", value: teacher.gender },
-    { label: "Primary Lesson", value: teacher.lesson },
-    { label: "Status", value: teacher.status },
-    { label: "Role", value: "Teacher" },
+    { label: "Teacher Name", value: `${teacher.user.firstName} ${teacher.user.lastName}` },
+    { label: "Email Address", value: teacher.user.email },
+    { label: "Employee Number", value: teacher.employeeNum },
+    { label: "Department", value: teacher.department || "N/A" },
+    { label: "Qualification", value: teacher.qualification || "N/A" },
+    { label: "Contact Number", value: teacher.user.phoneNumber || "N/A" },
+    { label: "Status", value: teacher.isActive ? "Active" : "Inactive" },
   ];
 
   return (

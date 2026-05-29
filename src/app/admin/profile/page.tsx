@@ -1,17 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardBody } from "@/components/ui";
-import { Mail, Phone, MapPin, Shield, School, User as UserIcon } from "lucide-react";
+import { Mail, Phone, MapPin, Shield, School, User as UserIcon, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { authApi } from "@/lib/api/auth";
 
 export default function AdminProfilePage() {
+    const { data: user, isLoading } = useQuery({
+        queryKey: ["current-user"],
+        queryFn: authApi.getCurrentUser,
+    });
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-black" />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-gray-500">Unable to load profile</p>
+            </div>
+        );
+    }
+
     const profileInfo = [
-        { label: "Full Name", value: "John Doe", icon: <UserIcon size={18} /> },
-        { label: "School Name", value: "RCA", icon: <School size={18} /> },
-        { label: "Gender", value: "Female", icon: <UserIcon size={18} /> }, // Matches screenshot value "Female"
-        { label: "Country", value: "Rwanda", icon: <MapPin size={18} /> },
-        { label: "Phone number", value: "0793131491", icon: <Phone size={18} /> },
-        { label: "Role", value: "School Admin", icon: <Shield size={18} /> },
+        { label: "Full Name", value: `${user.firstName} ${user.lastName}`, icon: <UserIcon size={18} /> },
+        { label: "School Name", value: "Blink Academy", icon: <School size={18} /> }, // TODO: Fetch from school API
+        { label: "Phone number", value: user.phoneNumber || "Not provided", icon: <Phone size={18} /> },
+        { label: "Role", value: user.roles.join(", ").replace(/_/g, " "), icon: <Shield size={18} /> },
     ];
 
     return (
@@ -22,18 +43,26 @@ export default function AdminProfilePage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-6">
                             <div className="relative">
-                                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2574&auto=format&fit=crop" 
-                                        alt="Alexa Rawles" 
-                                        className="w-full h-full object-cover"
-                                    />
+                                <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-100">
+                                    {user.avatarUrl ? (
+                                        <img 
+                                            src={user.avatarUrl} 
+                                            alt={`${user.firstName} ${user.lastName}`} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-black text-white text-3xl font-bold">
+                                            {user.firstName[0]}{user.lastName[0]}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
                             </div>
                             <div className="space-y-1">
-                                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Alexa Rawles</h1>
-                                <p className="text-gray-400 font-medium text-sm">alexarawles@gmail.com</p>
+                                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                    {user.firstName} {user.lastName}
+                                </h1>
+                                <p className="text-gray-400 font-medium text-sm">{user.email}</p>
                             </div>
                         </div>
                         <button className="bg-black text-white px-10 py-2.5 rounded-lg text-sm font-bold hover:opacity-90 transition-all shadow-md">
@@ -63,8 +92,8 @@ export default function AdminProfilePage() {
                                 <Mail size={22} />
                             </div>
                             <div className="space-y-0.5">
-                                <p className="text-base font-bold text-gray-900">alexarawles@gmail.com</p>
-                                <p className="text-xs text-gray-400 font-medium">1 month ago</p>
+                                <p className="text-base font-bold text-gray-900">{user.email}</p>
+                                <p className="text-xs text-gray-400 font-medium">Primary email</p>
                             </div>
                         </div>
                     </div>

@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/FormElements";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api/client";
+import { toast } from "@/lib/utils/toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,12 +15,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
@@ -27,20 +26,32 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Important: allow cookies to be set
         body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.message || "Invalid email or password");
+        const errorMessage = errorData.message || "Invalid email or password";
+        toast.error(errorMessage);
         setLoading(false);
         return;
       }
 
       const data = await response.json();
 
-      // Store the access token in localStorage
+      // Store both access and refresh tokens in localStorage (as backup)
       localStorage.setItem("accessToken", data.accessToken);
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
+
+      // Store user data
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
+      toast.success("Login successful! Redirecting...");
       
       // Decode JWT to get user roles (JWT format: header.payload.signature)
       const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
@@ -70,7 +81,8 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("Unable to connect to server. Please try again.");
+      const errorMessage = "Unable to connect to server. Please try again.";
+      toast.error(errorMessage);
       setLoading(false);
     }
   };
@@ -117,13 +129,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 ml-1">Email or Phone</label>
               <input

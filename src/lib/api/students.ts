@@ -6,22 +6,31 @@ export interface Student {
     studentNumber: string;
     dateOfBirth: string | null;
     gender: string | null;
-    enrollmentDate: string;
+    enrollmentDate?: string;
     isActive: boolean;
-    classId: string | null;
+    classId?: string | null;
     user: {
-        id: string;
+        id?: string;
         email: string;
         firstName: string;
         lastName: string;
-        phoneNumber: string | null;
-        avatarUrl: string | null;
+        phoneNumber?: string | null;
+        avatarUrl?: string | null;
     };
+    classes?: Array<{
+        class: {
+            id: string;
+            name: string;
+            year?: number;
+            stream?: string | null;
+        };
+    }>;
+    // Computed property for easier access
     class?: {
         id: string;
         name: string;
-        year: number;
-        stream: string | null;
+        year?: number;
+        stream?: string | null;
     };
 }
 
@@ -55,24 +64,40 @@ export interface UpdateStudentDto {
 }
 
 export const studentsApi = {
-    getStudents: (params?: {
+    getMyProfile: () =>
+        apiClient<Student>("/api/v1/students/me/profile"),
+
+    getStudents: async (params?: {
         page?: number;
         limit?: number;
         search?: string;
         classId?: string;
         isActive?: boolean;
     }) => {
-        const searchParams = new URLSearchParams();
-        if (params?.page) searchParams.append("page", params.page.toString());
-        if (params?.limit) searchParams.append("limit", params.limit.toString());
-        if (params?.search) searchParams.append("search", params.search);
-        if (params?.classId) searchParams.append("classId", params.classId);
-        if (params?.isActive !== undefined) searchParams.append("isActive", params.isActive.toString());
-        
-        const query = searchParams.toString();
-        return apiClient<StudentsResponse>(
-            `/api/v1/students${query ? `?${query}` : ""}`
-        );
+        // Filter out undefined values
+        const cleanParams: Record<string, string> = {};
+        if (params?.page) cleanParams.page = String(params.page);
+        if (params?.limit) cleanParams.limit = String(params.limit);
+        if (params?.search) cleanParams.search = params.search;
+        if (params?.classId) cleanParams.classId = params.classId;
+        if (params?.isActive !== undefined) cleanParams.isActive = String(params.isActive);
+
+        const queryString = new URLSearchParams(cleanParams).toString();
+        const url = `/api/v1/students${queryString ? `?${queryString}` : ''}`;
+
+        const response = await apiClient<StudentsResponse>(url);
+
+        // Transform the data to add a computed 'class' property for easier access
+        if (response.data) {
+            response.data = response.data.map(student => ({
+                ...student,
+                class: student.classes && student.classes.length > 0
+                    ? student.classes[0].class
+                    : undefined
+            }));
+        }
+
+        return response;
     },
 
     getStudent: (id: string) =>

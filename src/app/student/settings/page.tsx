@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { User, Bell, Shield, Globe, Monitor, HelpCircle, Check, LogOut, Camera, Key } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { User, Bell, Shield, Monitor, Check, Camera, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { studentsApi } from "@/lib/api/students";
+import { toast } from "@/lib/utils/toast";
 
 const TABS = [
   { id: "profile", label: "My Profile", icon: User },
@@ -12,18 +15,38 @@ const TABS = [
 ];
 
 export default function StudentSettingsPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Fetch student profile
+  const { data: student, isLoading } = useQuery({
+    queryKey: ["student-profile"],
+    queryFn: studentsApi.getMyProfile,
+  });
+
   // Form States
   const [profileData, setProfileData] = useState({
-    firstName: "Alex",
-    lastName: "Johnson",
-    email: "alex.j@student.iremee.edu",
-    phone: "+1 (555) 123-4567",
-    bio: "Computer Science major, hoping to specialize in AI and machine learning."
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    bio: ""
   });
+
+  // Update form when student data loads
+  useEffect(() => {
+    if (student) {
+      setProfileData({
+        firstName: student.user.firstName,
+        lastName: student.user.lastName,
+        email: student.user.email,
+        phone: student.user.phoneNumber || "",
+        bio: ""
+      });
+    }
+  }, [student]);
 
   const [notificationToggles, setNotificationToggles] = useState({
     emailAlerts: true,
@@ -36,12 +59,22 @@ export default function StudentSettingsPage() {
 
   const handleSave = () => {
     setIsSaving(true);
+    // TODO: Implement actual save functionality
     setTimeout(() => {
       setIsSaving(false);
       setSavedSuccess(true);
+      toast.success("Settings saved successfully");
       setTimeout(() => setSavedSuccess(false), 3000);
     }, 1000);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto pb-12">

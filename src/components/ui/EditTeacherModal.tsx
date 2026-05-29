@@ -7,7 +7,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Upload, Loader2 } from "lucide-react";
 import { updateTeacherSchema, UpdateTeacherInput } from "@/lib/validations/teacher";
 import { teachersApi, Teacher } from "@/lib/api/teachers";
-import { uploadToCloudinary } from "@/lib/api/client";
 import { toast } from "@/lib/utils/toast";
 
 interface EditTeacherModalProps {
@@ -72,13 +71,23 @@ export function EditTeacherModal({ isOpen, onClose, teacher }: EditTeacherModalP
 
     try {
       setIsUploading(true);
-      const url = await uploadToCloudinary(file);
-      setValue("avatarUrl", url);
-      setAvatarPreview(url);
-      toast.success("Image uploaded successfully");
+      
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setValue("avatarUrl", base64String);
+        setAvatarPreview(base64String);
+        toast.success("Image uploaded successfully");
+        setIsUploading(false);
+      };
+      reader.onerror = () => {
+        toast.error("Failed to upload image");
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       toast.error("Failed to upload image");
-    } finally {
       setIsUploading(false);
     }
   };

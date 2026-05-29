@@ -12,12 +12,14 @@ export function ViewStudentModal({ isOpen, onClose, student }: ViewStudentModalP
   if (!isOpen || !student) return null;
 
   const details = [
-    { label: "Student Name", value: student.name },
-    { label: "Email Address", value: student.email },
-    { label: "Gender", value: student.gender },
-    { label: "Student ID", value: student.studentId },
-    { label: "Contact Number", value: student.contact },
-    { label: "Class", value: student.class || "N/A" },
+    { label: "Student Name", value: `${student.user.firstName} ${student.user.lastName}` },
+    { label: "Email Address", value: student.user.email },
+    { label: "Gender", value: student.gender || "N/A" },
+    { label: "Student Number", value: student.studentNumber },
+    { label: "Contact Number", value: student.user.phoneNumber || "N/A" },
+    { label: "Class", value: student.class ? `${student.class.name}${student.class.stream ? ` - ${student.class.stream}` : ''}` : "N/A" },
+    { label: "Date of Birth", value: student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : "N/A" },
+    { label: "Enrollment Date", value: student.enrollmentDate ? new Date(student.enrollmentDate).toLocaleDateString() : "N/A" },
   ];
 
   return (

@@ -11,6 +11,7 @@ interface TopbarProps {
   role: string;
   userName?: string;
   userEmail?: string;
+  avatarUrl?: string;
   notificationCount?: number;
   onToggleSidebar?: () => void;
 }
@@ -20,6 +21,7 @@ export function Topbar({
   title,
   role,
   userName = "User",
+  avatarUrl,
   notificationCount = 0,
   onToggleSidebar,
 }: TopbarProps) {
@@ -91,7 +93,12 @@ export function Topbar({
           </div>
 
           {/* Avatar */}
-          <Avatar name={userName} size="md" className="w-[42px] h-[42px] rounded-full ring-2 ring-gray-100 shrink-0" />
+          <Avatar 
+            name={userName} 
+            src={avatarUrl}
+            size="md" 
+            className="w-[42px] h-[42px] rounded-full ring-2 ring-gray-100 shrink-0" 
+          />
         </Link>
       </div>
     </header>

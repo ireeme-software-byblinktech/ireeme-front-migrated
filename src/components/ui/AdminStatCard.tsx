@@ -74,7 +74,7 @@ export function AdminStatCard({
                         stroke="black"
                         strokeWidth="5"
                         strokeDasharray={circumference}
-                        strokeDashoffset={circumference * (1 - progress / 100)}
+                        strokeDashoffset={String(circumference * (1 - (isNaN(progress) ? 0 : progress) / 100))}
                         strokeLinecap="round"
                         className="transition-all duration-1000 ease-out"
                     />

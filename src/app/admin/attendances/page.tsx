@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
     AdminStatCard,
     DataTable,
@@ -12,90 +13,163 @@ import {
     Filter, 
     Calendar,
     GraduationCap,
-    Users
+    Users,
+    Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EditAttendanceModal } from "@/components/ui/EditAttendanceModal";
-
-interface AttendanceRecord {
-    id: number;
-    name: string;
-    email: string;
-    dateTime: string;
-    checkInTime: string;
-    status: "Present" | "Absent" | "Late";
-}
-
-const teacherAttendanceData: AttendanceRecord[] = Array.from({ length: 15 }).map((_, i) => ({
-    id: i + 1,
-    name: i % 4 === 0 ? "Samuel Johnson" : "John Doe",
-    email: i % 4 === 0 ? "samuel@gmail.com" : "johndoe@gmail.com",
-    dateTime: "12-06-2025",
-    checkInTime: i % 3 === 0 ? "-" : "09:15 AM",
-    status: i % 3 === 0 ? "Absent" : (i % 4 === 0 ? "Late" : "Present")
-}));
-
-const studentAttendanceData: AttendanceRecord[] = Array.from({ length: 15 }).map((_, i) => ({
-    id: i + 100,
-    name: "John Doe",
-    email: "johndoe@gmail.com",
-    dateTime: "12-06-2025",
-    checkInTime: i % 3 === 0 ? "-" : "09:15 AM",
-    status: i % 3 === 0 ? "Absent" : "Present"
-}));
+import { classesApi } from "@/lib/api/classes";
+import { attendanceApi, AttendanceRecord } from "@/lib/api/attendance";
+import { toast } from "@/lib/utils/toast";
 
 export default function AdminAttendancesPage() {
-    const [viewType, setViewType] = useState<"Teachers" | "Students">("Teachers");
-    const [data, setData] = useState(teacherAttendanceData);
-    const [studentData, setStudentData] = useState(studentAttendanceData);
-    const [filterToday, setFilterToday] = useState(false);
+    const queryClient = useQueryClient();
+    const [viewType, setViewType] = useState<"Teachers" | "Students">("Students");
+    const [selectedClassId, setSelectedClassId] = useState<string>("");
+    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [nameFilter, setNameFilter] = useState("");
-
-    // Modal state
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [activeRecord, setActiveRecord] = useState<any>(null);
 
-    const currentData = viewType === "Teachers" ? data : studentData;
+    // Fetch classes
+    const { data: classes, isLoading: loadingClasses } = useQuery({
+        queryKey: ["classes"],
+        queryFn: classesApi.getClasses,
+    });
 
-    const toggleStatus = (id: number) => {
-        const updater = (prev: AttendanceRecord[]): AttendanceRecord[] => prev.map(item => {
-            if (item.id === id) {
-                return {
-                    ...item,
-                    status: (item.status === "Present" ? "Absent" : "Present") as AttendanceRecord['status']
-                };
-            }
-            return item;
+    // Fetch daily attendance summary
+    const { data: attendanceData, isLoading: loadingAttendance } = useQuery({
+        queryKey: ["attendance-daily", selectedClassId, selectedDate],
+        queryFn: async () => {
+            const result = await attendanceApi.getDailySummary(
+                selectedClassId || undefined, 
+                selectedDate
+            );
+            return result;
+        },
+        enabled: !!selectedDate && viewType === "Students",
+    });
+
+    // Fetch teacher attendance summary
+    const { data: teacherAttendanceData, isLoading: loadingTeacherAttendance } = useQuery({
+        queryKey: ["teacher-attendance-daily", selectedDate],
+        queryFn: async () => {
+            const result = await attendanceApi.getTeacherDailySummary(selectedDate);
+            return result;
+        },
+        enabled: !!selectedDate && viewType === "Teachers",
+    });
+
+    // Set first class as default when classes load
+    React.useEffect(() => {
+        if (classes && classes.length > 0 && !selectedClassId) {
+            // Don't auto-select, let user choose "All Classes" or a specific class
+            // setSelectedClassId(classes[0].id);
+        }
+    }, [classes, selectedClassId]);
+
+    // Show message when date changes and no data exists
+    const hasNoDataForDate = viewType === "Students" 
+        ? (attendanceData?.records?.length === 0 && !loadingAttendance && selectedClassId)
+        : (teacherAttendanceData?.records?.length === 0 && !loadingTeacherAttendance);
+
+    // Mark bulk attendance mutation
+    const markAttendanceMutation = useMutation({
+        mutationFn: attendanceApi.markBulk,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["attendance-daily"] });
+            toast.success("Attendance updated successfully");
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || "Failed to update attendance");
+        },
+    });
+
+    // Mark teacher attendance mutation
+    const markTeacherAttendanceMutation = useMutation({
+        mutationFn: attendanceApi.markTeacherBulk,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["teacher-attendance-daily"] });
+            toast.success("Teacher attendance updated successfully");
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || "Failed to update teacher attendance");
+        },
+    });
+
+    const toggleStatus = (studentId: string, currentStatus: string) => {
+        if (!selectedClassId || !attendanceData) {
+            toast.error("Please select a class first");
+            return;
+        }
+        
+        const newStatus = currentStatus === "PRESENT" ? "ABSENT" : "PRESENT";
+        
+        markAttendanceMutation.mutate({
+            classId: selectedClassId,
+            date: selectedDate,
+            records: [{
+                studentId,
+                status: newStatus as any,
+            }],
         });
-
-        if (viewType === "Teachers") setData(updater);
-        else setStudentData(updater);
     };
 
-    const handleSaveAttendance = (id: number, status: "Present" | "Absent" | "Late", checkIn: string) => {
-        const updater = (prev: AttendanceRecord[]): AttendanceRecord[] => prev.map(item => {
-            if (item.id === id) {
-                return { ...item, status, checkInTime: checkIn } as AttendanceRecord;
-            }
-            return item;
+    const toggleTeacherStatus = (teacherId: string, currentStatus: string) => {
+        if (!teacherAttendanceData) {
+            toast.error("Unable to update attendance");
+            return;
+        }
+        
+        const newStatus = currentStatus === "PRESENT" ? "ABSENT" : "PRESENT";
+        
+        markTeacherAttendanceMutation.mutate({
+            date: selectedDate,
+            records: [{
+                teacherId,
+                status: newStatus as any,
+            }],
         });
-
-        if (viewType === "Teachers") setData(updater);
-        else setStudentData(updater);
     };
 
-    const openEditModal = (row: AttendanceRecord) => {
-        setActiveRecord(row);
+    const handleSaveAttendance = (studentId: string, status: "PRESENT" | "ABSENT" | "LATE", remarks: string) => {
+        if (!selectedClassId) {
+            toast.error("Please select a class first");
+            return;
+        }
+        
+        markAttendanceMutation.mutate({
+            classId: selectedClassId,
+            date: selectedDate,
+            records: [{
+                studentId,
+                status: status as any,
+                remarks,
+            }],
+        });
+        setIsEditOpen(false);
+    };
+
+    const openEditModal = (record: AttendanceRecord) => {
+        setActiveRecord(record);
         setIsEditOpen(true);
     };
 
     const filteredData = useMemo(() => {
-        return currentData.filter(item => {
-            const matchesName = item.name.toLowerCase().includes(nameFilter.toLowerCase());
-            const matchesDate = filterToday ? item.dateTime === "12-06-2025" : true;
-            return matchesName && matchesDate;
+        if (!attendanceData?.records) return [];
+        return attendanceData.records.filter(item => {
+            const fullName = `${item.student.user.firstName} ${item.student.user.lastName}`.toLowerCase();
+            return fullName.includes(nameFilter.toLowerCase());
         });
-    }, [currentData, nameFilter, filterToday]);
+    }, [attendanceData, nameFilter]);
+
+    const filteredTeacherData = useMemo(() => {
+        if (!teacherAttendanceData?.records) return [];
+        return teacherAttendanceData.records.filter(item => {
+            const fullName = `${item.teacher.user.firstName} ${item.teacher.user.lastName}`.toLowerCase();
+            return fullName.includes(nameFilter.toLowerCase());
+        });
+    }, [teacherAttendanceData, nameFilter]);
 
     const columns: Column<AttendanceRecord>[] = [
         {
@@ -105,24 +179,28 @@ export default function AdminAttendancesPage() {
             render: () => <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />
         },
         {
-            key: "name",
+            key: "student",
             header: viewType === "Teachers" ? "Teacher Name" : "Student Name",
-            render: (v) => <span className="font-medium text-gray-900">{String(v)}</span>
+            render: (_, row) => (
+                <span className="font-medium text-gray-900">
+                    {row.student.user.firstName} {row.student.user.lastName}
+                </span>
+            )
         },
         {
-            key: "email",
+            key: "student",
             header: "Email-address",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            render: (_, row) => <span className="text-gray-500">{row.student.user.email}</span>
         },
         {
-            key: "dateTime",
+            key: "date",
             header: "Date & Time",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            render: (v) => <span className="text-gray-500">{new Date(String(v)).toLocaleDateString()}</span>
         },
         {
             key: "checkInTime",
             header: "Check-in time",
-            render: (v) => <span className="text-gray-500">{String(v)}</span>
+            render: (v) => <span className="text-gray-500">{v ? new Date(String(v)).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-'}</span>
         },
         {
             key: "status",
@@ -130,7 +208,9 @@ export default function AdminAttendancesPage() {
             render: (v) => (
                 <div className={cn(
                     "px-8 py-2 rounded-md text-[11px] font-bold inline-block min-w-[100px] text-center uppercase tracking-wider",
-                    v === "Absent" ? "bg-[#EE1D23] text-white" : (viewType === "Students" ? "bg-[#008A44] text-white" : "bg-black text-white")
+                    v === "ABSENT" ? "bg-[#EE1D23] text-white" : 
+                    v === "LATE" ? "bg-[#F59E0B] text-white" :
+                    "bg-[#008A44] text-white"
                 )}>
                     {String(v)}
                 </div>
@@ -149,16 +229,17 @@ export default function AdminAttendancesPage() {
                         <Pencil size={18} />
                     </button>
                     <button 
-                        onClick={() => toggleStatus(row.id)}
+                        onClick={() => toggleStatus(row.studentId, row.status)}
                         className={cn(
                             "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                            row.status === "Present" ? "bg-black" : "bg-gray-200"
+                            row.status === "PRESENT" ? "bg-black" : "bg-gray-200"
                         )}
+                        disabled={markAttendanceMutation.isPending}
                     >
                         <span 
                             className={cn(
                                 "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                                row.status === "Present" ? "translate-x-5" : "translate-x-0"
+                                row.status === "PRESENT" ? "translate-x-5" : "translate-x-0"
                             )}
                         />
                     </button>
@@ -167,60 +248,182 @@ export default function AdminAttendancesPage() {
         }
     ];
 
+    const teacherColumns: Column<any>[] = [
+        {
+            key: "select",
+            header: <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />,
+            width: "50px",
+            render: () => <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />
+        },
+        {
+            key: "teacher",
+            header: "Teacher Name",
+            render: (_, row) => (
+                <span className="font-medium text-gray-900">
+                    {row.teacher.user.firstName} {row.teacher.user.lastName}
+                </span>
+            )
+        },
+        {
+            key: "teacher",
+            header: "Email-address",
+            render: (_, row) => <span className="text-gray-500">{row.teacher.user.email}</span>
+        },
+        {
+            key: "date",
+            header: "Date & Time",
+            render: (v) => <span className="text-gray-500">{new Date(String(v)).toLocaleDateString()}</span>
+        },
+        {
+            key: "checkInTime",
+            header: "Check-in time",
+            render: (v) => <span className="text-gray-500">{v ? new Date(String(v)).toLocaleTimeString() : '-'}</span>
+        },
+        {
+            key: "status",
+            header: "Status",
+            render: (v) => (
+                <div className={cn(
+                    "px-8 py-2 rounded-md text-[11px] font-bold inline-block min-w-[100px] text-center uppercase tracking-wider",
+                    v === "ABSENT" ? "bg-[#EE1D23] text-white" : 
+                    v === "LATE" ? "bg-[#F59E0B] text-white" :
+                    "bg-[#008A44] text-white"
+                )}>
+                    {String(v)}
+                </div>
+            )
+        },
+        {
+            key: "action",
+            header: "Action",
+            align: "right",
+            render: (_, row) => (
+                <div className="flex items-center gap-6 justify-end">
+                    <button 
+                        onClick={() => toggleTeacherStatus(row.teacherId, row.status)}
+                        className={cn(
+                            "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                            row.status === "PRESENT" ? "bg-black" : "bg-gray-200"
+                        )}
+                        disabled={markTeacherAttendanceMutation.isPending}
+                    >
+                        <span 
+                            className={cn(
+                                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                row.status === "PRESENT" ? "translate-x-5" : "translate-x-0"
+                            )}
+                        />
+                    </button>
+                </div>
+            )
+        }
+    ];
+
+    if (loadingClasses) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-black" />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 pb-10">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Attendances</h1>
+                
+                {/* Teachers/Students Toggle */}
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-1">
+                    <button
+                        onClick={() => setViewType("Teachers")}
+                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                            viewType === "Teachers"
+                                ? "bg-black text-white"
+                                : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                        Teachers
+                    </button>
+                    <button
+                        onClick={() => setViewType("Students")}
+                        className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+                            viewType === "Students"
+                                ? "bg-black text-white"
+                                : "text-gray-600 hover:text-gray-900"
+                        }`}
+                    >
+                        Students
+                    </button>
+                </div>
+            </div>
+
+            {/* Class and Date Selection */}
+            <div className="flex items-center gap-4">
+                {viewType === "Students" && (
+                    <select
+                        value={selectedClassId}
+                        onChange={(e) => setSelectedClassId(e.target.value)}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium"
+                    >
+                        <option value="">All Classes</option>
+                        {classes?.map((cls) => (
+                            <option key={cls.id} value={cls.id}>
+                                {cls.name} {cls.stream ? `- ${cls.stream}` : ''}
+                            </option>
+                        ))}
+                    </select>
+                )}
+                <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium"
+                />
             </div>
 
             {/* Status Section */}
             <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-gray-900">{viewType === "Teachers" ? "Teacher" : "Student"} status</h2>
-                    <div className="relative">
-                        <select 
-                            className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-pointer border border-gray-100 px-4 py-2 rounded-md hover:border-black transition-all appearance-none pr-10"
-                            value={viewType}
-                            onChange={(e) => setViewType(e.target.value as any)}
-                        >
-                            <option value="Teachers">Teachers</option>
-                            <option value="Students">Students</option>
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center gap-2 text-gray-400">
-                             <Filter size={14} />
-                             <ChevronDown size={14} />
-                        </div>
-                    </div>
+                    <h2 className="text-lg font-bold text-gray-900">
+                        {viewType === "Teachers" ? "Teacher status" : "Student status"}
+                    </h2>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <AdminStatCard 
-                        label={`Total ${viewType.toLowerCase()}`}
-                        value={308}
-                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
-                        subtext={[{ label: "Male (61%)" }, { label: "Female (39%)" }]}
+                        label={viewType === "Teachers" ? "Total teachers" : "Total students"}
+                        value={viewType === "Teachers" ? (teacherAttendanceData?.totalTeachers || 0) : (attendanceData?.totalStudents || 0)}
+                        icon={<Users />}
+                        subtext={[{ label: viewType === "Teachers" ? "In school" : "In selected class" }]}
                         progress={100}
                     />
                     <AdminStatCard 
                         label="Present | Today"
-                        value={308}
-                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
-                        subtext={[{ label: "Male (61%)" }, { label: "Female (39%)" }]}
-                        progress={85}
+                        value={viewType === "Teachers" ? (teacherAttendanceData?.present || 0) : (attendanceData?.present || 0)}
+                        icon={<Users />}
+                        subtext={[{ 
+                            label: `${viewType === "Teachers" ? (teacherAttendanceData?.attendanceRate.toFixed(0) || 0) : (attendanceData?.attendanceRate.toFixed(0) || 0)}% attendance`,
+                        }]}
+                        progress={viewType === "Teachers" ? (teacherAttendanceData?.attendanceRate || 0) : (attendanceData?.attendanceRate || 0)}
                     />
                     <AdminStatCard 
                         label="Absent | Today"
-                        value={308}
-                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
-                        subtext={[{ label: "Male (61%)" }, { label: "Female (39%)" }]}
-                        progress={15}
+                        value={viewType === "Teachers" ? (teacherAttendanceData?.absent || 0) : (attendanceData?.absent || 0)}
+                        icon={<Users />}
+                        subtext={[{ 
+                            label: `${viewType === "Teachers" ? (teacherAttendanceData?.late || 0) : (attendanceData?.late || 0)} late`,
+                        }]}
+                        progress={viewType === "Teachers" 
+                            ? (teacherAttendanceData ? (teacherAttendanceData.absent / teacherAttendanceData.totalTeachers) * 100 : 0)
+                            : (attendanceData ? (attendanceData.absent / attendanceData.totalStudents) * 100 : 0)
+                        }
                     />
                     <AdminStatCard 
                         label="Attendance rate"
-                        value={viewType === "Teachers" ? "75%" : "92%"}
-                        icon={viewType === "Teachers" ? <GraduationCap /> : <Users />}
-                        subtext="+2% from last week"
-                        progress={viewType === "Teachers" ? 75 : 92}
+                        value={`${viewType === "Teachers" ? (teacherAttendanceData?.attendanceRate.toFixed(0) || 0) : (attendanceData?.attendanceRate.toFixed(0) || 0)}%`}
+                        icon={<Users />}
+                        subtext={viewType === "Teachers" ? "For selected date" : "For selected date"}
+                        progress={viewType === "Teachers" ? (teacherAttendanceData?.attendanceRate || 0) : (attendanceData?.attendanceRate || 0)}
                     />
                 </div>
             </section>
@@ -228,57 +431,93 @@ export default function AdminAttendancesPage() {
             {/* Attendance List Section */}
             <section className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-gray-900">{viewType === "Teachers" ? "Teacher" : "Student"} Attendance list</h2>
+                    <h2 className="text-lg font-bold text-gray-900">
+                        {viewType === "Teachers" ? "Teacher Attendance list" : "Student Attendance list"}
+                    </h2>
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 text-sm font-medium text-gray-500 cursor-pointer border border-gray-100 px-3 py-2 rounded-md hover:border-black transition-all">
-                            <input 
-                                type="text"
-                                placeholder={`Search ${viewType}...`}
-                                className="bg-transparent border-none outline-none w-32 placeholder:text-gray-400"
-                                value={nameFilter}
-                                onChange={(e) => setNameFilter(e.target.value)}
-                            />
-                        </div>
-                        <button 
-                            onClick={() => setFilterToday(!filterToday)}
-                            className={cn(
-                                "flex items-center gap-2 px-8 h-10 rounded-lg text-sm font-bold uppercase tracking-widest transition-all border",
-                                filterToday ? "bg-black text-white border-black" : "bg-white text-gray-600 border-gray-200 hover:border-black"
-                            )}
-                        >
+                        <input
+                            type="text"
+                            placeholder={`Search ${viewType.toLowerCase()}...`}
+                            className="px-4 py-2 border border-gray-100 rounded-md text-sm"
+                            value={nameFilter}
+                            onChange={(e) => setNameFilter(e.target.value)}
+                        />
+                        <button className="px-4 py-2 bg-black text-white rounded-md text-sm font-medium flex items-center gap-2">
                             <Calendar size={16} />
                             Today
                         </button>
                     </div>
                 </div>
 
-                <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
-                    <DataTable 
-                        columns={columns} 
-                        data={filteredData} 
-                        pageSize={10}
-                        showPagination={false}
-                        className="attendance-table border-none table-black-header"
-                        keyField="id"
-                    />
-                </div>
-
-                {/* Pagination matching design */}
-                <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-100 mt-[-16px]">
-                    <span className="text-sm text-gray-500">Showing 1 to {Math.min(filteredData.length, 10)} of {filteredData.length} results</span>
-                    <div className="flex items-center gap-2">
-                        <button className="px-6 py-2 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Previous</button>
-                        <button className="w-9 h-9 bg-black text-white rounded-md text-sm font-medium">1</button>
-                        <button className="w-9 h-9 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors text-gray-600">2</button>
-                        <button className="px-6 py-2 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">Next</button>
+                {(viewType === "Students" ? loadingAttendance : loadingTeacherAttendance) ? (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 className="w-8 h-8 animate-spin text-black" />
                     </div>
-                </div>
+                ) : viewType === "Teachers" ? (
+                    filteredTeacherData.length === 0 ? (
+                        <div className="text-center py-20 text-gray-500">
+                            {hasNoDataForDate 
+                                ? `No teacher attendance records found for ${new Date(selectedDate).toLocaleDateString()}`
+                                : "No teacher attendance records found for selected date"
+                            }
+                        </div>
+                    ) : (
+                        <>
+                            <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
+                                <DataTable 
+                                    columns={teacherColumns} 
+                                    data={filteredTeacherData} 
+                                    pageSize={10}
+                                    showPagination={false}
+                                    className="attendance-table border-none table-black-header"
+                                    keyField="id"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-100 mt-[-16px]">
+                                <span className="text-sm text-gray-500">
+                                    Showing {filteredTeacherData.length} of {teacherAttendanceData?.totalTeachers || 0} teachers
+                                </span>
+                            </div>
+                        </>
+                    )
+                ) : filteredData.length === 0 ? (
+                    <div className="text-center py-20 text-gray-500">
+                        {hasNoDataForDate 
+                            ? `No attendance records found for ${new Date(selectedDate).toLocaleDateString()}`
+                            : `No attendance records found for selected ${selectedClassId ? 'class' : 'date'}`
+                        }
+                    </div>
+                ) : (
+                    <>
+                        <div className="bg-white border border-gray-100 rounded-none overflow-hidden shadow-sm">
+                            <DataTable 
+                                columns={columns} 
+                                data={filteredData} 
+                                pageSize={10}
+                                showPagination={false}
+                                className="attendance-table border-none table-black-header"
+                                keyField="id"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-100 mt-[-16px]">
+                            <span className="text-sm text-gray-500">
+                                Showing {filteredData.length} of {attendanceData?.totalStudents || 0} students
+                            </span>
+                        </div>
+                    </>
+                )}
             </section>
 
             <EditAttendanceModal 
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
-                onSave={handleSaveAttendance}
+                onSave={(id, status, checkIn) => {
+                    if (activeRecord) {
+                        handleSaveAttendance(activeRecord.studentId, status as any, checkIn);
+                    }
+                }}
                 data={activeRecord}
             />
         </div>

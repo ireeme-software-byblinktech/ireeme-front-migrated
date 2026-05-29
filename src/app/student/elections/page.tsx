@@ -1,83 +1,83 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   CheckSquare, Clock, AlertCircle, Award, 
-  User, Check, ChevronLeft, ChevronRight, CheckCircle2
+  User, Check, ChevronLeft, ChevronRight, Loader2, CheckCircle2
 } from "lucide-react";
+import { electionsApi } from "@/lib/api/elections";
+import { toast } from "@/lib/utils/toast";
+import { cn } from "@/lib/utils";
 
-// Types
-interface Candidate {
-  id: string;
-  name: string;
-  className: string;
-  quote: string;
-}
-
-interface ElectionPosition {
-  id: string;
-  title: string;
-  description: string;
-  required: boolean;
-  candidates: Candidate[];
-}
-
-// Data
-const positionsData: ElectionPosition[] = [
-  {
-    id: "head",
-    title: "Head Prefect",
-    description: "Lead the student body and represent students to administration",
-    required: true,
-    candidates: [
-      { id: "c1", name: "John Doe", className: "S5 MCB", quote: "I will promote discipline and unity among students, ensuring every voice is heard and creating a more inclusive school environment." },
-      { id: "c2", name: "Jane Smith", className: "S5 PCM", quote: "I will represent students fairly and work towards better communication with administration for positive change." }
-    ]
-  },
-  {
-    id: "deputy",
-    title: "Deputy Head Prefect",
-    description: "Assist the Head Prefect in coordinating student council activities",
-    required: true,
-    candidates: [
-      { id: "c3", name: "Alice Brown", className: "S4 PCB", quote: "Empowering every student to reach their full potential." },
-      { id: "c4", name: "Bob Wilson", className: "S4 MEG", quote: "Building a supportive and engaging campus community." }
-    ]
-  },
-  {
-    id: "class",
-    title: "Class Representative",
-    description: "Represent your graduating class in committee meetings",
-    required: true,
-    candidates: [
-      { id: "c5", name: "Michael Lee", className: "S5 MCB", quote: "Dedicated to academic excellence and student well-being." },
-      { id: "c6", name: "Sarah Connor", className: "S5 MCB", quote: "Ready to take action on the issues that matter most." }
-    ]
-  },
-  {
-    id: "sports",
-    title: "Sports Minister",
-    description: "Organize inter-school tournaments and athletic events",
-    required: true,
-    candidates: [
-      { id: "c7", name: "David Kim", className: "S4 Math", quote: "Sports build character. I'll make sure everyone has a chance to play." },
-      { id: "c8", name: "Emily Chen", className: "S5 Physics", quote: "Leveling up our athletic programs and school spirit!" }
-    ]
-  }
-];
+// Import types from API
+import type { Election } from "@/lib/api/elections";
 
 export default function StudentElectionsPage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [votes, setVotes] = useState<Record<string, string>>({});
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
 
+  // Fetch active elections
+  const { data: elections, isLoading } = useQuery({
+    queryKey: ["student-elections"],
+    queryFn: async () => {
+      const data = await electionsApi.getElections();
+      return data.filter((e: Election) => e.status === "ACTIVE" || (e.status === "CLOSED" && e.resultsPublished));
+    },
+  });
+
+  const activeElection = elections?.[0];
+
+  // Check voting status
+  const { data: votingStatus, isLoading: isLoadingStatus } = useQuery({
+    queryKey: ["voting-status", activeElection?.id],
+    queryFn: async () => {
+      if (!activeElection?.id) return null;
+      return await electionsApi.getVotingStatus(activeElection.id);
+    },
+    enabled: !!activeElection?.id && activeElection.status === "ACTIVE",
+  });
+
+  // Fetch results if election is closed and results are published
+  const { data: resultsData, isLoading: isLoadingResults } = useQuery({
+    queryKey: ["election-results", activeElection?.id],
+    queryFn: async () => {
+      if (!activeElection?.id) return null;
+      return await electionsApi.getResults(activeElection.id);
+    },
+    enabled: !!activeElection?.id && activeElection.status === "CLOSED" && activeElection.resultsPublished,
+  });
+
+  // Vote mutation
+  const queryClient = useQueryClient();
+  
+  const voteMutation = useMutation({
+    mutationFn: async (voteData: { positionId: string; candidateId: string }[]) => {
+      // Call vote API for each position
+      for (const vote of voteData) {
+        await electionsApi.castVote(vote);
+      }
+    },
+    onSuccess: () => {
+      setIsConfirmModalOpen(false);
+      toast.success("Your votes have been recorded successfully!");
+      // Refetch voting status
+      queryClient.invalidateQueries({ queryKey: ["voting-status", activeElection?.id] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to submit votes");
+    },
+  });
+
+  const positionsData = activeElection?.positions || [];
+  
   const currentPosition = positionsData[currentStepIndex];
-  const selectedCandidateId = votes[currentPosition.id];
+  const selectedCandidateId = currentPosition ? votes[currentPosition.id] : undefined;
   
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === positionsData.length - 1;
-  const progressPercent = Math.round(((currentStepIndex + 1) / positionsData.length) * 100);
+  const progressPercent = positionsData.length > 0 ? Math.round(((currentStepIndex + 1) / positionsData.length) * 100) : 0;
 
   const handleNext = () => {
     if (isLastStep) {
@@ -94,12 +94,133 @@ export default function StudentElectionsPage() {
   };
 
   const submitVotes = () => {
-    // In a real app, send votes to backend here
-    setIsConfirmModalOpen(false);
-    setHasVoted(true);
+    const voteData = Object.entries(votes).map(([positionId, candidateId]) => ({
+      positionId,
+      candidateId,
+    }));
+    voteMutation.mutate(voteData);
   };
 
-  if (hasVoted) {
+  if (isLoading || isLoadingStatus) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    );
+  }
+
+  if (!activeElection) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] w-full max-w-[1240px]">
+        <div className="bg-white border border-gray-100 shadow-2xl shadow-gray-200/50 rounded-3xl p-10 md:p-14 max-w-xl w-full text-center">
+          <div className="w-24 h-24 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckSquare size={44} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">No Active Elections</h1>
+          <p className="text-lg text-gray-500 max-w-sm mx-auto mb-10 leading-relaxed font-medium">
+            There are currently no elections open for voting. Please check back later.
+          </p>
+          <button 
+            onClick={() => window.location.href = '/student'}
+            className="bg-black text-white px-8 py-4 rounded-xl font-bold text-sm shadow-md hover:bg-gray-800 transition-all w-full sm:w-auto min-w-[200px]"
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show results if election is closed and results are published
+  if (activeElection.status === "CLOSED" && activeElection.resultsPublished) {
+    return (
+      <div className="space-y-6 max-w-[1240px] w-full pb-12">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Election Results</h1>
+        </div>
+
+        {/* Header Card */}
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <Award size={32} className="text-gray-900" strokeWidth={2.5} />
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">{activeElection.title}</h1>
+            </div>
+            <div className="flex items-center gap-2 bg-gray-100 text-gray-700 font-bold px-4 py-2 rounded-full text-sm shrink-0">
+              <div className="w-2 h-2 rounded-full bg-gray-700"></div>
+              Voting Closed
+            </div>
+          </div>
+        </div>
+
+        {/* Results */}
+        {isLoadingResults ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-black" />
+          </div>
+        ) : resultsData ? (
+          <div className="space-y-6">
+            {resultsData.positions.map((position) => (
+              <div key={position.positionId} className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-xl font-bold text-gray-900">{position.positionTitle}</h4>
+                  <span className="text-sm font-bold text-gray-500">
+                    Total Votes: {position.totalVotes}
+                  </span>
+                </div>
+                
+                <div className="space-y-3">
+                  {position.candidates.map((candidate, index) => {
+                    const isWinner = index === 0;
+                    return (
+                      <div 
+                        key={candidate.candidateId} 
+                        className={cn(
+                          "border rounded-lg p-4 transition-all",
+                          isWinner ? "border-[#008A44] bg-green-50/50" : "border-gray-200"
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {isWinner && (
+                              <div className="w-8 h-8 bg-[#008A44] text-white rounded-full flex items-center justify-center">
+                                <CheckCircle2 size={18} />
+                              </div>
+                            )}
+                            <div>
+                              <h5 className="text-lg font-bold text-gray-900">
+                                {candidate.studentName}
+                              </h5>
+                              {isWinner && (
+                                <span className="text-xs font-bold text-[#008A44] uppercase">
+                                  Winner
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-900">
+                              {candidate.voteCount}
+                            </div>
+                            <div className="text-sm font-bold text-gray-500">
+                              {candidate.percentage.toFixed(1)}%
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  // Show "already voted" message if student has voted
+  if (votingStatus?.hasVoted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] w-full max-w-[1240px]">
         <div className="bg-white border border-gray-100 shadow-2xl shadow-gray-200/50 rounded-3xl p-10 md:p-14 max-w-xl w-full text-center relative overflow-hidden">
@@ -118,7 +239,7 @@ export default function StudentElectionsPage() {
             
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Ballot Received!</h1>
             <p className="text-lg text-gray-500 max-w-sm mx-auto mb-10 leading-relaxed font-medium">
-              Your votes for the 2025 Student Council Elections have been securely recorded. Thank you for making your voice heard.
+              Your votes for the {activeElection.title} have been securely recorded. Thank you for making your voice heard.
             </p>
             
             <button 
@@ -141,7 +262,7 @@ export default function StudentElectionsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
             <CheckSquare size={32} className="text-gray-900" strokeWidth={2.5} />
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">Student Council Elections 2025</h1>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">{activeElection.title}</h1>
           </div>
           <div className="flex items-center gap-2 bg-[#E6F8EE] text-[#008A3D] font-bold px-4 py-2 rounded-full text-sm shrink-0">
             <div className="w-2 h-2 rounded-full bg-[#008A3D]"></div>
@@ -149,10 +270,12 @@ export default function StudentElectionsPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-gray-500">
-          <div className="flex items-center gap-2">
-            <Clock size={16} />
-            Ends in 2 days
-          </div>
+          {activeElection.endAt && (
+            <div className="flex items-center gap-2">
+              <Clock size={16} />
+              Ends {new Date(activeElection.endAt).toLocaleDateString()}
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <AlertCircle size={16} />
             Only one vote per position
@@ -193,7 +316,7 @@ export default function StudentElectionsPage() {
                   </div>
                 )}
                 <span className={`text-[13px] font-bold ${isCurrent || isCompleted ? 'text-gray-600' : 'text-[#868C98]'}`}>
-                  {pos.title.split(' ')[0]} {/* Head, Deputy, Class, Sports */}
+                  {pos.name ? pos.name.split(' ')[0] : 'Position'} {/* Head, Deputy, Class, Sports */}
                 </span>
               </div>
             );
@@ -207,15 +330,13 @@ export default function StudentElectionsPage() {
         <div className="bg-black text-white p-6 md:p-8">
           <div className="flex items-center gap-3 mb-2">
             <Award size={28} />
-            <h2 className="text-2xl font-extrabold">{currentPosition.title}</h2>
-            {currentPosition.required && (
-              <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-md ml-2 tracking-wider">
-                Required
-              </span>
-            )}
+            <h2 className="text-2xl font-extrabold">{currentPosition.name}</h2>
+            <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-md ml-2 tracking-wider">
+              Required
+            </span>
           </div>
           <p className="text-gray-400 text-sm md:text-base font-medium">
-            {currentPosition.description}
+            Select your preferred candidate for this position
           </p>
         </div>
 
@@ -223,6 +344,7 @@ export default function StudentElectionsPage() {
         <div className="p-6 md:p-8 space-y-4">
           {currentPosition.candidates.map((candidate) => {
             const isSelected = selectedCandidateId === candidate.id;
+            const candidateName = `${candidate.student.user.firstName} ${candidate.student.user.lastName}`;
             
             return (
               <label 
@@ -245,16 +367,18 @@ export default function StudentElectionsPage() {
                   <div className="flex-1 w-full">
                     <div className="flex items-center gap-2 mb-1">
                       <User size={20} className="text-gray-500" />
-                      <h3 className="text-xl font-bold text-gray-900">{candidate.name}</h3>
+                      <h3 className="text-xl font-bold text-gray-900">{candidateName}</h3>
                     </div>
                     <p className="text-sm font-bold text-gray-500 mb-4 ml-7">
-                      Class: {candidate.className}
+                      Student ID: {candidate.student.studentNumber}
                     </p>
                     
-                    {/* Quote styled box */}
-                    <div className="ml-7 bg-gray-100/80 rounded-lg p-5 border-l-[6px] border-black text-gray-700 italic font-medium leading-relaxed">
-                      "{candidate.quote}"
-                    </div>
+                    {/* Bio styled box */}
+                    {candidate.bio && (
+                      <div className="ml-7 bg-gray-100/80 rounded-lg p-5 border-l-[6px] border-black text-gray-700 italic font-medium leading-relaxed">
+                        "{candidate.bio}"
+                      </div>
+                    )}
                   </div>
                 </div>
                 
@@ -299,13 +423,14 @@ export default function StudentElectionsPage() {
 
           <button 
             onClick={handleNext}
-            disabled={!selectedCandidateId}
+            disabled={!selectedCandidateId || voteMutation.isPending}
             className={`flex items-center gap-2 px-8 py-3 rounded-lg font-bold text-sm transition-colors ${
-              !selectedCandidateId
+              !selectedCandidateId || voteMutation.isPending
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-70'
                 : 'bg-black text-white hover:bg-gray-800 shadow-sm'
             }`}
           >
+            {voteMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             {isLastStep ? 'Submit Votes' : 'Next'}
             {!isLastStep && <ChevronRight size={18} />}
           </button>
@@ -345,4 +470,4 @@ export default function StudentElectionsPage() {
 
     </div>
   );
-}
+}
