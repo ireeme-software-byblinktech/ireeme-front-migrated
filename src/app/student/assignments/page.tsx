@@ -2,44 +2,12 @@
 
 import { useState } from "react";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
-import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
+import { DataTable, Column } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
 import { GraduationCap, BookOpen, FileText, BarChart2, Filter } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
+import { useStudentAssignments } from "@/hooks/api/useStudentAPI";
 
-// Stats data array
-const statsData = [
-  {
-    label: "Total Subjects",
-    value: 15,
-    icon: <GraduationCap size={18} />,
-    progress: 75,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Assignments",
-    value: 30,
-    icon: <BookOpen size={18} />,
-    progress: 80,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Notes",
-    value: 30,
-    icon: <FileText size={18} />,
-    progress: 65,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Reports",
-    value: 30,
-    icon: <BarChart2 size={18} />,
-    progress: 90,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  }
-];
-
-// Assignment data
 interface Assignment {
   id: string;
   subject: string;
@@ -50,135 +18,34 @@ interface Assignment {
   grade?: string;
 }
 
-const assignmentsData: Assignment[] = [
-  {
-    id: "1",
-    subject: "Mathematics",
-    title: "Algebra Problem Set 1",
-    date: "10-Nov-2025",
-    term: "Term 1",
-    status: "Completed",
-    grade: "A"
-  },
-  {
-    id: "2",
-    subject: "Mathematics",
-    title: "Geometry Assignment",
-    date: "10-Nov-2025",
-    term: "Term 1",
-    status: "Completed",
-    grade: "B+"
-  },
-  {
-    id: "3",
-    subject: "Physics",
-    title: "Lab Report: Motion",
-    date: "12-Nov-2025",
-    term: "Term 1",
-    status: "In Progress"
-  },
-  {
-    id: "4",
-    subject: "Chemistry",
-    title: "Chemical Reactions Essay",
-    date: "15-Nov-2025",
-    term: "Term 1",
-    status: "Pending"
-  },
-  {
-    id: "5",
-    subject: "English",
-    title: "Literature Analysis",
-    date: "08-Nov-2025",
-    term: "Term 1",
-    status: "Late"
-  },
-  {
-    id: "6",
-    subject: "History",
-    title: "World War II Research",
-    date: "20-Nov-2025",
-    term: "Term 1",
-    status: "Completed",
-    grade: "A-"
-  },
-  {
-    id: "7",
-    subject: "Biology",
-    title: "Cell Structure Diagram",
-    date: "18-Nov-2025",
-    term: "Term 1",
-    status: "In Progress"
-  },
-  {
-    id: "8",
-    subject: "Mathematics",
-    title: "Calculus Problem Set",
-    date: "25-Nov-2025",
-    term: "Term 1",
-    status: "Pending"
-  },
-  {
-    id: "9",
-    subject: "Physics",
-    title: "Energy Conservation Lab",
-    date: "22-Nov-2025",
-    term: "Term 1",
-    status: "Completed",
-    grade: "A+"
-  },
-  {
-    id: "10",
-    subject: "Chemistry",
-    title: "Periodic Table Quiz",
-    date: "14-Nov-2025",
-    term: "Term 1",
-    status: "Completed",
-    grade: "B"
-  },
-  {
-    id: "11",
-    subject: "English",
-    title: "Poetry Interpretation",
-    date: "28-Nov-2025",
-    term: "Term 1",
-    status: "Pending"
-  },
-  {
-    id: "12",
-    subject: "History",
-    title: "Ancient Civilizations Essay",
-    date: "30-Nov-2025",
-    term: "Term 1",
-    status: "Pending"
-  },
-  {
-    id: "13",
-    subject: "Biology",
-    title: "Genetics Problem Set",
-    date: "16-Nov-2025",
-    term: "Term 1",
-    status: "In Progress"
-  },
-  {
-    id: "14",
-    subject: "Mathematics",
-    title: "Statistics Assignment",
-    date: "05-Dec-2025",
-    term: "Term 1",
-    status: "Pending"
-  },
-  {
-    id: "15",
-    subject: "Physics",
-    title: "Waves and Sound Lab",
-    date: "03-Dec-2025",
-    term: "Term 1",
-    status: "Pending"
-  }
-];
-
 export default function AssignmentsPage() {
+  const { data: realAssignmentsData, isLoading } = useStudentAssignments();
+
+  const assignmentsData: Assignment[] = (realAssignmentsData || []).map(a => {
+    let status: "Completed" | "In Progress" | "Pending" | "Late" = "Pending";
+    const now = new Date();
+    const dueAt = new Date(a.dueAt);
+    const hasSubmission = a.submissions && a.submissions.length > 0;
+
+    if (hasSubmission) {
+      status = "Completed";
+    } else if (now > dueAt) {
+      status = "Late";
+    } else {
+      status = "Pending";
+    }
+
+    return {
+      id: a.id,
+      subject: a.subject?.name || "Unknown",
+      title: a.title,
+      date: new Date(a.dueAt).toLocaleDateString(),
+      term: "Current Term",
+      status,
+      grade: a.submissions?.[0]?.grade?.score ? `${a.submissions[0].grade.score}` : undefined
+    };
+  });
+
   const [titleFilter, setTitleFilter] = useState("");
   const [termFilter, setTermFilter] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
@@ -186,7 +53,6 @@ export default function AssignmentsPage() {
   const [selectedSubmission, setSelectedSubmission] = useState<Assignment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Filter data based on filters
   const filteredData = assignmentsData.filter(assignment => {
     const matchesTitle = titleFilter === "" || assignment.title.toLowerCase().includes(titleFilter.toLowerCase());
     const matchesTerm = termFilter === "" || assignment.term === termFilter;
@@ -195,7 +61,6 @@ export default function AssignmentsPage() {
     return matchesTitle && matchesTerm && matchesGrade;
   });
 
-  // Handle checkbox selection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedItems(filteredData.map(item => item.id));
@@ -244,17 +109,17 @@ export default function AssignmentsPage() {
       )
     },
     {
+      key: "title",
+      header: "Title",
+      render: (_, row) => (
+        <div className="font-medium text-gray-900">{row.title}</div>
+      )
+    },
+    {
       key: "date",
       header: "Date",
       render: (_, row) => (
         <div className="text-gray-600">{row.date}</div>
-      )
-    },
-    {
-      key: "term",
-      header: "Term",
-      render: (_, row) => (
-        <div className="text-gray-600">{row.term}</div>
       )
     },
     {
@@ -289,29 +154,29 @@ export default function AssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Assignments</h1>
       </div>
 
-      {/* Stats Cards */}
       <div className="stats-grid">
-        {statsData.map((stat, index) => (
-          <StatCard
-            key={index}
-            label={stat.label}
-            value={stat.value.toString()}
-            icon={stat.icon}
-            progress={stat.progress}
-            trend={stat.trend}
-          />
-        ))}
+        <StatCard
+          label="Total Assignments"
+          value={assignmentsData.length.toString()}
+          icon={<BookOpen size={18} />}
+          progress={80}
+          trend={{ value: "3.6", direction: "up", label: "This month" }}
+        />
+        <StatCard
+          label="Total Subjects"
+          value={Array.from(new Set(assignmentsData.map(a => a.subject))).length.toString()}
+          icon={<GraduationCap size={18} />}
+          progress={75}
+          trend={{ value: "3.6", direction: "up", label: "This month" }}
+        />
       </div>
 
-      {/* Assignment Overview Section */}
       <Card>
         <CardBody>
-          {/* Header and Filters on same row */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900">Assignment overview</h2>
 
@@ -347,34 +212,23 @@ export default function AssignmentsPage() {
                 ]}
                 className="w-32"
               />
-
-              <Select
-                placeholder="Grade"
-                value={gradeFilter}
-                onChange={(e) => setGradeFilter(e.target.value)}
-                options={[
-                  { value: "", label: "All Grades" },
-                  { value: "A+", label: "A+" },
-                  { value: "A", label: "A" },
-                  { value: "A-", label: "A-" },
-                  { value: "B+", label: "B+" },
-                  { value: "B", label: "B" },
-                  { value: "B-", label: "B-" }
-                ]}
-                className="w-32"
-              />
             </div>
           </div>
 
-          {/* Table */}
-          <DataTable
-            columns={columns as unknown as Column<Record<string, unknown>>[]}
-            data={filteredData as unknown as Record<string, unknown>[]}
-            keyField="id"
-            className="assignments-table"
-            pageSize={10}
-            paginationClassName="pagination-rounded"
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns as unknown as Column<Record<string, unknown>>[]}
+              data={filteredData as unknown as Record<string, unknown>[]}
+              keyField="id"
+              className="assignments-table"
+              pageSize={10}
+              paginationClassName="pagination-rounded"
+            />
+          )}
         </CardBody>
       </Card>
 
@@ -383,14 +237,13 @@ export default function AssignmentsPage() {
         onClose={() => setIsModalOpen(false)}
         submission={selectedSubmission ? {
           ...selectedSubmission,
-          teacher: "Dr. Anais Kamal", 
-          submittedDate: "Today, 10:45 AM", 
+          teacher: "Subject Teacher",
+          submittedDate: selectedSubmission.status === "Completed" ? "Submitted" : undefined,
           fileName: selectedSubmission.status === "Completed" ? `${selectedSubmission.title.replace(/\s+/g, '_')}.pdf` : undefined,
           fileSize: "1.2 MB",
-          comments: selectedSubmission.status === "Completed" ? "Excellent work on this assignment. Your methodology is clear and well-documented." : undefined
-        } : null}
+          comments: selectedSubmission.status === "Completed" ? "Excellent work." : undefined
+        } as any : null}
       />
     </div>
   );
 }
-

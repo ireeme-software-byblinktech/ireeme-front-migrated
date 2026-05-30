@@ -1,4 +1,5 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+// Remove any trailing /api/v1 to prevent double-prefixing since endpoints already include it
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/api\/v1\/?$/, '');
 
 // Get auth token from storage
 const getAuthToken = (): string | null => {
@@ -104,7 +105,6 @@ export async function apiClient<T>(
     throw new Error(errorMessage);
   }
 
-  // Handle 204 No Content (e.g., DELETE operations)
   if (response.status === 204 || response.headers.get("content-length") === "0") {
     return undefined as T;
   }
