@@ -42,37 +42,99 @@ const InputField = ({ label, defaultValue, placeholder, className, type }: Field
   );
 };
 
+const SelectField = ({ label, defaultValue, placeholder, className, students }: FieldProps & { students?: RecordModalProps['students'] }) => {
+  return (
+    <div className={cn("space-y-2", className)}>
+      <select
+        defaultValue={defaultValue}
+        onKeyDown={handleEnterAsTab}
+        className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-black transition-all appearance-none cursor-pointer"
+      >
+        <option value="">{placeholder || label}</option>
+        {students?.map((student) => (
+          <option key={student.id} value={student.id}>
+            {student.user.firstName} {student.user.lastName} - {student.class?.name || student.studentNumber}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
 interface RecordModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm?: () => void;
   record?: any;
+  students?: Array<{
+    id: string;
+    user: {
+      firstName: string;
+      lastName: string;
+    };
+    studentNumber: string;
+    class?: {
+      name: string;
+    };
+  }>;
 }
 
 export function AddRecordModal({ open, onClose, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Add Record</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Add Record</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
 
         {/* Body */}
-        <div className="space-y-6">
-          <InputField label="Name" placeholder="Name" />
-          <InputField label="Class" placeholder="Class" />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Blood Type" placeholder="Blood Type" />
-            <InputField label="Allergies" placeholder="Allergies" />
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Student Name</label>
+            <input
+              type="text"
+              placeholder="Student Name"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Class</label>
+            <input
+              type="text"
+              placeholder="Class"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Blood Type</label>
+              <input
+                type="text"
+                placeholder="Blood Type"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Allergies</label>
+              <input
+                type="text"
+                placeholder="Allergies"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
           </div>
         </div>
 
@@ -80,13 +142,13 @@ export function AddRecordModal({ open, onClose, onConfirm }: RecordModalProps) {
         <div className="flex gap-4 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
+            className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
           >
             CANCEL
           </button>
           <button
             onClick={() => { onConfirm?.(); onClose(); }}
-            className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
+            className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
           >
             ADD
           </button>
@@ -98,28 +160,64 @@ export function AddRecordModal({ open, onClose, onConfirm }: RecordModalProps) {
 
 export function UpdateRecordModal({ open, onClose, record, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Update Record</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Update Record</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
 
         {/* Body */}
-        <div className="space-y-6">
-          <InputField label="Name" defaultValue={record?.name || "Amani Samuel"} />
-          <InputField label="Class" defaultValue={record?.class || "S5 MCB"} />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Blood Type" defaultValue={record?.bloodType || "O+"} />
-            <InputField label="Allergies" defaultValue={record?.allergies || "Peanuts"} />
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Student Name</label>
+            <input
+              type="text"
+              defaultValue={record?.name || "Amani Samuel"}
+              placeholder="Student Name"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Class</label>
+            <input
+              type="text"
+              defaultValue={record?.class || "S5 MCB"}
+              placeholder="Class"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Blood Type</label>
+              <input
+                type="text"
+                defaultValue={record?.bloodType || "O+"}
+                placeholder="Blood Type"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Allergies</label>
+              <input
+                type="text"
+                defaultValue={record?.allergies || "Peanuts"}
+                placeholder="Allergies"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
           </div>
         </div>
 
@@ -127,15 +225,15 @@ export function UpdateRecordModal({ open, onClose, record, onConfirm }: RecordMo
         <div className="flex gap-4 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
+            className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
           >
             CANCEL
           </button>
           <button
             onClick={() => { onConfirm?.(); onClose(); }}
-            className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
+            className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
           >
-            ADD
+            UPDATE
           </button>
         </div>
       </div>
@@ -239,31 +337,28 @@ export function DeleteConfirmationModal({ open, onClose, onConfirm }: RecordModa
 
 export function AddAppointmentModal({ open, onClose, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="xl" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white p-6 pt-10">
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-8 px-2">
-          <div className="flex items-center gap-8">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={36} strokeWidth={2.5} />
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[32px] font-black tracking-tight text-gray-900">Add Appointment</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Add Appointment</h2>
           </div>
-          <button onClick={onClose} className="p-2 border-2 border-gray-300 rounded-xl text-gray-400 hover:text-black transition-colors">
-            <X size={20} strokeWidth={4} />
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
 
-        {/* Divider */}
-        <div className="mx-2 h-0.5 bg-gray-400 mb-12 opacity-50" />
-
         {/* Body */}
-        <div className="space-y-8">
+        <div className="space-y-5">
           <InputField label="Name" placeholder="Name" />
           <InputField label="Health Issue" placeholder="Health Issue" />
-          <div className="grid grid-cols-2 gap-8">
-            <InputField label="Date issued" placeholder="Date issued" />
-            <InputField label="Expected Return" placeholder="Expected Return" />
+          <div className="grid grid-cols-2 gap-5">
+            <InputField label="Date issued" placeholder="Date issued" type="date" />
+            <InputField label="Expected Return" placeholder="Expected Return" type="date" />
           </div>
 
           <div className="flex items-center gap-4 pt-2">
@@ -278,16 +373,16 @@ export function AddAppointmentModal({ open, onClose, onConfirm }: RecordModalPro
         </div>
 
         {/* Footer */}
-        <div className="flex gap-6 mt-16 px-12 pb-6">
+        <div className="flex gap-4 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 py-6 bg-gray-200 text-black text-[16px] font-black rounded-2xl uppercase tracking-widest hover:bg-gray-300 transition-all active:scale-95"
+            className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
           >
             CANCEL
           </button>
           <button
             onClick={onClose}
-            className="flex-1 py-6 bg-black text-white text-[16px] font-black rounded-2xl uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-2xl shadow-black/20"
+            className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
           >
             ADD
           </button>
@@ -299,26 +394,25 @@ export function AddAppointmentModal({ open, onClose, onConfirm }: RecordModalPro
 
 export function UpdateAppointmentModal({ open, onClose, record, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="xl" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 pt-12">
-        <div className="flex items-center justify-between mb-8 px-2">
-          <div className="flex items-center gap-8">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={36} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[32px] font-black tracking-tight text-gray-900">Update Appointment</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Update Appointment</h2>
           </div>
-          <button onClick={onClose} className="p-2 border-2 border-gray-300 rounded-xl text-gray-400 hover:text-black transition-colors">
-            <X size={20} strokeWidth={4} />
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="mx-2 h-0.5 bg-gray-400 mb-12 opacity-50" />
-        <div className="space-y-8 px-12">
+        <div className="space-y-5">
           <InputField label="Name" defaultValue={record?.name || "John Doe"} />
           <InputField label="Health Issue" defaultValue={record?.type?.split(" • ")[1] || "Check-up"} />
-          <div className="grid grid-cols-2 gap-8">
-            <InputField label="Date issued" defaultValue={record?.date || "02-02-2026"} />
-            <InputField label="Expected Return" defaultValue={record?.expectedReturn || "02-10-2026"} />
+          <div className="grid grid-cols-2 gap-5">
+            <InputField label="Date issued" defaultValue={record?.date || "02-02-2026"} type="date" />
+            <InputField label="Expected Return" defaultValue={record?.expectedReturn || "02-10-2026"} type="date" />
           </div>
           <div className="flex items-center gap-4 pt-2">
             <input
@@ -330,16 +424,16 @@ export function UpdateAppointmentModal({ open, onClose, record, onConfirm }: Rec
             <label htmlFor="update-return-checkbox" className="text-[18px] font-black text-gray-700 cursor-pointer">Return</label>
           </div>
         </div>
-        <div className="flex gap-6 mt-16 px-12 pb-6">
+        <div className="flex gap-4 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 py-6 bg-gray-200 text-black text-[16px] font-black rounded-2xl uppercase tracking-widest hover:bg-gray-300 transition-all active:scale-95"
+            className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
           >
             CANCEL
           </button>
           <button
             onClick={() => { onConfirm?.(); onClose(); }}
-            className="flex-1 py-6 bg-black text-white text-[16px] font-black rounded-2xl uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-2xl shadow-black/20"
+            className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
           >
             UPDATE
           </button>
@@ -395,36 +489,76 @@ export function ViewAppointmentModal({ open, onClose, record }: RecordModalProps
   );
 }
 
-export function AddMedicationModal({ open, onClose, onConfirm }: RecordModalProps) {
+export function AddMedicationModal({ open, onClose, onConfirm, formData, setFormData }: RecordModalProps & { formData?: any; setFormData?: any }) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Add Medication</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Add Medication</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="space-y-6">
-          <InputField label="Medication Name" placeholder="Medication Name" />
-          <InputField label="Type" placeholder="Type (e.g. Tablet, Syrup)" />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Quantity" placeholder="Quantity" />
-            <InputField label="Expiry Date" placeholder="Expiry Date" />
+        <div className="space-y-5">
+          <input
+            type="text"
+            value={formData?.name || ""}
+            onChange={(e) => setFormData?.({ ...formData, name: e.target.value })}
+            placeholder="Medication Name"
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+          />
+          <select
+            value={formData?.type || ""}
+            onChange={(e) => setFormData?.({ ...formData, type: e.target.value })}
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
+          >
+            <option value="">Select Type</option>
+            <option value="Tablet">Tablet</option>
+            <option value="Syrup">Syrup</option>
+          </select>
+          <div className="grid grid-cols-2 gap-5">
+            <input
+              type="text"
+              value={formData?.quantity || ""}
+              onChange={(e) => setFormData?.({ ...formData, quantity: e.target.value })}
+              placeholder="Quantity"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+            <input
+              type="date"
+              value={formData?.expiryDate || ""}
+              onChange={(e) => setFormData?.({ ...formData, expiryDate: e.target.value })}
+              placeholder="Expiry Date"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
           </div>
+          <select
+            value={formData?.status || "In Stock"}
+            onChange={(e) => setFormData?.({ ...formData, status: e.target.value })}
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
+          >
+            <option value="In Stock">In Stock</option>
+            <option value="Low Stock">Low Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+          </select>
         </div>
         <div className="flex gap-4 pt-4">
-          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
+          <button onClick={onClose} className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
           <button
-            onClick={() => { onConfirm?.(); onClose(); }}
-            className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
+            onClick={() => { onConfirm?.(); }}
+            className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
           >
             ADD
           </button>
@@ -434,34 +568,74 @@ export function AddMedicationModal({ open, onClose, onConfirm }: RecordModalProp
   );
 }
 
-export function UpdateMedicationModal({ open, onClose, record, onConfirm }: RecordModalProps) {
+export function UpdateMedicationModal({ open, onClose, record, onConfirm, formData, setFormData }: RecordModalProps & { formData?: any; setFormData?: any }) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Update Medication</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Update Medication</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="space-y-6">
-          <InputField label="Medication Name" defaultValue={record?.name || "Paracetamol"} />
-          <InputField label="Type" defaultValue={record?.type || "Tablet"} />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Quantity" defaultValue={record?.quantity || "500 tablets"} />
-            <InputField label="Expiry Date" defaultValue={record?.date || "02-02-2026"} />
+        <div className="space-y-5">
+          <input
+            type="text"
+            value={formData?.name || ""}
+            onChange={(e) => setFormData?.({ ...formData, name: e.target.value })}
+            placeholder="Medication Name"
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+          />
+          <select
+            value={formData?.type || ""}
+            onChange={(e) => setFormData?.({ ...formData, type: e.target.value })}
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
+          >
+            <option value="">Select Type</option>
+            <option value="Tablet">Tablet</option>
+            <option value="Syrup">Syrup</option>
+          </select>
+          <div className="grid grid-cols-2 gap-5">
+            <input
+              type="text"
+              value={formData?.quantity || ""}
+              onChange={(e) => setFormData?.({ ...formData, quantity: e.target.value })}
+              placeholder="Quantity"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+            <input
+              type="date"
+              value={formData?.expiryDate ? new Date(formData.expiryDate).toISOString().split('T')[0] : ""}
+              onChange={(e) => setFormData?.({ ...formData, expiryDate: e.target.value })}
+              placeholder="Expiry Date"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
           </div>
+          <select
+            value={formData?.status || "In Stock"}
+            onChange={(e) => setFormData?.({ ...formData, status: e.target.value })}
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
+          >
+            <option value="In Stock">In Stock</option>
+            <option value="Low Stock">Low Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+          </select>
         </div>
         <div className="flex gap-4 pt-4">
-          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
+          <button onClick={onClose} className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
-          <button onClick={onClose} className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
+          <button onClick={() => { onConfirm?.(); }} className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
             UPDATE
           </button>
         </div>
@@ -489,11 +663,11 @@ export function ViewMedicationModal({ open, onClose, record }: RecordModalProps)
         <div className="border border-gray-200 rounded-[24px] overflow-hidden flex mx-4 p-8  min-h-[220px]">
           <div className="flex-[1.4] border-r border-gray-200 pr-10 flex flex-col justify-center gap-5">
             {[
-              { label: "Name", value: record?.name || "Paracetamol" },
-              { label: "Type", value: record?.type || "Tablet" },
-              { label: "Quantity", value: record?.quantity || "500 tablets" },
-              { label: "Expiry Date", value: record?.date || "02-02-2026" },
-              { label: "Status", value: record?.status || "In Stock" }
+              { label: "Name", value: record?.name || "N/A" },
+              { label: "Type", value: record?.type || "N/A" },
+              { label: "Quantity", value: record?.quantity || "N/A" },
+              { label: "Expiry Date", value: record?.expiryDate ? new Date(record.expiryDate).toLocaleDateString() : "N/A" },
+              { label: "Status", value: record?.status || "N/A" }
             ].map((item, i) => (
               <div key={i} className="border-b border-gray-100 pb-1.5 flex gap-2 whitespace-nowrap">
                 <span className="text-[14px] font-black text-gray-900 min-w-max">{item.label}:</span>
@@ -503,7 +677,7 @@ export function ViewMedicationModal({ open, onClose, record }: RecordModalProps)
           </div>
           <div className="flex-1 pl-12 flex flex-col justify-center gap-2 whitespace-nowrap">
             <p className="text-[13px] font-bold text-gray-400 uppercase tracking-tight">Stored by :</p>
-            <p className="text-[15px] font-black text-gray-900">Moses Byiringiro</p>
+            <p className="text-[15px] font-black text-gray-900">Nurse</p>
           </div>
         </div>
         <div className="flex justify-center mt-10 pb-2">
@@ -518,35 +692,66 @@ export function ViewMedicationModal({ open, onClose, record }: RecordModalProps)
 
 export function AddMedicalCaseModal({ open, onClose, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">New Medical Case</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">New Medical Case</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="space-y-6">
-          <InputField label="Student Name" placeholder="Student Name" />
-          <InputField label="Class" placeholder="Class" />
-          <InputField label="Diagnosis" placeholder="Diagnosis" />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Date" placeholder="Date" />
-            <InputField label="Status" placeholder="Status" />
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Student Name</label>
+            <input
+              type="text"
+              placeholder="Student Name"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Diagnosis</label>
+            <input
+              type="text"
+              placeholder="Diagnosis"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Date</label>
+              <input
+                type="date"
+                placeholder="Date"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Status</label>
+              <input
+                type="text"
+                placeholder="Status"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
           </div>
         </div>
         <div className="flex gap-4 pt-4">
-          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
+          <button onClick={onClose} className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
           <button
             onClick={() => { onConfirm?.(); onClose(); }}
-            className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
+            className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
           >
             CREATE
           </button>
@@ -558,33 +763,68 @@ export function AddMedicalCaseModal({ open, onClose, onConfirm }: RecordModalPro
 
 export function UpdateMedicalCaseModal({ open, onClose, record, onConfirm }: RecordModalProps) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Update Case</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Update Case</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="space-y-6">
-          <InputField label="Student Name" defaultValue={record?.student || "John Doe"} />
-          <InputField label="Class" defaultValue={record?.class || "S5 MCB"} />
-          <InputField label="Diagnosis" defaultValue={record?.diagnosis || "In Progress"} />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Date" defaultValue={record?.date || "02-02-2026"} />
-            <InputField label="Case ID" defaultValue={record?.id || "MC-2025-001"} />
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Student Name</label>
+            <input
+              type="text"
+              defaultValue={record?.student || "John Doe"}
+              placeholder="Student Name"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Diagnosis</label>
+            <input
+              type="text"
+              defaultValue={record?.diagnosis || "In Progress"}
+              placeholder="Diagnosis"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Date</label>
+              <input
+                type="date"
+                defaultValue={record?.date || "02-02-2026"}
+                placeholder="Date"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Case ID</label>
+              <input
+                type="text"
+                defaultValue={record?.id || "MC-2025-001"}
+                placeholder="Case ID"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
           </div>
         </div>
         <div className="flex gap-4 pt-4">
-          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
+          <button onClick={onClose} className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
-          <button onClick={onClose} className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
+          <button onClick={onClose} className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
             UPDATE
           </button>
         </div>
@@ -639,35 +879,66 @@ export function ViewMedicalCaseModal({ open, onClose, record }: RecordModalProps
   );
 }
 
-export function UpdatePermissionModal({ open, onClose, record, onConfirm }: RecordModalProps) {
+export function UpdatePermissionModal({ open, onClose, record, onConfirm, formData, setFormData }: RecordModalProps & { formData?: any; setFormData?: any }) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="md" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Update Permission</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Update Permission</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="space-y-6">
-          <InputField label="Student Name" defaultValue={record?.name || "John Doe"} />
-          <InputField label="Health Issue" defaultValue={record?.issue || "High Fever"} />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Date issued" type="date" defaultValue={record?.dateIssued || "2026-02-02"} />
-            <InputField label="Expected Return" type="date" defaultValue={record?.expectedReturn || "2026-02-10"} />
-          </div>
-          <InputField label="Parent/Guardian" defaultValue={record?.parent || "Mrs. Jane Doe"} />
+        <div className="space-y-5">
+          <input
+            type="text"
+            value={record?.student?.user ? `${record.student.user.firstName} ${record.student.user.lastName}` : ""}
+            disabled
+            className="w-full px-6 py-4 bg-gray-100 border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-500 cursor-not-allowed"
+          />
+          <input
+            type="text"
+            value={formData?.healthIssue || ""}
+            onChange={(e) => setFormData?.({ ...formData, healthIssue: e.target.value })}
+            placeholder="Health Issue"
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+          />
+          <input
+            type="date"
+            value={formData?.expectedReturn || ""}
+            onChange={(e) => setFormData?.({ ...formData, expectedReturn: e.target.value })}
+            placeholder="Expected Return"
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+          />
+          <input
+            type="text"
+            value={formData?.parentGuardian || ""}
+            onChange={(e) => setFormData?.({ ...formData, parentGuardian: e.target.value })}
+            placeholder="Parent/Guardian"
+            onKeyDown={handleEnterAsTab}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+          />
+          <textarea
+            value={formData?.notes || ""}
+            onChange={(e) => setFormData?.({ ...formData, notes: e.target.value })}
+            placeholder="Notes (optional)"
+            onKeyDown={handleEnterAsTab}
+            rows={3}
+            className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400 resize-none"
+          />
         </div>
         <div className="flex gap-4 pt-4">
-          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
+          <button onClick={onClose} className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
-          <button onClick={() => { onConfirm?.(); onClose(); }} className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
+          <button onClick={() => { onConfirm?.(); }} className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
             UPDATE
           </button>
         </div>
@@ -677,11 +948,37 @@ export function UpdatePermissionModal({ open, onClose, record, onConfirm }: Reco
 }
 
 export function ViewPermissionModal({ open, onClose, record }: RecordModalProps) {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const formatStatus = (status?: string) => {
+    if (!status) return "Active";
+    return status.charAt(0) + status.slice(1).toLowerCase();
+  };
+
+  const studentName = record?.student?.user 
+    ? `${record.student.user.firstName} ${record.student.user.lastName}` 
+    : record?.name || "N/A";
+
+  const nurseName = record?.nurse 
+    ? `${record.nurse.firstName} ${record.nurse.lastName}` 
+    : "Moses Byiringiro";
+
+  const nurseInitials = record?.nurse 
+    ? `${record.nurse.firstName[0]}${record.nurse.lastName[0]}` 
+    : "MB";
+
   return (
     <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[40px] !border-none !shadow-2xl">
-      <div className="bg-white">
+      <div className="bg-white overflow-y-auto max-h-[80vh] scrollbar-hide">
         {/* Header Ribbon */}
-        <div className="bg-gray-50/50 px-10 py-8 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-gray-50/50 px-10 py-2 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="w-14 h-14 bg-white shadow-sm border border-gray-100 rounded-2xl flex items-center justify-center text-black">
               <BookOpen size={24} strokeWidth={2.5} />
@@ -696,56 +993,64 @@ export function ViewPermissionModal({ open, onClose, record }: RecordModalProps)
           </button>
         </div>
 
-        <div className="p-10 space-y-8">
+        <div className="p-10 space-y-4">
           {/* Main Info Card */}
           <div className="bg-gray-50/50 border border-gray-100 rounded-[28px] p-8 space-y-6 relative overflow-hidden">
             {/* Status Badge */}
             <div className="absolute top-6 right-6">
               <span className={cn(
                 "px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider",
-                (record?.status || "Active") === "Active" ? "bg-black text-white" :
-                  (record?.status || "Active") === "Overdue" ? "bg-red-100 text-red-600" : "bg-gray-200 text-gray-600"
+                record?.status === "ACTIVE" ? "bg-black text-white" :
+                  record?.status === "OVERDUE" ? "bg-red-100 text-red-600" : "bg-gray-200 text-gray-600"
               )}>
-                {record?.status || "Active"}
+                {formatStatus(record?.status)}
               </span>
             </div>
 
             <div>
               <h3 className="text-gray-400 font-bold text-[12px] uppercase tracking-widest mb-1.5">Student</h3>
-              <p className="text-gray-900 font-black text-[22px]">{record?.name || "John Doe"}</p>
+              <p className="text-gray-900 font-black text-[22px]">{studentName}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-200/60">
               <div>
                 <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Health Issue</h3>
-                <p className="text-gray-800 font-bold text-[15px]">{record?.issue || "High Fever"}</p>
+                <p className="text-gray-800 font-bold text-[15px]">{record?.healthIssue || record?.issue || "N/A"}</p>
               </div>
               <div>
                 <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Parent / Guardian</h3>
-                <p className="text-gray-800 font-bold text-[15px]">{record?.parent || "Mrs. Jane Doe"}</p>
+                <p className="text-gray-800 font-bold text-[15px]">{record?.parentGuardian || record?.parent || "N/A"}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-200/60">
               <div>
                 <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Date Issued</h3>
-                <p className="text-gray-800 font-bold text-[15px]">{record?.dateIssued || "02-02-2026"}</p>
+                <p className="text-gray-800 font-bold text-[15px]">{formatDate(record?.dateIssued)}</p>
               </div>
               <div>
                 <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Expected Return</h3>
-                <p className="text-gray-800 font-bold text-[15px]">{record?.expectedReturn || "02-10-2026"}</p>
+                <p className="text-gray-800 font-bold text-[15px]">{formatDate(record?.expectedReturn)}</p>
               </div>
             </div>
+
+            {/* Notes Section - Only show if notes exist */}
+            {record?.notes && (
+              <div className="pt-4 border-t border-gray-200/60">
+                <h3 className="text-gray-400 font-bold text-[11px] uppercase tracking-widest mb-2">Notes</h3>
+                <p className="text-gray-800 font-medium text-[14px] leading-relaxed">{record.notes}</p>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between border border-gray-100 rounded-[20px] p-6 bg-white shadow-sm">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500">
-                MB
+                {nurseInitials}
               </div>
               <div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">Authorized By</p>
-                <p className="text-[14px] font-black text-gray-900">Moses Byiringiro</p>
+                <p className="text-[14px] font-black text-gray-900">{nurseName}</p>
               </div>
             </div>
           </div>
@@ -851,35 +1156,90 @@ export function ViewDocumentModal({ open, onClose, record }: RecordModalProps) {
   );
 }
 
-export function AddPermissionModal({ open, onClose, onConfirm }: RecordModalProps) {
+export function AddPermissionModal({ open, onClose, onConfirm, students, formData, setFormData }: RecordModalProps & { formData?: any; setFormData?: any }) {
   return (
-    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[32px] !border-none !shadow-2xl">
-      <div className="bg-white p-10 space-y-10">
-        <div className="flex items-center justify-between border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-200 rounded-2xl flex items-center justify-center text-black">
-              <BookOpen size={32} strokeWidth={2.5} />
+    <Modal open={open} onClose={onClose} size="lg" className="p-0 overflow-hidden rounded-[28px] !border-none !shadow-2xl">
+      <div className="bg-white p-8 space-y-8">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-black">
+              <BookOpen size={28} strokeWidth={2.5} />
             </div>
-            <h2 className="text-[28px] font-black tracking-tight text-gray-900">Add Permission</h2>
+            <h2 className="text-[24px] font-black tracking-tight text-gray-900">Add Permission</h2>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-black">
-            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={18} strokeWidth={3} /></div>
+            <div className="border-2 border-gray-400 rounded-lg p-0.5"><X size={16} strokeWidth={3} /></div>
           </button>
         </div>
-        <div className="space-y-6">
-          <InputField label="Student Name" placeholder="Student Name" />
-          <InputField label="Health Issue" placeholder="Health Issue" />
-          <div className="grid grid-cols-2 gap-6">
-            <InputField label="Date issued" placeholder="Date issued" type="date" />
-            <InputField label="Expected Return" placeholder="Expected Return" type="date" />
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Student</label>
+            <select
+              value={formData?.studentId || ""}
+              onChange={(e) => setFormData?.({ ...formData, studentId: e.target.value })}
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
+            >
+              <option value="">Select Student</option>
+              {students?.map((student) => (
+                <option key={student.id} value={student.id}>
+                  {student.user.firstName} {student.user.lastName} - {student.class?.name || student.studentNumber}
+                </option>
+              ))}
+            </select>
           </div>
-          <InputField label="Parent/Guardian" placeholder="Parent/Guardian" />
+          <div className="grid grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Health Issue</label>
+              <input
+                type="text"
+                value={formData?.healthIssue || ""}
+                onChange={(e) => setFormData?.({ ...formData, healthIssue: e.target.value })}
+                placeholder="Health Issue"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Expected Return</label>
+              <input
+                type="date"
+                value={formData?.expectedReturn || ""}
+                onChange={(e) => setFormData?.({ ...formData, expectedReturn: e.target.value })}
+                placeholder="Expected Return"
+                onKeyDown={handleEnterAsTab}
+                className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Parent/Guardian</label>
+            <input
+              type="text"
+              value={formData?.parentGuardian || ""}
+              onChange={(e) => setFormData?.({ ...formData, parentGuardian: e.target.value })}
+              placeholder="Parent/Guardian"
+              onKeyDown={handleEnterAsTab}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-gray-700 uppercase tracking-wide">Notes (Optional)</label>
+            <textarea
+              value={formData?.notes || ""}
+              onChange={(e) => setFormData?.({ ...formData, notes: e.target.value })}
+              placeholder="Additional notes..."
+              onKeyDown={handleEnterAsTab}
+              rows={3}
+              className="w-full px-6 py-4 bg-white border border-gray-200 rounded-[20px] text-[15px] font-medium text-gray-900 focus:outline-none focus:border-black transition-all placeholder:text-gray-400 resize-none"
+            />
+          </div>
         </div>
         <div className="flex gap-4 pt-4">
-          <button onClick={onClose} className="flex-1 py-5 bg-gray-200 text-black text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
+          <button onClick={onClose} className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95">
             CANCEL
           </button>
-          <button onClick={() => { onConfirm?.(); onClose(); }} className="flex-1 py-5 bg-black text-white text-[15px] font-black rounded-[20px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
+          <button onClick={() => { onConfirm?.(); }} className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10">
             ADD
           </button>
         </div>

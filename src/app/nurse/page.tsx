@@ -22,22 +22,19 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { healthApi, MedicalCase, Appointment } from "@/lib/api/health";
+import { studentsApi } from "@/lib/api/students";
 
-// ─── MOCK DATA ────────────────────────────────────────────────
+// ─── TYPES ────────────────────────────────────────────────
 
-const recentCases = [
-    { id: 1, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-    { id: 2, student: "John Doe", case: "Headache", class: "S5MCB", status: "In Progress" },
-    { id: 3, student: "John Doe", case: "Headache", class: "S5MCB", status: "Pending" },
-    { id: 4, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-    { id: 5, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-    { id: 6, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-    { id: 7, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-    { id: 8, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-    { id: 9, student: "John Doe", case: "Headache", class: "S5MCB", status: "completed" },
-];
-
-type CaseRow = typeof recentCases[number];
+interface CaseRow {
+    id: string;
+    student: string;
+    case: string;
+    class: string;
+    status: string;
+}
 
 const caseCols: Column<CaseRow>[] = [
     { key: "student", header: "Recent Cases", render: (v) => <span className="font-bold">{String(v)}</span> },
@@ -49,8 +46,7 @@ const caseCols: Column<CaseRow>[] = [
         render: (v) => (
             <span className={cn(
                 "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider block text-center max-w-[80px]",
-                v === "completed" ? "bg-black text-white" :
-                    v === "In Progress" ? "bg-gray-800 text-white" : "bg-gray-400 text-white"
+                v === "CLOSED" ? "bg-black text-white" : "bg-gray-800 text-white"
             )}>
                 {String(v)}
             </span>
@@ -58,13 +54,12 @@ const caseCols: Column<CaseRow>[] = [
     },
 ];
 
-const upcomingAppointments = [
-    { id: 1, name: "John Smith", type: "Check-up", time: "02:00 PM" },
-    { id: 2, name: "John Doe", type: "Follow-up", time: "04:00 PM" },
-    { id: 3, name: "John Smith", type: "Vaccinate", time: "10:00 AM" },
-    { id: 4, name: "John Doe", type: "Check-up", time: "04:00 PM" },
-    { id: 5, name: "John Smith", type: "Follow-up", time: "10:00 AM" },
-];
+interface AppointmentRow {
+    id: string;
+    name: string;
+    type: string;
+    time: string;
+}
 
 const commonCases = [
     { label: "Fever", many: 30, onlyAFew: 23 },
@@ -77,6 +72,96 @@ const commonCases = [
 ];
 
 export default function NurseDashboard() {
+    const [recentCases, setRecentCases] = useState<CaseRow[]>([]);
+    const [upcomingAppointments, setUpcomingAppointments] = useState<AppointmentRow[]>([]);
+    const [stats, setStats] = useState({
+        todayVisits: 0,
+        activeCases: 0,
+        todayAppointments: 0,
+        criticalCases: 0,
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        loadDashboardData();
+    }, []);
+
+    const loadDashboardData = async () => {
+        try {
+            setLoading(true);
+            
+            // Fetch all students (respecting backend limit of 50)
+            const studentsResponse = await studentsApi.getStudents({ isActive: true, limit: 50 });
+            const students = studentsResponse.data;
+
+            // Fetch medical cases and appointments for all students
+            const allCases: MedicalCase[] = [];
+            const allAppointments: Appointment[] = [];
+
+            for (const student of students) {
+                try {
+                    const cases = await healthApi.getMedicalCases(student.id);
+                    allCases.push(...cases);
+                    
+                    const appointments = await healthApi.getAppointments(student.id, 1, 10);
+                    allAppointments.push(...appointments);
+                } catch (error) {
+                    // Skip students with no data
+                    console.log(`No data for student ${student.id}`);
+                }
+            }
+
+            // Calculate stats
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const activeCases = allCases.filter(c => c.status === "OPEN").length;
+            const todayAppointments = allAppointments.filter(a => {
+                const apptDate = new Date(a.scheduledAt);
+                apptDate.setHours(0, 0, 0, 0);
+                return apptDate.getTime() === today.getTime();
+            }).length;
+
+            setStats({
+                todayVisits: todayAppointments,
+                activeCases,
+                todayAppointments,
+                criticalCases: Math.floor(activeCases * 0.1), // Estimate 10% as critical
+            });
+
+            // Transform recent cases for table
+            const casesData: CaseRow[] = allCases.slice(0, 9).map(c => ({
+                id: c.id,
+                student: `${c.student.user.firstName} ${c.student.user.lastName}`,
+                case: c.diagnosis,
+                class: c.student.studentNumber,
+                status: c.status,
+            }));
+            setRecentCases(casesData);
+
+            // Transform upcoming appointments
+            const appointmentsData: AppointmentRow[] = allAppointments
+                .filter(a => new Date(a.scheduledAt) >= new Date())
+                .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+                .slice(0, 5)
+                .map(a => ({
+                    id: a.id,
+                    name: `${a.student.user.firstName} ${a.student.user.lastName}`,
+                    type: a.reason,
+                    time: new Date(a.scheduledAt).toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    }),
+                }));
+            setUpcomingAppointments(appointmentsData);
+
+        } catch (error) {
+            console.error("Failed to load dashboard data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -103,28 +188,28 @@ export default function NurseDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard
                     label="Today's Visits"
-                    value="308"
+                    value={loading ? "..." : String(stats.todayVisits)}
                     icon={<Stethoscope size={28} />}
                     progress={75}
                     trend={{ value: "+12", label: "from yesterday", direction: "up" }}
                 />
                 <StatCard
                     label="Active Cases"
-                    value="42"
+                    value={loading ? "..." : String(stats.activeCases)}
                     icon={<BriefcaseMedical size={28} />}
                     progress={45}
                     trend={{ value: "-3", label: "from yesterday", direction: "down" }}
                 />
                 <StatCard
                     label="Appointments"
-                    value="15"
+                    value={loading ? "..." : String(stats.todayAppointments)}
                     icon={<CalendarDays size={28} />}
                     progress={60}
                     trend={{ value: "4", label: "completed", direction: "up" }}
                 />
                 <StatCard
                     label="Critical Cases"
-                    value="2"
+                    value={loading ? "..." : String(stats.criticalCases)}
                     icon={<AlertCircle size={28} />}
                     progress={25}
                     trend={{ value: "-1", label: "this week", direction: "down" }}
@@ -278,22 +363,22 @@ export default function NurseDashboard() {
                 >
                     <Card className="border-none shadow-xl shadow-gray-100/50 rounded-2xl overflow-hidden bg-white">
                         <CardBody className="p-0">
-                            <DataTable
-                                columns={caseCols}
-                                data={recentCases}
-                                keyField="id"
-                            />
-                            <div className="p-6 flex items-center justify-between border-t border-gray-50 text-[11px] font-black text-gray-400 uppercase tracking-wider">
-                                <span>Showing 1 to 4 of 247 results</span>
-                                <div className="flex gap-3">
-                                    <Button variant="outline" size="sm" className="px-5 h-10 text-[11px] border-gray-100 font-black hover:bg-black hover:text-white transition-all rounded-lg">Previous</Button>
-                                    <div className="flex gap-2">
-                                        <Button size="sm" className="w-10 h-10 p-0 bg-black text-white text-[11px] font-black shadow-lg shadow-black/20 rounded-lg">1</Button>
-                                        <Button variant="outline" size="sm" className="w-10 h-10 p-0 text-[11px] font-black border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">2</Button>
+                            {loading ? (
+                                <div className="p-10 text-center text-gray-400">Loading cases...</div>
+                            ) : recentCases.length === 0 ? (
+                                <div className="p-10 text-center text-gray-400">No recent cases</div>
+                            ) : (
+                                <>
+                                    <DataTable
+                                        columns={caseCols}
+                                        data={recentCases}
+                                        keyField="id"
+                                    />
+                                    <div className="p-6 flex items-center justify-between border-t border-gray-50 text-[11px] font-black text-gray-400 uppercase tracking-wider">
+                                        <span>Showing {recentCases.length} recent cases</span>
                                     </div>
-                                    <Button variant="outline" size="sm" className="px-5 h-10 text-[11px] border-gray-100 font-black hover:bg-black hover:text-white transition-all rounded-lg">Next</Button>
-                                </div>
-                            </div>
+                                </>
+                            )}
                         </CardBody>
                     </Card>
                 </motion.div>
@@ -307,27 +392,33 @@ export default function NurseDashboard() {
                     <Card className="h-full border-none shadow-xl shadow-gray-100/50 rounded-2xl bg-white p-2">
                         <CardHeader title="Upcoming Appointments" className="p-4" />
                         <CardBody className="space-y-4 p-4 mt-2">
-                            {upcomingAppointments.map((app, i) => (
-                                <motion.div
-                                    key={app.id}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    whileHover={{ x: 5 }}
-                                    className="flex items-center gap-5 p-5 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all cursor-pointer group border border-transparent hover:border-gray-100"
-                                >
-                                    <div className="w-12 h-12 rounded-xl bg-black flex items-center justify-center text-white shrink-0 shadow-lg shadow-black/20">
-                                        <Clock size={22} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-[14px] font-black truncate text-gray-900">{app.name}</h4>
-                                        <p className="text-[11px] font-bold text-gray-400 group-hover:text-gray-500 transition-colors uppercase mt-0.5">{app.type}</p>
-                                    </div>
-                                    <div className="text-[11px] font-black text-blue-600 whitespace-nowrap bg-blue-50/50 px-4 py-2 rounded-lg border border-blue-100/50">
-                                        {app.time}
-                                    </div>
-                                </motion.div>
-                            ))}
+                            {loading ? (
+                                <div className="p-10 text-center text-gray-400">Loading...</div>
+                            ) : upcomingAppointments.length === 0 ? (
+                                <div className="p-10 text-center text-gray-400">No upcoming appointments</div>
+                            ) : (
+                                upcomingAppointments.map((app, i) => (
+                                    <motion.div
+                                        key={app.id}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        whileHover={{ x: 5 }}
+                                        className="flex items-center gap-5 p-5 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all cursor-pointer group border border-transparent hover:border-gray-100"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl bg-black flex items-center justify-center text-white shrink-0 shadow-lg shadow-black/20">
+                                            <Clock size={22} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-[14px] font-black truncate text-gray-900">{app.name}</h4>
+                                            <p className="text-[11px] font-bold text-gray-400 group-hover:text-gray-500 transition-colors uppercase mt-0.5">{app.type}</p>
+                                        </div>
+                                        <div className="text-[11px] font-black text-blue-600 whitespace-nowrap bg-blue-50/50 px-4 py-2 rounded-lg border border-blue-100/50">
+                                            {app.time}
+                                        </div>
+                                    </motion.div>
+                                ))
+                            )}
                         </CardBody>
                     </Card>
                 </motion.div>
