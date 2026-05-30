@@ -48,14 +48,61 @@ export const useStudentProfile = () => {
     });
 };
 
+// Raw shape returned by GET /students/:id/dashboard
+interface RawDashboard {
+    grades: Array<{ id: string; score: any; maxScore: any; gradedAt: string; subject?: { name: string } }>;
+    attendance: Array<{ status: string; _count: { status: number } }>;
+    assignments: Array<{ id: string; title: string; dueAt: string; type: string; subject?: { name: string } }>;
+    unreadNotifications: number;
+}
+
+function transformDashboard(raw: RawDashboard): StudentDashboard {
+    // Attendance stats
+    const totalAttendance = raw.attendance.reduce((sum, a) => sum + a._count.status, 0);
+    const presentCount = raw.attendance.find(a => a.status === 'PRESENT')?._count.status ?? 0;
+    const averageAttendance = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
+
+    return {
+        overview: {
+            totalSubjects: [...new Set(raw.assignments.map(a => a.subject?.name).filter(Boolean))].length || raw.grades.length,
+            totalAssignments: raw.assignments.length,
+            completedAssignments: 0,
+            averageAttendance,
+            assignmentsProgress: raw.assignments.length > 0 ? Math.round((0 / raw.assignments.length) * 100) : 0,
+        },
+        upcomingAssignments: raw.assignments.map(a => ({
+            id: a.id,
+            title: a.title,
+            subjectId: '',
+            subjectName: a.subject?.name ?? 'Unknown',
+            dueDate: a.dueAt,
+            status: 'Pending',
+            teacherName: '',
+            progress: 0,
+        })),
+        recentGrades: raw.grades.map(g => ({
+            id: g.id,
+            subjectName: g.subject?.name ?? 'Unknown',
+            score: Number(g.score),
+            total: Number(g.maxScore),
+            date: g.gradedAt,
+        })),
+        notices: [],
+    };
+}
+
 export const useStudentDashboard = (studentId: string | undefined) => {
     return useQuery({
         queryKey: ['student-dashboard', studentId],
-        queryFn: () => apiClient<StudentDashboard>(`/api/v1/students/${studentId}/dashboard`),
+        queryFn: async () => {
+            const raw = await apiClient<RawDashboard>(`/api/v1/students/${studentId}/dashboard`);
+            return transformDashboard(raw);
+        },
         enabled: !!studentId,
         staleTime: 5 * 60 * 1000,
     });
 };
+
 
 export const useStudentAssignments = () => {
     return useQuery({
