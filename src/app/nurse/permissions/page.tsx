@@ -14,55 +14,170 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     AddPermissionModal,
     UpdatePermissionModal,
     ViewPermissionModal,
     DeleteConfirmationModal
 } from "@/components/nurse/HealthRecordModals";
+import { studentsApi, Student } from "@/lib/api/students";
+import { homePermissionsApi, HomePermission, CreateHomePermissionDto, UpdateHomePermissionDto, HomePermissionStatus } from "@/lib/api/home-permissions";
+import { toast } from "@/lib/utils/toast";
 
-const homePermissions = [
-    { id: 1, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Active" },
-    { id: 2, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Returned" },
-    { id: 3, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Returned" },
-    { id: 4, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Returned" },
-    { id: 5, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Returned" },
-    { id: 6, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Returned" },
-    { id: 7, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Returned" },
-    { id: 8, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Overdue" },
-    { id: 9, name: "John Doe", issue: "High Fever (39°C)", parent: "Mrs. Jane Doe (Mother)", dateIssued: "02-02-2026", expectedReturn: "02-02-2026", status: "Active" },
-];
-
-type PermissionRow = typeof homePermissions[number];
+interface PermissionRow extends HomePermission {
+    name: string;
+    issue: string;
+    parent: string;
+    dateIssued: string;
+    expectedReturn: string;
+}
 
 export default function HomePermissionsPage() {
-    const [permissions, setPermissions] = useState(homePermissions);
+    const [permissions, setPermissions] = useState<HomePermission[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ active: 0, returned: 0, overdue: 0, thisWeek: 0 });
     const [activeModal, setActiveModal] = useState<"add" | "edit" | "view" | "delete" | null>(null);
-    const [selectedRecord, setSelectedRecord] = useState<any>(null);
+    const [selectedRecord, setSelectedRecord] = useState<HomePermission | null>(null);
+    const [students, setStudents] = useState<Student[]>([]);
+    const [formData, setFormData] = useState<CreateHomePermissionDto>({
+        studentId: "",
+        healthIssue: "",
+        parentGuardian: "",
+        expectedReturn: "",
+        notes: "",
+    });
 
-    const handleAdd = () => {
-        const newPermission = {
-            id: permissions.length + 1,
-            name: "New Student " + (permissions.length + 1),
-            issue: "General Sickness",
-            parent: "Mrs. Smith",
-            dateIssued: new Date().toISOString().split('T')[0],
-            expectedReturn: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            status: "Active"
-        };
-        setPermissions([newPermission, ...permissions]);
+    useEffect(() => {
+        fetchPermissions();
+        fetchStudents();
+        fetchStats();
+    }, []);
+
+    const fetchPermissions = async () => {
+        setLoading(true);
+        try {
+            const response = await homePermissionsApi.getAll();
+            setPermissions(response.data);
+        } catch (error) {
+            console.error("Failed to fetch permissions:", error);
+            toast.error("Failed to load permissions");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleUpdate = () => {
-        setPermissions(permissions.map(item =>
-            item.id === selectedRecord.id ? { ...item, name: item.name + " (Updated)" } : item
-        ));
+    const fetchStudents = async () => {
+        try {
+            const response = await studentsApi.getStudents({ limit: 50, isActive: true });
+            setStudents(response.data);
+        } catch (error) {
+            console.error("Failed to fetch students:", error);
+        }
     };
 
-    const handleDelete = () => {
-        setPermissions(permissions.filter(item => item.id !== selectedRecord.id));
+    const fetchStats = async () => {
+        try {
+            const data = await homePermissionsApi.getStats();
+            setStats(data);
+        } catch (error) {
+            console.error("Failed to fetch stats:", error);
+        }
     };
+
+    const handleAdd = async () => {
+        if (!formData.studentId || !formData.healthIssue || !formData.parentGuardian || !formData.expectedReturn) {
+            toast.error("Please fill in all required fields");
+            return;
+        }
+
+        try {
+            const newPermission = await homePermissionsApi.create(formData);
+            setPermissions(prev => [newPermission, ...prev]);
+            toast.success("Permission created successfully");
+            setActiveModal(null);
+            setFormData({ studentId: "", healthIssue: "", parentGuardian: "", expectedReturn: "", notes: "" });
+            fetchStats();
+        } catch (error) {
+            console.error("Failed to create permission:", error);
+            toast.error("Failed to create permission");
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!selectedRecord) return;
+
+        try {
+            const updateData: UpdateHomePermissionDto = {
+                healthIssue: formData.healthIssue,
+                parentGuardian: formData.parentGuardian,
+                expectedReturn: formData.expectedReturn,
+                notes: formData.notes,
+            };
+            const updated = await homePermissionsApi.update(selectedRecord.id, updateData);
+            setPermissions(prev => prev.map(p => p.id === selectedRecord.id ? updated : p));
+            toast.success("Permission updated successfully");
+            setActiveModal(null);
+            setSelectedRecord(null);
+        } catch (error) {
+            console.error("Failed to update permission:", error);
+            toast.error("Failed to update permission");
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedRecord) return;
+
+        try {
+            await homePermissionsApi.delete(selectedRecord.id);
+            setPermissions(prev => prev.filter(p => p.id !== selectedRecord.id));
+            toast.success("Permission deleted successfully");
+            setActiveModal(null);
+            setSelectedRecord(null);
+            fetchStats();
+        } catch (error) {
+            console.error("Failed to delete permission:", error);
+            toast.error("Failed to delete permission");
+        }
+    };
+
+    const handleOpenAddModal = () => {
+        setFormData({ studentId: "", healthIssue: "", parentGuardian: "", expectedReturn: "", notes: "" });
+        setActiveModal("add");
+    };
+
+    const handleEdit = (record: HomePermission) => {
+        setSelectedRecord(record);
+        setFormData({
+            studentId: record.studentId,
+            healthIssue: record.healthIssue,
+            parentGuardian: record.parentGuardian,
+            expectedReturn: new Date(record.expectedReturn).toISOString().split('T')[0],
+            notes: record.notes || "",
+        });
+        setActiveModal("edit");
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    };
+
+    const formatStatus = (status: HomePermissionStatus) => {
+        return status.charAt(0) + status.slice(1).toLowerCase();
+    };
+
+    const tableData: PermissionRow[] = permissions.map(p => ({
+        ...p,
+        name: `${p.student.user.firstName} ${p.student.user.lastName}`,
+        issue: p.healthIssue,
+        parent: p.parentGuardian,
+        dateIssued: formatDate(p.dateIssued),
+        expectedReturn: formatDate(p.expectedReturn),
+    }));
 
     const columns: Column<PermissionRow>[] = [
         {
@@ -86,13 +201,13 @@ export default function HomePermissionsPage() {
         {
             key: "status",
             header: "Status",
-            render: (v) => (
+            render: (_, row) => (
                 <span className={cn(
                     "px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest block text-center max-w-[110px]",
-                    v === "Active" ? "bg-black text-white" :
-                        v === "Overdue" ? "bg-red-950 text-red-500 shadow-lg shadow-red-500/10" : "bg-gray-100 text-gray-800"
+                    row.status === HomePermissionStatus.ACTIVE ? "bg-black text-white" :
+                        row.status === HomePermissionStatus.OVERDUE ? "bg-red-950 text-red-500 shadow-lg shadow-red-500/10" : "bg-gray-100 text-gray-800"
                 )}>
-                    {String(v)}
+                    {formatStatus(row.status)}
                 </span>
             )
         },
@@ -109,7 +224,7 @@ export default function HomePermissionsPage() {
                         <Eye size={18} />
                     </button>
                     <button
-                        onClick={() => { setSelectedRecord(row); setActiveModal("edit"); }}
+                        onClick={() => handleEdit(row)}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-black"
                     >
                         <Edit size={18} />
@@ -133,10 +248,10 @@ export default function HomePermissionsPage() {
         >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {[
-                    { label: "Active Permission", value: "308", icon: <GraduationCap size={28} />, progress: 75, trend: { value: "+12", label: "from yesterday", direction: "up" as const } },
-                    { label: "Returned Today", value: "308", icon: <GraduationCap size={28} />, progress: 45, trend: { value: "-3", label: "from yesterday", direction: "down" as const } },
-                    { label: "Overdue Returns", value: "308", icon: <GraduationCap size={28} />, progress: 60, trend: { value: "4", label: "completed", direction: "up" as const } },
-                    { label: "This Week", value: "308", icon: <GraduationCap size={28} />, progress: 25, trend: { value: "-1", label: "this week", direction: "down" as const } },
+                    { label: "Active Permission", value: stats.active.toString(), icon: <GraduationCap size={28} />, progress: 75, trend: { value: "+12", label: "from yesterday", direction: "up" as const } },
+                    { label: "Returned Today", value: stats.returned.toString(), icon: <GraduationCap size={28} />, progress: 45, trend: { value: "-3", label: "from yesterday", direction: "down" as const } },
+                    { label: "Overdue Returns", value: stats.overdue.toString(), icon: <GraduationCap size={28} />, progress: 60, trend: { value: "4", label: "completed", direction: "up" as const } },
+                    { label: "This Week", value: stats.thisWeek.toString(), icon: <GraduationCap size={28} />, progress: 25, trend: { value: "-1", label: "this week", direction: "down" as const } },
                 ].map((stat, i) => (
                     <motion.div
                         key={i}
@@ -186,7 +301,7 @@ export default function HomePermissionsPage() {
                         </div>
                         <Button
                             icon={<Plus size={20} />}
-                            onClick={() => setActiveModal("add")}
+                            onClick={handleOpenAddModal}
                             className="bg-black text-white hover:bg-gray-800 rounded-2xl h-12 px-10 font-black shadow-2xl shadow-black/20"
                         >
                             Add Record
@@ -196,19 +311,43 @@ export default function HomePermissionsPage() {
 
                 <Card className="mt-10 overflow-hidden border border-gray-50 rounded-2xl shadow-none">
                     <CardBody className="p-0">
-                        <DataTable
-                            columns={columns}
-                            data={permissions}
-                            keyField="id"
-                            className="table-header-black"
-                        />
+                        {loading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <p className="text-gray-500">Loading permissions...</p>
+                            </div>
+                        ) : tableData.length === 0 ? (
+                            <div className="flex items-center justify-center py-12">
+                                <p className="text-gray-500">No permissions recorded</p>
+                            </div>
+                        ) : (
+                            <DataTable
+                                columns={columns}
+                                data={tableData}
+                                keyField="id"
+                                className="table-header-black"
+                            />
+                        )}
                     </CardBody>
                 </Card>
             </motion.div>
 
             {/* Modals */}
-            <AddPermissionModal open={activeModal === "add"} onClose={() => setActiveModal(null)} onConfirm={handleAdd} />
-            <UpdatePermissionModal open={activeModal === "edit"} onClose={() => setActiveModal(null)} record={selectedRecord} onConfirm={handleUpdate} />
+            <AddPermissionModal 
+                open={activeModal === "add"} 
+                onClose={() => setActiveModal(null)} 
+                onConfirm={handleAdd} 
+                students={students}
+                formData={formData}
+                setFormData={setFormData}
+            />
+            <UpdatePermissionModal 
+                open={activeModal === "edit"} 
+                onClose={() => setActiveModal(null)} 
+                record={selectedRecord} 
+                onConfirm={handleUpdate}
+                formData={formData}
+                setFormData={setFormData}
+            />
             <ViewPermissionModal open={activeModal === "view"} onClose={() => setActiveModal(null)} record={selectedRecord} />
             <DeleteConfirmationModal open={activeModal === "delete"} onClose={() => setActiveModal(null)} onConfirm={handleDelete} />
         </motion.div>
