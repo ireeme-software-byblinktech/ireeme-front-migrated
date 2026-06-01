@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
     Library,
     BookOpen,
@@ -12,61 +14,164 @@ import {
     Clock,
     ArrowRight,
     User,
-    StickyNote
 } from "lucide-react";
 import { Card, CardBody, CardHeader, StatCard } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// ─── MOCK DATA ────────────────────────────────────────────────
-
-const borrowedBooks = [
-    { id: 1, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 2, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 3, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 4, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 5, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 6, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 7, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-    { id: 8, cover: "/books/book1.jpg", title: "Crimes of stanfield", borrower: "John Doe", borrowDate: "25-07-2025", returnDate: "25-07-2025" },
-];
-
-type BorrowedBook = typeof borrowedBooks[number];
-
-const borrowedCols: Column<BorrowedBook>[] = [
-    {
-        key: "cover",
-        header: "Book Cover",
-        width: "80px",
-        render: () => (
-            <div className="w-10 h-14 bg-gray-50 rounded-sm overflow-hidden flex items-center justify-center border border-gray-100 shadow-sm ml-2">
-                <Book className="text-gray-300" size={20} />
-            </div>
-        )
-    },
-    { key: "title", header: "Book Title", render: (v) => <span className="font-semibold text-gray-800 ml-4">{String(v)}</span> },
-    { key: "borrower", header: "Borrower", render: (v) => <span className="text-gray-600">{String(v)}</span> },
-    { key: "borrowDate", header: "Borrow date", render: (v) => <span className="text-gray-500 tabular-nums">{String(v)}</span> },
-    { key: "returnDate", header: "Return date", render: (v) => <span className="text-gray-500 tabular-nums">{String(v)}</span> },
-];
-
-const upcomingReturns = [
-    { id: 1, title: "Animal Farm", borrower: "Alex Turner", due: "3/18/2024", daysLeft: "1d", color: "text-rose-500 bg-rose-50 border-rose-100" },
-    { id: 2, title: "Lord of the Flies", borrower: "Daniel Lee", due: "3/17/2024", daysLeft: "2d", color: "text-amber-500 bg-amber-50 border-amber-100" },
-    { id: 3, title: "Brave New World", borrower: "Daniel Lee", due: "3/18/2024", daysLeft: "3d", color: "text-yellow-500 bg-yellow-50 border-yellow-100" },
-    { id: 4, title: "Fahrenheit 451", borrower: "Emily White", due: "3/19/2024", daysLeft: "4d", color: "text-orange-500 bg-orange-50 border-orange-100" },
-];
-
-const popularBooks = [
-    { id: 1, title: "Harry Potter Series", author: "J.K. Rowling", category: "Fiction", issues: 155, available: 8, total: 12, color: "bg-blue-600" },
-    { id: 2, title: "The Hunger Games", author: "Suzanne Collins", category: "Fiction", issues: 134, available: 5, total: 10, color: "bg-indigo-600" },
-    { id: 3, title: "Physics Fundamentals", author: "Dr. Robert Smith", category: "Science", issues: 98, available: 15, total: 20, color: "bg-blue-500" },
-    { id: 4, title: "World History", author: "Prof. Jane Miller", category: "History", issues: 87, available: 12, total: 18, color: "bg-blue-700" },
-];
+import { libraryApi, Borrowing } from "@/lib/api/library";
+import { studentsApi } from "@/lib/api/students";
 
 export default function LibrarianDashboard() {
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Fetch books
+    const { data: booksResponse } = useQuery({
+        queryKey: ["dashboard-books"],
+        queryFn: () => libraryApi.getBooks({ limit: 100 }),
+    });
+
+    // Fetch borrowings
+    const { data: borrowingsResponse } = useQuery({
+        queryKey: ["dashboard-borrowings"],
+        queryFn: () => libraryApi.getBorrowings({ limit: 100 }),
+    });
+
+    // Fetch students
+    const { data: studentsResponse } = useQuery({
+        queryKey: ["dashboard-students"],
+        queryFn: () => studentsApi.getStudents({ limit: 100, isActive: true }),
+    });
+
+    const books = booksResponse?.data || [];
+    const borrowings = borrowingsResponse?.data || [];
+    const students = studentsResponse?.data || [];
+
+    // Helper function for date formatting
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+        });
+    };
+
+    // Calculate stats
+    const totalBooks = booksResponse?.total || 0;
+    const totalMembers = studentsResponse?.total || 0;
+    const activeBorrowings = borrowings.filter(b => !b.returnedAt).length;
+    const overdueBorrowings = borrowings.filter(b => 
+        !b.returnedAt && new Date(b.dueDate) < new Date()
+    ).length;
+
+    // Recent borrowings (last 8)
+    const recentBorrowings = borrowings
+        .sort((a, b) => new Date(b.borrowedAt).getTime() - new Date(a.borrowedAt).getTime())
+        .slice(0, 8);
+
+    // Upcoming returns (next 4 due dates)
+    const upcomingReturns = borrowings
+        .filter(b => !b.returnedAt)
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+        .slice(0, 4)
+        .map(b => {
+            const daysLeft = Math.ceil((new Date(b.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            const isOverdue = daysLeft < 0;
+            return {
+                id: b.id,
+                title: b.book?.title || "N/A",
+                borrower: b.student ? `${b.student.firstName} ${b.student.lastName}` : "N/A",
+                due: formatDate(b.dueDate),
+                daysLeft: isOverdue ? 'Overdue' : `${daysLeft}d`,
+                color: isOverdue ? 'text-red-600 bg-red-50 border-red-100' :
+                       daysLeft <= 1 ? 'text-rose-500 bg-rose-50 border-rose-100' :
+                       daysLeft <= 2 ? 'text-amber-500 bg-amber-50 border-amber-100' :
+                       daysLeft <= 3 ? 'text-yellow-500 bg-yellow-50 border-yellow-100' :
+                       'text-orange-500 bg-orange-50 border-orange-100'
+            };
+        });
+
+    // Popular books (most borrowed)
+    const bookBorrowCounts = borrowings.reduce((acc, b) => {
+        acc[b.bookId] = (acc[b.bookId] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    const popularBooks = books
+        .map(book => ({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            category: book.genre || "General",
+            issues: bookBorrowCounts[book.id] || 0,
+            available: book.availableCopies,
+            total: book.totalCopies,
+            color: book.availableCopies > book.totalCopies / 2 ? "bg-emerald-500" : 
+                   book.availableCopies > 0 ? "bg-amber-500" : "bg-red-500"
+        }))
+        .sort((a, b) => b.issues - a.issues)
+        .slice(0, 4);
+
+    const borrowedCols: Column<Borrowing>[] = [
+        {
+            key: "bookId",
+            header: "Book Cover",
+            width: "80px",
+            render: (v, borrowing) => (
+                <div className="w-10 h-14 bg-gray-50 rounded-sm overflow-hidden flex items-center justify-center border border-gray-100 shadow-sm ml-2">
+                    {borrowing.book?.coverUrl ? (
+                        <img src={borrowing.book.coverUrl} alt={borrowing.book.title} className="w-full h-full object-cover" />
+                    ) : (
+                        <Book className="text-gray-300" size={20} />
+                    )}
+                </div>
+            )
+        },
+        { 
+            key: "bookId", 
+            header: "Book Title", 
+            render: (v, borrowing) => <span className="font-semibold text-gray-800 ml-4">{borrowing.book?.title || "N/A"}</span> 
+        },
+        { 
+            key: "studentId", 
+            header: "Borrower", 
+            render: (v, borrowing) => (
+                <span className="text-gray-600">
+                    {borrowing.student ? `${borrowing.student.firstName} ${borrowing.student.lastName}` : "N/A"}
+                </span>
+            )
+        },
+        { 
+            key: "borrowedAt", 
+            header: "Borrow date", 
+            render: (v) => <span className="text-gray-500 tabular-nums">{formatDate(String(v))}</span> 
+        },
+        { 
+            key: "dueDate", 
+            header: "Due date", 
+            render: (v) => <span className="text-gray-500 tabular-nums">{formatDate(String(v))}</span> 
+        },
+        {
+            key: "id",
+            header: "Status",
+            render: (v, borrowing) => {
+                const isReturned = !!borrowing.returnedAt;
+                const isOverdue = !isReturned && new Date(borrowing.dueDate) < new Date();
+                const status = isReturned ? "Returned" : isOverdue ? "Overdue" : "Active";
+                return (
+                    <span className={cn(
+                        "px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border text-center block w-fit",
+                        status === "Active" ? "bg-blue-50 text-blue-700 border-blue-100" : 
+                        status === "Overdue" ? "bg-rose-50 text-rose-700 border-rose-100" :
+                        "bg-emerald-50 text-emerald-700 border-emerald-100"
+                    )}>
+                        {status}
+                    </span>
+                );
+            }
+        }
+    ];
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -92,28 +197,28 @@ export default function LibrarianDashboard() {
             {/* Stats Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard
-                    label="Total Subjects"
-                    value="15"
+                    label="Total Books"
+                    value={totalBooks.toString()}
                     icon={<BookOpen />}
                     trend={{ value: "+3.6", direction: "up", label: "This month" }}
                 />
                 <StatCard
-                    label="Total Assignments"
-                    value="30"
-                    icon={<ClipboardList />}
+                    label="Total Members"
+                    value={totalMembers.toString()}
+                    icon={<Users />}
                     trend={{ value: "+3.6", direction: "up", label: "This month" }}
                 />
                 <StatCard
-                    label="Total Notes"
-                    value="30"
-                    icon={<StickyNote />}
+                    label="Active Loans"
+                    value={activeBorrowings.toString()}
+                    icon={<Book />}
                     trend={{ value: "+3.6", direction: "up", label: "This month" }}
                 />
                 <StatCard
-                    label="Total reports"
-                    value="30"
-                    icon={<FileText />}
-                    trend={{ value: "+3.6", direction: "up", label: "This month" }}
+                    label="Overdue Books"
+                    value={overdueBorrowings.toString()}
+                    icon={<Clock />}
+                    trend={{ value: "-2.1", direction: "down", label: "This month" }}
                 />
             </div>
 
@@ -124,7 +229,7 @@ export default function LibrarianDashboard() {
                         <CardBody className="p-0">
                             <DataTable
                                 columns={borrowedCols}
-                                data={borrowedBooks}
+                                data={recentBorrowings}
                                 keyField="id"
                             />
                         </CardBody>
@@ -135,28 +240,36 @@ export default function LibrarianDashboard() {
                 <Card className="border-none shadow-xl shadow-gray-100/50 rounded-2xl bg-white p-2 h-fit">
                     <CardHeader title="Upcoming Returns" className="p-6 pb-2 border-none" />
                     <CardBody className="space-y-4 p-6 pt-2">
-                        {upcomingReturns.map((item, i) => (
-                            <motion.div
-                                key={item.id}
-                                initial={{ opacity: 0, x: 20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                whileHover={{ x: 5 }}
-                                className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-gray-100/50 transition-all border border-transparent hover:border-gray-100 group cursor-pointer"
-                            >
-                                <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                                    <Clock size={22} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-[14px] font-black text-gray-900">{item.title}</h4>
-                                    <p className="text-[11px] font-bold text-gray-400 group-hover:text-gray-500 transition-colors mt-0.5">{item.borrower}</p>
-                                    <p className="text-[10px] text-gray-400/80 mt-1 font-bold uppercase tracking-tighter">Due: {item.due}</p>
-                                </div>
-                                <div className={cn("px-2.5 py-1.5 rounded-lg text-[10px] font-black border tracking-tighter", item.color)}>
-                                    {item.daysLeft}
-                                </div>
-                            </motion.div>
-                        ))}
+                        {upcomingReturns.length > 0 ? (
+                            upcomingReturns.map((item, i) => (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    whileHover={{ x: 5 }}
+                                    className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-gray-100/50 transition-all border border-transparent hover:border-gray-100 group cursor-pointer"
+                                >
+                                    <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                                        <Clock size={22} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-[14px] font-black text-gray-900">{item.title}</h4>
+                                        <p className="text-[11px] font-bold text-gray-400 group-hover:text-gray-500 transition-colors mt-0.5">{item.borrower}</p>
+                                        <p className="text-[10px] text-gray-400/80 mt-1 font-bold uppercase tracking-tighter">Due: {item.due}</p>
+                                    </div>
+                                    <div className={cn("px-2.5 py-1.5 rounded-lg text-[10px] font-black border tracking-tighter", item.color)}>
+                                        {item.daysLeft}
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <Clock className="text-gray-300 mb-3" size={36} />
+                                <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No Upcoming Returns</p>
+                                <p className="text-xs text-gray-400 mt-1">All borrowed books have been returned.</p>
+                            </div>
+                        )}
                     </CardBody>
                 </Card>
             </div>

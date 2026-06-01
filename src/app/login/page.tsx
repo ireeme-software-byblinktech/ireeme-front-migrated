@@ -218,6 +218,7 @@ export default function LoginPage() {
             <div className="space-y-1 text-sm text-gray-700">
               <p><span className="font-bold">Admin:</span> admin@gmail.com / admin@123</p>
               <p><span className="font-bold">Teacher:</span> john.smith@blinkacademy.com / Password123!</p>
+              <p><span className="font-bold">Librarian:</span> librarian@rca8800.com / Password123!</p>
               <p><span className="font-bold">Student:</span> alice.williams@student.com / Password123!</p>
             </div>
           </div>
