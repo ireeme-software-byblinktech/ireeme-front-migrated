@@ -1,32 +1,21 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Button, Select } from "@/components/ui";
+import { useState, useMemo, useEffect } from "react";
+import { Button } from "@/components/ui";
 import { Download, Printer, Share2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { academicTermsApi } from "@/lib/api/academic-terms";
+import { useActiveTerm } from "@/hooks/api/useAcademicTerms";
 import { useStudentGrades, useStudentProfile } from "@/hooks/api/useStudentAPI";
 
 export default function StudentReportCardPage() {
   const { data: profile } = useStudentProfile();
+  const { data: activeTerm } = useActiveTerm();
 
-  const { data: termsData } = useQuery({
-    queryKey: ['academic-terms'],
-    queryFn: academicTermsApi.getTerms
-  });
+  const { data: gradesResponse, isLoading: isLoadingGrades } = useStudentGrades(
+    profile?.id, 
+    activeTerm?.id
+  );
 
-  const terms = termsData || [];
-  const [selectedTermId, setSelectedTermId] = useState<string>("");
-
-  // Need to pick a default term when terms load
-  if (terms.length > 0 && !selectedTermId) {
-    const active = terms.find(t => t.isActive);
-    setSelectedTermId(active ? active.id : terms[0].id);
-  }
-
-  const { data: gradesResponse, isLoading: isLoadingGrades } = useStudentGrades(profile?.id, selectedTermId);
-
-  // Group grades by subject to format appropriately (mock formatting to fit template)
+  // Group grades by subject
   const transcriptData = useMemo(() => {
     if (!gradesResponse?.data) return [];
 
@@ -44,7 +33,6 @@ export default function StudentReportCardPage() {
         };
       }
 
-      // We will assume that since we fetch per-term, we only populate the first term slot for simplicity
       gradesBySubject[subjectName].first.tot = grade.score;
       gradesBySubject[subjectName].grade = grade.score >= 90 ? "A" : grade.score >= 80 ? "B" : grade.score >= 70 ? "C" : grade.score >= 60 ? "D" : "F";
     });
@@ -59,12 +47,9 @@ export default function StudentReportCardPage() {
         <div className="flex items-center gap-4">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Academic Term</span>
-            <Select
-              value={selectedTermId}
-              onChange={(e) => setSelectedTermId(e.target.value)}
-              options={terms.length ? terms.map(t => ({ value: t.id, label: t.name })) : [{ value: "", label: "Loading..." }]}
-              className="w-48 h-10"
-            />
+            <div className="text-sm font-bold px-4 py-2 bg-gray-100 rounded-lg min-w-[200px] text-center">
+              {activeTerm?.name || "No Active Term"}
+            </div>
           </div>
         </div>
       </div>
@@ -86,8 +71,8 @@ export default function StudentReportCardPage() {
           <div className="border-[2px] border-black p-10 max-w-5xl mx-auto bg-white overflow-x-auto">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-start gap-6">
-                <div className="w-20 h-20 bg-[#1e293b] rounded-xl flex items-center justify-center">
-                  <img src="/icons/logo.png" alt="Logo" className="w-12 h-12 invert" />
+                <div className="w-20 h-20 bg-black rounded-xl flex items-center justify-center">
+                  <img src="/icons/logo.png" alt="Logo" className="w-20 h-20 invert" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-2xl font-black text-black leading-tight tracking-tight">BLINK CAMPUS</h3>
@@ -105,7 +90,7 @@ export default function StudentReportCardPage() {
             <div className="h-[2px] bg-black w-full mb-8" />
 
             <div className="text-center mb-8">
-              <h4 className="text-2xl font-black text-black tracking-[0.1em] uppercase underline underline-offset-8 decoration-[3px]">TRANSCRIPT</h4>
+              <h4 className="text-2xl font-black text-black uppercase underline underline-offset-8 decoration-[3px]">TRANSCRIPT</h4>
             </div>
 
             {transcriptData.length === 0 ? (
@@ -179,19 +164,19 @@ export default function StudentReportCardPage() {
               </div>
               <div className="flex flex-col items-end gap-1">
                 <div className="w-32 h-0.5 bg-black/10" />
-                <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.2em]">Official Portal Record</span>
+                <span className="text-[10px] font-medium text-gray-300">Official Portal Record</span>
               </div>
             </div>
           </div>
         )}
 
         <div className="mt-8 flex justify-center gap-4">
-          <button className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors text-sm font-bold uppercase tracking-widest">
+          <button className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors text-sm font-semibold">
             <Printer size={16} />
             Print Version
           </button>
           <div className="w-px h-4 bg-gray-200" />
-          <button className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors text-sm font-bold uppercase tracking-widest">
+          <button className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors text-sm font-semibold">
             <Share2 size={16} />
             Share Securely
           </button>

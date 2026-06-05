@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
   StatCard, 
   Card, 
@@ -20,6 +20,8 @@ import {
   FileText
 } from "lucide-react";
 import { ViewSubmissionModal } from "@/components/ui/ViewSubmissionModal";
+import { useStudentAssignments, useStudentProfile, useStudentDashboard } from "@/hooks/api/useStudentAPI";
+import { formatDate } from "@/lib/utils";
 
 // Project interface matching the portal's needs
 interface Project {
@@ -33,106 +35,84 @@ interface Project {
   description: string;
 }
 
-// Mock project data
-const projectsData: Project[] = [
-  {
-    id: "1",
-    title: "Eco-Friendly School Garden",
-    subject: "Environmental Science",
-    mentor: "Dr. Sarah Wilson",
-    deadline: "20-Dec-2025",
-    status: "In Progress",
-    progress: 65,
-    description: "Designing and implementing a sustainable garden in the school backyard using organic composting and native plant species."
-  },
-  {
-    id: "2",
-    title: "Robotics: Autonomous Maze Solver",
-    subject: "Computer Science",
-    mentor: "Prof. Alex Kumar",
-    deadline: "15-Nov-2025",
-    status: "Completed",
-    progress: 100,
-    description: "Building and programming a robot that can navigate and solve any rectangular maze using ultrasonic sensors and Dijkstra's algorithm."
-  },
-  {
-    id: "3",
-    title: "Modern Rwandan History Analysis",
-    subject: "History",
-    mentor: "Mr. Mujesha Jean",
-    deadline: "05-Jan-2026",
-    status: "Pending",
-    progress: 0,
-    description: "A comprehensive research paper analyzing the socio-economic transformations in Rwanda over the last three decades."
-  },
-  {
-    id: "4",
-    title: "Quantum Mechanics Simulation",
-    subject: "Physics",
-    mentor: "Dr. Anais Kamal",
-    deadline: "10-Nov-2025",
-    status: "Late",
-    progress: 40,
-    description: "Developing a Python-based simulation to visualize electron probability density in hydrogen-like atoms."
-  },
-  {
-    id: "5",
-    title: "Chemistry: Bio-plastic Synthesis",
-    subject: "Chemistry",
-    mentor: "Dr. Robert Johnson",
-    deadline: "25-Dec-2025",
-    status: "In Progress",
-    progress: 25,
-    description: "Experimenting with different starch-based materials to create a biodegradable alternative to single-use plastics."
-  },
-  {
-    id: "6",
-    title: "English: Shakespearean Modernization",
-    subject: "English",
-    mentor: "Mrs. Emily Clark",
-    deadline: "12-Dec-2025",
-    status: "Completed",
-    progress: 100,
-    description: "Adapting 'Hamlet' into a modern-day corporate drama script while maintaining the original themes and motifs."
-  }
-];
-
-// Stats calculation
-const stats = [
-  {
-    label: "Total Projects",
-    value: projectsData.length.toString(),
-    icon: <FolderKanban size={18} />,
-    progress: 100,
-    trend: { value: "12", direction: "up" as const, label: "vs last term" }
-  },
-  {
-    label: "Completed",
-    value: projectsData.filter(p => p.status === "Completed").length.toString(),
-    icon: <CheckCircle2 size={18} className="text-green-500" />,
-    progress: Math.round((projectsData.filter(p => p.status === "Completed").length / projectsData.length) * 100),
-    trend: { value: "5", direction: "up" as const, label: "this month" }
-  },
-  {
-    label: "In Progress",
-    value: projectsData.filter(p => p.status === "In Progress").length.toString(),
-    icon: <Clock size={18} className="text-blue-500" />,
-    progress: Math.round((projectsData.filter(p => p.status === "In Progress").length / projectsData.length) * 100),
-  },
-  {
-    label: "Pending/Late",
-    value: projectsData.filter(p => p.status === "Pending" || p.status === "Late").length.toString(),
-    icon: <AlertCircle size={18} className="text-orange-500" />,
-    progress: Math.round((projectsData.filter(p => p.status === "Pending" || p.status === "Late").length / projectsData.length) * 100),
-  }
-];
-
 export default function StudentProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data: profile } = useStudentProfile();
+  const { data: dashboardData } = useStudentDashboard(profile?.id);
+  const { data: assignmentsData, isLoading } = useStudentAssignments();
+
+  // Filter for PROJECT type assignments
+  const projectsData: Project[] = useMemo(() => {
+    if (!assignmentsData) return [];
+    
+    return assignmentsData
+      .filter(assignment => assignment.type === "PROJECT")
+      .map(assignment => {
+        const dueDate = new Date(assignment.dueAt);
+        const now = new Date();
+        const hasSubmission = assignment.submissions && assignment.submissions.length > 0;
+        
+        let status: Project['status'] = "Pending";
+        let progress = 0;
+        
+        if (hasSubmission) {
+          status = "Completed";
+          progress = 100;
+        } else if (dueDate < now) {
+          status = "Late";
+          progress = 40;
+        } else {
+          status = "In Progress";
+          progress = 25;
+        }
+
+        return {
+          id: assignment.id,
+          title: assignment.title,
+          subject: assignment.subject?.name || "General",
+          mentor: `${assignment.teacher?.user.firstName} ${assignment.teacher?.user.lastName}`,
+          deadline: formatDate(assignment.dueAt),
+          status,
+          progress,
+          description: assignment.description || "Project assignment"
+        };
+      });
+  }, [assignmentsData]);
+
+  // Stats calculation
+  const stats = useMemo(() => [
+    {
+      label: "Total Projects",
+      value: projectsData.length.toString(),
+      icon: <FolderKanban size={18} />,
+      progress: 100,
+      trend: { value: projectsData.length.toString(), direction: "up" as const, label: "active" }
+    },
+    {
+      label: "Completed",
+      value: projectsData.filter(p => p.status === "Completed").length.toString(),
+      icon: <CheckCircle2 size={18} className="text-green-500" />,
+      progress: projectsData.length > 0 ? Math.round((projectsData.filter(p => p.status === "Completed").length / projectsData.length) * 100) : 0,
+      trend: { value: projectsData.filter(p => p.status === "Completed").length.toString(), direction: "up" as const, label: "finished" }
+    },
+    {
+      label: "In Progress",
+      value: projectsData.filter(p => p.status === "In Progress").length.toString(),
+      icon: <Clock size={18} className="text-blue-500" />,
+      progress: projectsData.length > 0 ? Math.round((projectsData.filter(p => p.status === "In Progress").length / projectsData.length) * 100) : 0,
+    },
+    {
+      label: "Pending/Late",
+      value: projectsData.filter(p => p.status === "Pending" || p.status === "Late").length.toString(),
+      icon: <AlertCircle size={18} className="text-orange-500" />,
+      progress: projectsData.length > 0 ? Math.round((projectsData.filter(p => p.status === "Pending" || p.status === "Late").length / projectsData.length) * 100) : 0,
+    }
+  ], [projectsData]);
 
   // Filter logic
   const filteredProjects = projectsData.filter(project => {
@@ -144,7 +124,18 @@ export default function StudentProjectsPage() {
     return matchesSearch && matchesStatus && matchesSubject;
   });
 
-  const subjects = Array.from(new Set(projectsData.map(p => p.subject)));
+  const subjects = useMemo(() => 
+    Array.from(new Set(projectsData.map(p => p.subject))),
+    [projectsData]
+  );
+
+  if (isLoading && !projectsData.length) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      </div>
+    );
+  }
 
   const columns: Column<Project>[] = [
     {
@@ -277,14 +268,24 @@ export default function StudentProjectsPage() {
           </div>
 
           {/* Data Table */}
-          <DataTable
-            columns={columns as any}
-            data={filteredProjects as any}
-            keyField="id"
-            className="projects-table"
-            pageSize={5}
-            paginationClassName="pagination-rounded"
-          />
+          {filteredProjects.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <FolderKanban size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No projects found</p>
+              {projectsData.length === 0 && (
+                <p className="text-sm mt-2">Projects will appear here when teachers assign them</p>
+              )}
+            </div>
+          ) : (
+            <DataTable
+              columns={columns as any}
+              data={filteredProjects as any}
+              keyField="id"
+              className="projects-table"
+              pageSize={5}
+              paginationClassName="pagination-rounded"
+            />
+          )}
         </CardBody>
       </Card>
 

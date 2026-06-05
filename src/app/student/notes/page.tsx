@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { StatCard, Card, CardBody } from "@/components/ui";
-import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
+import { DataTable, Column } from "@/components/ui/DataTable";
 import { SearchInput, Select } from "@/components/ui/FormElements";
 import {
   GraduationCap,
@@ -20,6 +20,8 @@ import {
   ChevronDown,
   Type
 } from "lucide-react";
+import { useStudentProfile, useStudentDashboard, useStudentAssignments } from "@/hooks/api/useStudentAPI";
+import { formatDate } from "@/lib/utils";
 
 // --- Types ---
 interface Note {
@@ -33,23 +35,6 @@ interface Note {
 
 type AIViewType = 'content' | 'summary' | 'quiz' | 'explain';
 type FontScaleType = 'sm' | 'base' | 'lg' | 'xl';
-
-// --- Static Data ---
-const statsData = [
-  { label: "Total Subjects", value: 15, icon: <GraduationCap size={18} />, progress: 75, trend: { value: "3.6", direction: "up" as const, label: "This month" } },
-  { label: "Total Assignments", value: 30, icon: <BookOpen size={18} />, progress: 80, trend: { value: "3.6", direction: "up" as const, label: "This month" } },
-  { label: "Total Notes", value: 30, icon: <FileText size={18} />, progress: 65, trend: { value: "3.6", direction: "up" as const, label: "This month" } },
-  { label: "Total Reports", value: 30, icon: <BarChart2 size={18} />, progress: 90, trend: { value: "3.6", direction: "up" as const, label: "This month" } }
-];
-
-const notesData: Note[] = [
-  { id: "1", title: "Introduction to Calculus - Derivatives", description: "Derivatives and integrals are fundamental concepts in...", subject: "Mathematics", teacher: "Prof. Johnson", date: "Nov 20" },
-  { id: "2", title: "Newton's Laws of Motion", description: "Newton's three laws form the foundation of classical me...", subject: "Physics", teacher: "Dr. Smith", date: "Nov 19" },
-  { id: "3", title: "Chemical Bonding and Molecular Struct...", description: "Chemical bonds are forces that hold atoms together in...", subject: "Chemistry", teacher: "Prof. Williams", date: "Nov 18" },
-  { id: "4", title: "World War II - Major Events and Impact", description: "World War II was a global conflict that lasted from...", subject: "History", teacher: "Mr. Brown", date: "Nov 17" },
-  { id: "5", title: "Photosynthesis Process", description: "Photosynthesis is the process by which plants convert...", subject: "Biology", teacher: "Dr. Davis", date: "Nov 16" },
-  { id: "6", title: "Shakespeare's Literary Techniques", description: "William Shakespeare employed various literary devices...", subject: "English", teacher: "Ms. Wilson", date: "Nov 15" }
-];
 
 // --- Sub-components ---
 
@@ -150,7 +135,7 @@ function NoteViewModal({ isOpen, onClose, note }: { isOpen: boolean; onClose: ()
               <h2 className="text-xl md:text-2xl tracking-tight leading-none mb-1.5 uppercase font-[900]">
                 {note.title}
               </h2>
-              <div className="flex items-center gap-3 text-gray-400 uppercase tracking-widest text-[9px]">
+              <div className="flex items-center gap-3 text-gray-400 font-semibold text-xs">
                 <span>{note.subject}</span>
                 <span className="w-1 h-1 rounded-full bg-gray-600"></span>
                 <span>{note.teacher}</span>
@@ -216,9 +201,6 @@ function NoteViewModal({ isOpen, onClose, note }: { isOpen: boolean; onClose: ()
                     <div className="h-px bg-white/10 my-3 mx-1" />
                     <NeuralDropdownItem icon={<PenTool size={16} />} title="Ask AI Companion" onClick={() => handleAIAction("chat")} />
                   </div>
-                  <div className="bg-white/[0.03] p-3 text-center border-t border-white/5 uppercase tracking-[0.4em] text-[7px] font-[900] text-white/20">
-                    Neural Interface V3.0 • Industrial Grade
-                  </div>
                 </div>
               )}
             </div>
@@ -254,11 +236,11 @@ function NoteViewModal({ isOpen, onClose, note }: { isOpen: boolean; onClose: ()
             </div>
           )}
 
-          <section className="max-w-4xl mx-auto p-12 md:p-20 space-y-12">
+          <section className="max-w-4xl mx-auto p-6 md:p-12 space-y-12">
             {/* Context Breadcrumb */}
             <div className="space-y-10">
               <div className="flex items-center justify-between border-b border-gray-100 pb-6">
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">
+                <h3 className="text-md font-semibold text-gray-400">
                   {activeAIView === 'content' ? 'Authenticated Study Material' : `AI Context Agent: ${activeAIView}`}
                 </h3>
                 <div className="flex items-center gap-6">
@@ -375,12 +357,11 @@ function NoteViewModal({ isOpen, onClose, note }: { isOpen: boolean; onClose: ()
 
         {/* Global Action Footer */}
         <footer className="p-8 border-t border-gray-100 bg-gray-50 flex justify-between items-center shrink-0 px-12">
-          <div className="text-gray-400 uppercase tracking-[0.3em] font-black text-[10px]">Neural Learning Hub • Iremee OS 2024</div>
           <button
             onClick={onClose}
             className="bg-black text-white px-12 py-4 rounded-sm font-black uppercase tracking-[0.2em] hover:bg-gray-800 transition-all text-[11px] shadow-lg active:scale-95"
           >
-            Terminate Session
+            Close
           </button>
         </footer>
       </div>
@@ -395,12 +376,70 @@ export default function StudentNotesPage() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const { data: profile } = useStudentProfile();
+  const { data: dashboardData } = useStudentDashboard(profile?.id);
+  const { data: assignmentsData, isLoading } = useStudentAssignments();
+
+  // Transform assignments to notes format
+  const notesData: Note[] = useMemo(() => {
+    if (!assignmentsData) return [];
+    
+    return assignmentsData.map(assignment => ({
+      id: assignment.id,
+      title: assignment.title,
+      description: assignment.description || "Study material for this assignment",
+      subject: assignment.subject?.name || "General",
+      teacher: `${assignment.teacher?.user.firstName} ${assignment.teacher?.user.lastName}`,
+      date: formatDate(assignment.createdAt)
+    }));
+  }, [assignmentsData]);
+
+  // Derive stats from real data
+  const statsData = useMemo(() => [
+    { 
+      label: "Total Subjects", 
+      value: dashboardData?.overview.totalSubjects || 0, 
+      icon: <GraduationCap size={18} />, 
+      progress: 75, 
+      trend: { value: "3.6", direction: "up" as const, label: "This month" } 
+    },
+    { 
+      label: "Total Assignments", 
+      value: dashboardData?.overview.totalAssignments || 0, 
+      icon: <BookOpen size={18} />, 
+      progress: dashboardData?.overview.assignmentsProgress || 80, 
+      trend: { value: "2.1", direction: "up" as const, label: "This month" } 
+    },
+    { 
+      label: "Total Notes", 
+      value: notesData.length, 
+      icon: <FileText size={18} />, 
+      progress: Math.min(100, notesData.length * 3), 
+      trend: { value: notesData.length.toString(), direction: "up" as const, label: "Available" } 
+    },
+    { 
+      label: "Avg. Attendance", 
+      value: `${dashboardData?.overview.averageAttendance || 0}%`, 
+      icon: <BarChart2 size={18} />, 
+      progress: dashboardData?.overview.averageAttendance || 0, 
+      trend: { value: "0.5", direction: "up" as const, label: "This month" } 
+    }
+  ], [dashboardData, notesData.length]);
+
   // Search logic
   const filteredData = notesData.filter(note =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     note.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
     note.teacher.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading && !notesData.length) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      </div>
+    );
+  }
 
   const columns: Column<Note>[] = [
     {
@@ -457,8 +496,8 @@ export default function StudentNotesPage() {
       {/* Page Signature */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-[900] text-gray-900 uppercase tracking-tighter mb-2">Note Archive</h1>
-          <p className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.3em]">Central Intelligence • Academic Information Center</p>
+          <h1 className="text-3xl font-[900] text-gray-900 mb-2">Note Archive</h1>
+          <p className="text-md text-gray-400 font-medium">Central Intelligence • Academic Information Center</p>
         </div>
         <div className="hidden md:block">
           <div className="flex gap-2 text-[9px] font-black uppercase tracking-widest text-gray-300">
@@ -486,10 +525,10 @@ export default function StudentNotesPage() {
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white p-6 border border-gray-100 shadow-sm">
         <div className="flex-1 w-full max-w-xl">
           <SearchInput
-            placeholder="FILTER ARCHIVE BY SUBJECT, TEACHER, OR KEYWORD..."
+            placeholder="Search, Filter, ..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border-gray-200 focus:border-black transition-colors font-bold text-[11px] uppercase placeholder:text-gray-300"
+            className="border-gray-200 focus:border-black transition-colors font-medium text-sm placeholder:text-gray-300"
           />
         </div>
 
@@ -498,11 +537,11 @@ export default function StudentNotesPage() {
             value={filterAll}
             onChange={(e) => setFilterAll(e.target.value)}
             options={[
-              { value: "All", label: "ALL DOCUMENTS" },
-              { value: "Recent", label: "RECENTLY ACCESSED" },
-              { value: "Favorites", label: "STARRED FILES" }
+              { value: "All", label: "All Documents" },
+              { value: "Recent", label: "Recently Accessed" },
+              { value: "Favorites", label: "Starred Files" }
             ]}
-            className="w-full md:w-56 font-black text-[10px] uppercase border-gray-200"
+            className="w-full md:w-56 font-medium text-sm border-gray-200"
           />
         </div>
       </div>
@@ -510,14 +549,21 @@ export default function StudentNotesPage() {
       {/* Document Registry */}
       <Card className="border-gray-100 shadow-xl overflow-hidden rounded-none">
         <CardBody className="p-0">
-          <DataTable
-            columns={columns as unknown as Column<Record<string, unknown>>[]}
-            data={filteredData as unknown as Record<string, unknown>[]}
-            keyField="id"
-            className="notes-industrial-table"
-            pageSize={8}
-            paginationClassName="pagination-industrial p-8 border-t border-gray-50 flex justify-center bg-gray-50/30"
-          />
+          {filteredData.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <FileText size={48} className="mx-auto mb-4 text-gray-300" />
+              <p>No study materials found</p>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns as unknown as Column<Record<string, unknown>>[]}
+              data={filteredData as unknown as Record<string, unknown>[]}
+              keyField="id"
+              className="notes-industrial-table"
+              pageSize={8}
+              paginationClassName="pagination-industrial p-8 border-t border-gray-50 flex justify-center bg-gray-50/30"
+            />
+          )}
         </CardBody>
       </Card>
 

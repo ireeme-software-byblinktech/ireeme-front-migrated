@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { StatCard, Card, CardHeader, CardBody } from "@/components/ui";
 import { 
@@ -10,51 +10,75 @@ import {
   AlertCircle, 
   Pill, 
   GraduationCap,
-  X
+  X,
+  ClipboardList,
+  Activity
 } from "lucide-react";
-
-// Stats data array
-// (Keeping original text from mockup for visual fidelity, but can be updated to health metrics)
-const statsData = [
-  {
-    label: "Total Subjects",
-    value: 15,
-    icon: <GraduationCap size={20} />,
-    progress: 75,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Notes", 
-    value: 30,
-    icon: <FileText size={20} />,
-    progress: 80,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total Assignments",
-    value: 30, 
-    icon: <FileText size={20} />,
-    progress: 65,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Total reports",
-    value: 30,
-    icon: <FileText size={20} />,
-    progress: 90,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  }
-];
+import { useStudentProfile } from "@/hooks/api/useStudentAPI";
+import { useHealthRecords, useHealthAppointments, useMedicalCases, useCreateAppointment } from "@/hooks/api/useHealth";
+import { formatDate } from "@/lib/utils";
 
 export default function StudentHealthPage() {
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+
+  const { data: profile } = useStudentProfile();
+  const { data: healthRecords = [], isLoading: recordsLoading } = useHealthRecords(profile?.id);
+  const { data: appointments = [], isLoading: appointmentsLoading } = useHealthAppointments(profile?.id);
+  const { data: medicalCases = [], isLoading: casesLoading } = useMedicalCases(profile?.id);
+
+  const isLoading = recordsLoading || appointmentsLoading || casesLoading;
+
+  // Derive stats from real data
+  const statsData = useMemo(() => [
+    {
+      label: "Total Records",
+      value: healthRecords.length,
+      icon: <FileText size={20} />,
+      progress: Math.min(100, healthRecords.length * 10),
+      trend: { value: healthRecords.filter(r => {
+        const date = new Date(r.date);
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return date > monthAgo;
+      }).length.toString(), direction: "up" as const, label: "This month" }
+    },
+    {
+      label: "Appointments", 
+      value: appointments.length,
+      icon: <Calendar size={20} />,
+      progress: Math.min(100, (appointments.filter(a => a.status === "COMPLETED").length / Math.max(1, appointments.length)) * 100),
+      trend: { value: appointments.filter(a => a.status === "SCHEDULED").length.toString(), direction: "up" as const, label: "Upcoming" }
+    },
+    {
+      label: "Medical Cases",
+      value: medicalCases.length, 
+      icon: <ClipboardList size={20} />,
+      progress: Math.min(100, (medicalCases.filter(c => c.status === "RESOLVED").length / Math.max(1, medicalCases.length)) * 100),
+      trend: { value: medicalCases.filter(c => c.status === "OPEN").length.toString(), direction: "up" as const, label: "Active" }
+    },
+    {
+      label: "Health Status",
+      value: "Good",
+      icon: <Activity size={20} />,
+      progress: 90,
+      trend: { value: "0", direction: "up" as const, label: "Issues" }
+    }
+  ], [healthRecords, appointments, medicalCases]);
+
+  if (isLoading && !healthRecords.length) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-[1240px] w-full pb-8">
       {/* Page Title */}
       <div>
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-[#111827] mb-2 tracking-tight">Health Center</h1>
-        <p className="text-lg text-gray-500">Manage your health records and appointments</p>
+        <h1 className="text-2xl lg:text-3xl font-extrabold text-[#111827] mb-2">Health Center</h1>
+        <p className="text-sm text-gray-500">Manage your health records and appointments</p>
       </div>
       
       {/* Stats Cards */}
@@ -119,53 +143,36 @@ export default function StudentHealthPage() {
               </button>
             </div>
             <CardBody className="space-y-4 p-5">
-              {/* Appointment Item */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                    <Calendar size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-lg">Regular Checkup</h4>
-                    <p className="text-base text-gray-500 mt-1">2025-01-22 at 10:00 AM</p>
-                  </div>
+              {appointments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p>No appointments yet</p>
                 </div>
-                <div className="px-4 py-1.5 bg-blue-100 text-blue-700 text-sm font-bold rounded-full shrink-0">
-                  Scheduled
-                </div>
-              </div>
-
-              {/* Appointment Item */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                    <Calendar size={24} className="text-white" />
+              ) : (
+                appointments.slice(0, 3).map((appointment) => (
+                  <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                        <Calendar size={24} className="text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-lg">{appointment.reason}</h4>
+                        <p className="text-base text-gray-500 mt-1">
+                          {formatDate(appointment.appointmentDate, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`px-4 py-1.5 text-sm font-bold rounded-full shrink-0 ${
+                      appointment.status === "SCHEDULED" ? "bg-blue-100 text-blue-700" :
+                      appointment.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+                      appointment.status === "CANCELLED" ? "bg-red-100 text-red-700" :
+                      "bg-gray-100 text-gray-700"
+                    }`}>
+                      {appointment.status}
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-lg">Fever</h4>
-                    <p className="text-base text-gray-500 mt-1">2025-01-15 at 2:30 PM</p>
-                  </div>
-                </div>
-                <div className="px-4 py-1.5 bg-green-100 text-green-700 text-sm font-bold rounded-full shrink-0">
-                  Completed
-                </div>
-              </div>
-
-              {/* Appointment Item */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                    <Calendar size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-lg">Headache</h4>
-                    <p className="text-base text-gray-500 mt-1">2025-01-10 at 11:00 AM</p>
-                  </div>
-                </div>
-                <div className="px-4 py-1.5 bg-green-100 text-green-700 text-sm font-bold rounded-full shrink-0">
-                  Completed
-                </div>
-              </div>
+                ))
+              )}
             </CardBody>
           </Card>
 
@@ -175,41 +182,31 @@ export default function StudentHealthPage() {
               <h3 className="text-lg font-bold text-gray-900">Medical History</h3>
             </div>
             <CardBody className="space-y-4 p-5">
-              {/* History Item */}
-              <div className="border border-gray-100 rounded-xl p-5 flex flex-col gap-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-base">Fever</h4>
-                    <p className="text-sm text-gray-500 mt-1">2025-01-15</p>
-                  </div>
-                  <span className="text-sm text-gray-500">Nurse Jane</span>
+              {healthRecords.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <FileText size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p>No medical history yet</p>
                 </div>
-                <p className="text-base text-gray-700 mt-2">Paracetamol prescribed</p>
-              </div>
-
-              {/* History Item */}
-              <div className="border border-gray-100 rounded-xl p-5 flex flex-col gap-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-base">Headache</h4>
-                    <p className="text-sm text-gray-500 mt-1">2025-01-10</p>
+              ) : (
+                healthRecords.slice(0, 3).map((record) => (
+                  <div key={record.id} className="border border-gray-100 rounded-xl p-5 flex flex-col gap-2">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-base">{record.chiefComplaint}</h4>
+                        <p className="text-sm text-gray-500 mt-1">{formatDate(record.date)}</p>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {record.nurse.user.firstName} {record.nurse.user.lastName}
+                      </span>
+                    </div>
+                    {(record.diagnosis || record.treatment) && (
+                      <p className="text-base text-gray-700 mt-2">
+                        {record.diagnosis || record.treatment}
+                      </p>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-500">Nurse Jane</span>
-                </div>
-                <p className="text-base text-gray-700 mt-2">Rest and hydration</p>
-              </div>
-
-              {/* History Item */}
-              <div className="border border-gray-100 rounded-xl p-5 flex flex-col gap-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-base">Minor Injury</h4>
-                    <p className="text-sm text-gray-500 mt-1">2024-12-20</p>
-                  </div>
-                  <span className="text-sm text-gray-500">Nurse Mary</span>
-                </div>
-                <p className="text-base text-gray-700 mt-2">Wound cleaned and bandaged</p>
-              </div>
+                ))
+              )}
             </CardBody>
           </Card>
 
@@ -227,27 +224,29 @@ export default function StudentHealthPage() {
               <div className="space-y-6">
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Blood Type</h5>
-                  <p className="text-base font-bold text-gray-900">O+</p>
+                  <p className="text-base font-bold text-gray-900">{(profile as any)?.bloodType || "Not set"}</p>
                 </div>
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Height</h5>
-                  <p className="text-base font-bold text-gray-900">170 cm</p>
+                  <p className="text-base font-bold text-gray-900">{(profile as any)?.height ? `${(profile as any).height} cm` : "Not set"}</p>
                 </div>
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Weight</h5>
-                  <p className="text-base font-bold text-gray-900">65 kg</p>
+                  <p className="text-base font-bold text-gray-900">{(profile as any)?.weight ? `${(profile as any).weight} kg` : "Not set"}</p>
                 </div>
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Allergies</h5>
-                  <p className="text-base font-bold text-gray-900">Peanuts</p>
+                  <p className="text-base font-bold text-gray-900">{(profile as any)?.allergies || "None"}</p>
                 </div>
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Medical Conditions</h5>
-                  <p className="text-base font-bold text-gray-900">None</p>
+                  <p className="text-base font-bold text-gray-900">{(profile as any)?.medicalConditions || "None"}</p>
                 </div>
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Last Checkup</h5>
-                  <p className="text-base font-bold text-gray-900">2025-01-15</p>
+                  <p className="text-base font-bold text-gray-900">
+                    {healthRecords.length > 0 ? formatDate(healthRecords[0].date) : "No checkups yet"}
+                  </p>
                 </div>
               </div>
             </CardBody>
@@ -291,11 +290,29 @@ function BookAppointmentModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
     description: ""
   });
 
+  const { data: profile } = useStudentProfile();
+  const createAppointment = useCreateAppointment();
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onClose();
+    if (!profile?.id || !formData.reason || !formData.date || !formData.time) return;
+
+    try {
+      const appointmentDate = new Date(`${formData.date}T${formData.time}`).toISOString();
+      await createAppointment.mutateAsync({
+        studentId: profile.id,
+        appointmentDate,
+        reason: formData.reason,
+        type: formData.type,
+        description: formData.description || undefined,
+      });
+      onClose();
+      setFormData({ reason: "", date: "", time: "", type: "General Checkup", description: "" });
+    } catch (error) {
+      console.error("Failed to create appointment:", error);
+    }
   };
 
   return (

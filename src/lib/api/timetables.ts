@@ -13,10 +13,10 @@ export interface TimetableSlot {
 }
 
 export const timetablesApi = {
-    getMyTimetable: () => apiClient<TimetableSlot[]>("/timetable/mine"),
+    getMyTimetable: () => apiClient<TimetableSlot[]>("/api/v1/timetable/mine"),
 
     getByClass: (classId: string) =>
-        apiClient<TimetableSlot[]>(`/timetable/class/${classId}`),
+        apiClient<TimetableSlot[]>(`/api/v1/timetable/class/${classId}`),
 
     create: (dto: {
         classId: string;
@@ -25,10 +25,10 @@ export const timetablesApi = {
         dayOfWeek: number;
         startTime: string;
         room?: string;
-    }) => apiClient<TimetableSlot>("/timetable", {
+    }) => apiClient<TimetableSlot>("/api/v1/timetable", {
         method: "POST",
         body: JSON.stringify(dto),
     }),
 
-    delete: (id: string) => apiClient(`/timetable/${id}`, { method: "DELETE" }),
+    delete: (id: string) => apiClient(`/api/v1/timetable/${id}`, { method: "DELETE" }),
 };

@@ -116,8 +116,9 @@ export const useStudentGrades = (studentId: string | undefined, termId: string |
     return useQuery({
         queryKey: ['student-grades', studentId, termId],
         queryFn: () => gradesApi.getByStudentTerm(studentId!, termId!),
-        enabled: !!studentId && !!termId,
+        enabled: !!studentId && !!termId && termId.length > 10, // Ensure valid UUID
         staleTime: 5 * 60 * 1000,
+        retry: 1,
     });
 };
 

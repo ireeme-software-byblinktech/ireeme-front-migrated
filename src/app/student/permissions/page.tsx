@@ -1,87 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
-import { Search, Filter, Upload, Edit, Trash2 } from "lucide-react";
+import { Search, Filter, Upload, Edit, Trash2, Loader2 } from "lucide-react";
+import { permissionsApi, CreatePermissionDto } from "@/lib/api/permissions";
+import { useStudentProfile } from "@/hooks/api/useStudentAPI";
+import { toast } from "@/lib/utils/toast";
 
-// Permission data interface
+// Permission data interface matching backend
 interface Permission {
   id: string;
   reqId: string;
   reason: string;
   dateSubmitted: string;
   returnDate: string;
-  status: "Pending" | "Approved" | "Rejected" | "Present";
+  status: "PENDING" | "APPROVED" | "REJECTED";
 }
-
-// Sample permission data
-const permissionsData: Permission[] = [
-  {
-    id: "1",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
-  },
-  {
-    id: "2",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Approved"
-  },
-  {
-    id: "3",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Approved"
-  },
-  {
-    id: "4",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Approved"
-  },
-  {
-    id: "5",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
-  },
-  {
-    id: "6",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
-  },
-  {
-    id: "7",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Pending"
-  },
-  {
-    id: "8",
-    reqId: "REQ-001",
-    reason: "Medical appointment",
-    dateSubmitted: "20-07-2025",
-    returnDate: "20-07-2025",
-    status: "Present"
-  }
-];
 
 export default function StudentPermissionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,8 +30,29 @@ export default function StudentPermissionsPage() {
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const itemsPerPage = 8;
 
+  const { data: profile } = useStudentProfile();
+  const studentId = profile?.id;
+  const queryClient = useQueryClient();
+
+  // Fetch permissions
+  const { data: permissionsData, isLoading } = useQuery({
+    queryKey: ["permissions", studentId],
+    queryFn: () => permissionsApi.getAll({ page: 1, limit: 100 }),
+    enabled: !!studentId,
+  });
+
+  // Transform backend data to display format
+  const permissionsDisplay: Permission[] = (permissionsData?.data || []).map((p) => ({
+    id: p.id,
+    reqId: `REQ-${p.id.substring(0, 8).toUpperCase()}`,
+    reason: p.reason,
+    dateSubmitted: new Date(p.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
+    returnDate: new Date(p.endDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }),
+    status: p.status,
+  }));
+
   // Filter data based on search and filters
-  const filteredData = permissionsData.filter(permission => {
+  const filteredData = permissionsDisplay.filter(permission => {
     const matchesSearch = permission.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          permission.reqId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || permission.status.toLowerCase() === statusFilter.toLowerCase();
@@ -111,14 +68,12 @@ export default function StudentPermissionsPage() {
     const baseClasses = "px-3 py-1 rounded text-xs font-medium";
     
     switch (status) {
-      case "Pending":
+      case "PENDING":
         return `${baseClasses} bg-black text-white`;
-      case "Approved":
+      case "APPROVED":
         return `${baseClasses} bg-black text-white`;
-      case "Rejected":
+      case "REJECTED":
         return `${baseClasses} bg-red-600 text-white`;
-      case "Present":
-        return `${baseClasses} bg-gray-600 text-white`;
       default:
         return `${baseClasses} bg-gray-500 text-white`;
     }
@@ -174,6 +129,7 @@ export default function StudentPermissionsPage() {
               setIsEditModalOpen(true);
             }}
             className="text-gray-600 hover:text-gray-900 p-1"
+            disabled={row.status !== "PENDING"}
           >
             <Edit size={16} />
           </button>
@@ -183,6 +139,7 @@ export default function StudentPermissionsPage() {
               setIsDeleteModalOpen(true);
             }}
             className="text-gray-600 hover:text-gray-900 p-1"
+            disabled={row.status !== "PENDING"}
           >
             <Trash2 size={16} />
           </button>
@@ -190,6 +147,14 @@ export default function StudentPermissionsPage() {
       )
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -255,50 +220,60 @@ export default function StudentPermissionsPage() {
       {/* Permissions Table */}
       <Card>
         <CardBody className="p-0">
-          <div className="overflow-x-auto">
-            <DataTable
-              columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={paginatedData as unknown as Record<string, unknown>[]}
-              keyField="id"
-              className="assignments-table"
-            />
-          </div>
+          {paginatedData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+              <Upload size={48} className="mb-4 text-gray-300" />
+              <p className="text-lg font-medium">No permission requests found</p>
+              <p className="text-sm">Create your first permission request to get started.</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <DataTable
+                  columns={columns as unknown as Column<Record<string, unknown>>[]}
+                  data={paginatedData as unknown as Record<string, unknown>[]}
+                  keyField="id"
+                  className="assignments-table"
+                />
+              </div>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-            <div className="text-sm text-gray-500">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 text-sm rounded ${
-                    currentPage === page
-                      ? "bg-black text-white"
-                      : "border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+              {/* Pagination */}
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 text-sm rounded ${
+                        currentPage === page
+                          ? "bg-black text-white"
+                          : "border border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </CardBody>
       </Card>
 
@@ -307,6 +282,7 @@ export default function StudentPermissionsPage() {
         <RequestPermissionModal
           isOpen={isRequestModalOpen}
           onClose={() => setIsRequestModalOpen(false)}
+          studentId={studentId}
         />
       )}
 
@@ -491,22 +467,50 @@ function DeletePermissionModal({
 }
 
 // Request Permission Modal Component
-function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function RequestPermissionModal({ isOpen, onClose, studentId }: { isOpen: boolean; onClose: () => void; studentId?: string }) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    studentName: "",
-    studentId: "",
-    grade: "",
-    class: "",
-    departureDate: "",
-    returnDate: "",
-    reason: ""
+    reason: "",
+    startDate: "",
+    endDate: "",
+    description: ""
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: CreatePermissionDto) => permissionsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      toast.success("Permission request submitted successfully");
+      onClose();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to submit permission request");
+    },
   });
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onClose();
+    
+    if (!studentId) {
+      toast.error("Student ID not found");
+      return;
+    }
+
+    if (!formData.reason || !formData.startDate || !formData.endDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    createMutation.mutate({
+      studentId,
+      type: "LEAVE",
+      reason: formData.reason,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      description: formData.description,
+    });
   };
 
   return (
@@ -537,74 +541,33 @@ function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose:
             <div className="flex-1 overflow-y-auto p-6">
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Reason for Permission */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Reason for permission *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.reason}
+                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
+                    placeholder="e.g. Medical appointment, Family emergency"
+                    required
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Student Name */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Student Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.studentName}
-                      onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Your first name"
-                    />
-                  </div>
-
-                  {/* Student ID */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Student ID *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.studentId}
-                      onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  {/* Grade */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Grade *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.grade}
-                      onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Your first name"
-                    />
-                  </div>
-
-                  {/* Class */}
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Class *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.class}
-                      onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
                   {/* Departure Date */}
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
                       Departure date *
                     </label>
                     <input
-                      type="text"
-                      value={formData.departureDate}
-                      onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="select a date"
+                      required
                     />
                   </div>
 
@@ -614,65 +577,42 @@ function RequestPermissionModal({ isOpen, onClose }: { isOpen: boolean; onClose:
                       Return date *
                     </label>
                     <input
-                      type="text"
-                      value={formData.returnDate}
-                      onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400"
-                      placeholder="Enter your email"
+                      required
                     />
                   </div>
                 </div>
 
-                {/* Reason for Permission */}
+                {/* Additional Description */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Reason for permission *
+                    Additional details
                   </label>
                   <textarea
-                    value={formData.reason}
-                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-400 h-20 resize-none"
-                    placeholder="Enter a small description"
+                    placeholder="Enter additional details about your request"
                   />
-                </div>
-
-                {/* Upload Supporting Documents */}
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Upload supporting documents *
-                  </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 text-gray-400 mb-3">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" />
-                          <path d="M9 15l3 -3l3 3" />
-                          <path d="M12 12l0 9" />
-                        </svg>
-                      </div>
-                      <p className="text-gray-600 font-medium mb-1">Upload a document</p>
-                      <p className="text-gray-500 text-sm mb-4">Supported formats: Pdf, Docx, Jpg, PNG (Max 10MB)</p>
-                      <button
-                        type="button"
-                        className="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-                      >
-                        Upload
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-center gap-4 pt-4">
                   <button
                     type="submit"
-                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                    disabled={createMutation.isPending}
+                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2"
                   >
+                    {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                     Request
                   </button>
                   <button
                     type="button"
                     onClick={onClose}
+                    disabled={createMutation.isPending}
                     className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
                   >
                     cancel
