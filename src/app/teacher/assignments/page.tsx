@@ -9,6 +9,7 @@ import {
   AssignmentCard,
   AssignmentTable,
   AssignmentViewToggle,
+  SubmissionsModal,
 } from "@/components/teacher/assignments";
 
 export default function TeacherAssignmentsPage() {
@@ -16,22 +17,51 @@ export default function TeacherAssignmentsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isSubmissionsModalOpen, setIsSubmissionsModalOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     subjectId: "",
+    classId: "", // NEW: Class selection
     type: "HOMEWORK",
     maxScore: 100,
     weight: 1,
     dueAt: "",
     allowLate: false,
+    externalLink: "",
   });
+  const [questions, setQuestions] = useState<any[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [questionFormat, setQuestionFormat] = useState<"MCQ" | "OPEN">("MCQ");
-  const [questions, setQuestions] = useState<any[]>([]);
   const [draftAssignments, setDraftAssignments] = useState<Set<string>>(new Set());
+
+  // Question handlers
+  const addQuestion = () => {
+    setQuestions([
+      ...questions,
+      {
+        type: "MULTIPLE_CHOICE",
+        text: "",
+        order: questions.length + 1,
+        marks: 1,
+        options: [],
+        correctAnswer: "",
+        rubric: "",
+      },
+    ]);
+  };
+
+  const removeQuestion = (index: number) => {
+    setQuestions(questions.filter((_, i) => i !== index));
+  };
+
+  const updateQuestion = (index: number, updatedQuestion: any) => {
+    const updated = [...questions];
+    updated[index] = updatedQuestion;
+    setQuestions(updated);
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("draftAssignments");
@@ -62,7 +92,29 @@ export default function TeacherAssignmentsPage() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // Fetch teacher's classes
+  const { data: classesData, isLoading: isLoadingClasses } = useQuery({
+    queryKey: ["teacher-classes"],
+    queryFn: async () => {
+      const response = await apiClient("/api/v1/teachers/classes/assigned");
+      return response as { classes: Array<{ id: string; name: string }> };
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Fetch teacher's subjects
+  const { data: subjectsData, isLoading: isLoadingSubjects } = useQuery({
+    queryKey: ["teacher-subjects"],
+    queryFn: async () => {
+      const response = await apiClient("/api/v1/teachers/subjects/taught");
+      return response as { subjects: Array<{ id: string; name: string; code: string }> };
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
   const assignments = Array.isArray(assignmentsData) ? assignmentsData : [];
+  const teacherClasses = classesData?.classes || [];
+  const teacherSubjects = subjectsData?.subjects || [];
 
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (assignmentId: string) => {
@@ -130,74 +182,23 @@ export default function TeacherAssignmentsPage() {
       title: "",
       description: "",
       subjectId: "",
+      classId: "",
       type: "HOMEWORK",
       maxScore: 100,
       weight: 1,
       dueAt: "",
       allowLate: false,
+      externalLink: "",
     });
-    setFormErrors({});
     setQuestions([]);
-    setQuestionFormat("MCQ");
-  };
-
-  const addQuestion = () => {
-    const newQuestion: any = {
-      id: `q-${Date.now()}`,
-      text: "",
-      type: questionFormat,
-    };
-    if (questionFormat === "MCQ") {
-      newQuestion.options = [
-        { id: "A", value: "", isCorrect: true },
-        { id: "B", value: "", isCorrect: false },
-        { id: "C", value: "", isCorrect: false },
-        { id: "D", value: "", isCorrect: false },
-      ];
-    }
-    setQuestions([...questions, newQuestion]);
-  };
-
-  const removeQuestion = (questionId: string) => {
-    setQuestions(questions.filter((q) => q.id !== questionId));
-  };
-
-  const updateQuestionText = (questionId: string, text: string) => {
-    setQuestions(questions.map((q) => (q.id === questionId ? { ...q, text } : q)));
-  };
-
-  const updateQuestionOption = (questionId: string, optionId: string, value: string) => {
-    setQuestions(
-      questions.map((q) => {
-        if (q.id === questionId && q.options) {
-          return {
-            ...q,
-            options: q.options.map((o: any) => (o.id === optionId ? { ...o, value } : o)),
-          };
-        }
-        return q;
-      })
-    );
-  };
-
-  const setQuestionCorrectOption = (questionId: string, optionId: string) => {
-    setQuestions(
-      questions.map((q) => {
-        if (q.id === questionId && q.options) {
-          return {
-            ...q,
-            options: q.options.map((o: any) => ({ ...o, isCorrect: o.id === optionId })),
-          };
-        }
-        return q;
-      })
-    );
+    setFormErrors({});
   };
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
     if (!formData.title.trim()) errors.title = "Title is required";
     if (!formData.subjectId) errors.subjectId = "Subject is required";
+    if (!formData.classId) errors.classId = "Class is required"; // NEW: Class is mandatory
     if (!formData.dueAt) errors.dueAt = "Due date is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -209,11 +210,13 @@ export default function TeacherAssignmentsPage() {
       title: assignment.title,
       description: assignment.description || "",
       subjectId: assignment.subjectId || "",
+      classId: assignment.classId || "",
       type: assignment.type,
       maxScore: assignment.maxScore,
       weight: assignment.weight || 1,
       dueAt: assignment.dueAt ? new Date(assignment.dueAt).toISOString().slice(0, 16) : "",
       allowLate: assignment.allowLate || false,
+      externalLink: assignment.externalLink || "",
     });
     setIsEditModalOpen(true);
   };
@@ -224,43 +227,14 @@ export default function TeacherAssignmentsPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSubmitCreate = async (e: React.FormEvent, isDraft: boolean = false) => {
-    e.preventDefault();
+  const handleViewAssignment = (assignment: any) => {
+    setSelectedAssignment(assignment);
+    setIsViewModalOpen(true);
+  };
 
-    if (isDraft) {
-      if (!formData.title.trim()) {
-        setFormErrors({ title: "Title is required" });
-        return;
-      }
-      if (!formData.subjectId) {
-        setFormErrors({ subjectId: "Subject is required" });
-        return;
-      }
-    } else {
-      if (!validateForm()) return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const payload: any = {
-        title: formData.title,
-        description: formData.description || undefined,
-        subjectId: formData.subjectId,
-        type: formData.type.toUpperCase(),
-        maxScore: formData.maxScore,
-        weight: formData.weight,
-        allowLate: formData.allowLate,
-      };
-      if (formData.dueAt) {
-        payload.dueAt = new Date(formData.dueAt).toISOString();
-      }
-      const response: any = await createAssignmentMutation.mutateAsync(payload);
-      if (!isDraft && response?.id) {
-        saveDraftToStorage(response.id);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleViewSubmissions = (assignment: any) => {
+    setSelectedAssignment(assignment);
+    setIsSubmissionsModalOpen(true);
   };
 
   const handleSubmitEdit = async (e: React.FormEvent) => {
@@ -402,8 +376,8 @@ export default function TeacherAssignmentsPage() {
               originalAssignment={assignment}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onView={() => {}}
-              onViewSubmissions={() => {}}
+              onView={handleViewAssignment}
+              onViewSubmissions={handleViewSubmissions}
             />
           ))}
         </div>
@@ -426,27 +400,386 @@ export default function TeacherAssignmentsPage() {
           sortField="title"
           sortDirection="asc"
           onSort={() => {}}
-          onView={() => {}}
+          onView={handleViewAssignment}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onViewSubmissions={() => {}}
+          onViewSubmissions={handleViewSubmissions}
         />
       )}
 
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">Create Assignment</h2>
-            <p className="text-gray-600 mb-6">Use the form below to create a new assignment</p>
-            <button
-              onClick={() => {
-                setIsCreateModalOpen(false);
-                resetForm();
-              }}
-              className="mt-6 px-4 py-2 bg-black text-white rounded-lg"
-            >
-              Close
-            </button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-end z-50 p-4">
+          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto mr-20">
+            <h2 className="text-2xl font-bold mb-2">Create Assignment</h2>
+            <p className="text-gray-600 mb-6">Create a new assignment with questions or an external link</p>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!validateForm()) return;
+              setIsSubmitting(true);
+              try {
+                const payload: any = {
+                  title: formData.title,
+                  description: formData.description || undefined,
+                  subjectId: formData.subjectId,
+                  classId: formData.classId, // NEW: Now mandatory
+                  type: formData.type.toUpperCase(),
+                  maxScore: formData.maxScore,
+                  weight: formData.weight,
+                  allowLate: formData.allowLate,
+                };
+                if (formData.dueAt) {
+                  payload.dueAt = new Date(formData.dueAt).toISOString();
+                }
+                if (formData.externalLink) {
+                  payload.externalLink = formData.externalLink;
+                }
+                if (questions.length > 0) {
+                  payload.questions = questions;
+                }
+                await createAssignmentMutation.mutateAsync(payload);
+              } finally {
+                setIsSubmitting(false);
+              }
+            }} className="space-y-6">
+              {formErrors.submit && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600 text-sm">
+                  {formErrors.submit}
+                </div>
+              )}
+              
+              {/* Basic Info */}
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Title *</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                  placeholder="e.g., Algebraic Equations Assignment"
+                />
+                {formErrors.title && <p className="text-red-600 text-xs mt-1">{formErrors.title}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Subject *</label>
+                <select
+                  value={formData.subjectId}
+                  onChange={(e) => setFormData({ ...formData, subjectId: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                >
+                  <option value="">Select subject</option>
+                  {isLoadingSubjects ? (
+                    <option disabled>Loading subjects...</option>
+                  ) : (
+                    teacherSubjects.map(subj => (
+                      <option key={subj.id} value={subj.id}>
+                        {subj.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                {formErrors.subjectId && <p className="text-red-600 text-xs mt-1">{formErrors.subjectId}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Class *</label>
+                <select
+                  value={formData.classId}
+                  onChange={(e) => setFormData({ ...formData, classId: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                >
+                  <option value="">Select class</option>
+                  {isLoadingClasses ? (
+                    <option disabled>Loading classes...</option>
+                  ) : (
+                    teacherClasses.map(cls => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                {formErrors.classId && <p className="text-red-600 text-xs mt-1">{formErrors.classId}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Type</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                  >
+                    <option value="HOMEWORK">Homework</option>
+                    <option value="CAT">CAT</option>
+                    <option value="EXAM">Exam</option>
+                    <option value="PROJECT">Project</option>
+                    <option value="QUIZ">Quiz</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Max Score</label>
+                  <input
+                    type="number"
+                    value={formData.maxScore}
+                    onChange={(e) => setFormData({ ...formData, maxScore: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Due Date *</label>
+                <input
+                  type="datetime-local"
+                  value={formData.dueAt}
+                  onChange={(e) => setFormData({ ...formData, dueAt: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                />
+                {formErrors.dueAt && <p className="text-red-600 text-xs mt-1">{formErrors.dueAt}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                  placeholder="Add assignment instructions or details..."
+                />
+              </div>
+
+              {/* External Link Option */}
+              <div className="border-t pt-4">
+                <label className="block text-sm font-bold text-gray-900 mb-3">Assignment Source</label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="internal"
+                      name="source"
+                      checked={!formData.externalLink}
+                      onChange={() => setFormData({ ...formData, externalLink: '' })}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="internal" className="text-sm text-gray-700">Create questions in this system</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="external"
+                      name="source"
+                      checked={!!formData.externalLink}
+                      onChange={() => setFormData({ ...formData, externalLink: 'https://' })}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="external" className="text-sm text-gray-700">Use external link (Google Forms, etc.)</label>
+                  </div>
+                </div>
+
+                {formData.externalLink && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-bold text-gray-900 mb-2">External Link *</label>
+                    <input
+                      type="url"
+                      value={formData.externalLink}
+                      onChange={(e) => setFormData({ ...formData, externalLink: e.target.value })}
+                      className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+                      placeholder="https://forms.google.com/..."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Paste Google Forms, Docs, or any assignment link</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Questions Builder - Only show if internal assignment */}
+              {!formData.externalLink && (
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-bold text-gray-900">Questions</label>
+                    <button
+                      type="button"
+                      onClick={addQuestion}
+                      className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      + Add Question
+                    </button>
+                  </div>
+
+                  {questions.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">No questions yet. Add one to get started.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {questions.map((q, idx) => (
+                        <div key={idx} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <h4 className="text-sm font-semibold text-gray-900">Question {idx + 1}</h4>
+                            <button
+                              type="button"
+                              onClick={() => removeQuestion(idx)}
+                              className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                            >
+                              Remove
+                            </button>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-xs font-bold text-gray-600 uppercase">Type</label>
+                              <select
+                                value={q.type}
+                                onChange={(e) => updateQuestion(idx, { ...q, type: e.target.value as any })}
+                                className="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm"
+                              >
+                                <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                                <option value="OPEN_ENDED">Open Ended</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="text-xs font-bold text-gray-600 uppercase">Question Text</label>
+                              <textarea
+                                value={q.text}
+                                onChange={(e) => updateQuestion(idx, { ...q, text: e.target.value })}
+                                rows={2}
+                                className="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm"
+                                placeholder="Enter the question..."
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-xs font-bold text-gray-600 uppercase">Marks</label>
+                                <input
+                                  type="number"
+                                  value={q.marks}
+                                  onChange={(e) => updateQuestion(idx, { ...q, marks: parseFloat(e.target.value) })}
+                                  className="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm"
+                                  step="0.5"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-bold text-gray-600 uppercase">Order</label>
+                                <input
+                                  type="number"
+                                  value={q.order}
+                                  onChange={(e) => updateQuestion(idx, { ...q, order: parseInt(e.target.value) })}
+                                  className="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm"
+                                />
+                              </div>
+                            </div>
+
+                            {q.type === 'MULTIPLE_CHOICE' && (
+                              <>
+                                <div>
+                                  <label className="text-xs font-bold text-gray-600 uppercase mb-2 block">Options</label>
+                                  <div className="space-y-2">
+                                    {q.options && q.options.length > 0 ? (
+                                      q.options.map((option: string, optIdx: number) => (
+                                        <div key={optIdx} className="flex items-center gap-2 bg-white p-2 rounded border border-gray-200">
+                                          <input
+                                            type="radio"
+                                            id={`correct-${idx}-${optIdx}`}
+                                            name={`correct-answer-${idx}`}
+                                            value={optIdx.toString()}
+                                            checked={q.correctAnswer === optIdx.toString()}
+                                            onChange={(e) => updateQuestion(idx, { ...q, correctAnswer: e.target.value })}
+                                            className="w-4 h-4"
+                                          />
+                                          <input
+                                            type="text"
+                                            value={option}
+                                            onChange={(e) => {
+                                              const newOptions = [...q.options];
+                                              newOptions[optIdx] = e.target.value;
+                                              updateQuestion(idx, { ...q, options: newOptions });
+                                            }}
+                                            className="flex-1 px-2 py-1 text-sm rounded border border-gray-200"
+                                            placeholder={`Option ${optIdx + 1}`}
+                                          />
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const newOptions = q.options.filter((_: string, i: number) => i !== optIdx);
+                                              updateQuestion(idx, { ...q, options: newOptions });
+                                            }}
+                                            className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-gray-500">No options yet</p>
+                                    )}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateQuestion(idx, { ...q, options: [...(q.options || []), ''] })}
+                                    className="text-xs mt-2 px-3 py-1 bg-green-100 text-green-600 rounded hover:bg-green-200"
+                                  >
+                                    + Add Option
+                                  </button>
+                                </div>
+                              </>
+                            )}
+
+                            {q.type === 'OPEN_ENDED' && (
+                              <div>
+                                <label className="text-xs font-bold text-gray-600 uppercase">Grading Rubric</label>
+                                <textarea
+                                  value={q.rubric || ''}
+                                  onChange={(e) => updateQuestion(idx, { ...q, rubric: e.target.value })}
+                                  rows={2}
+                                  className="w-full mt-1 px-3 py-2 rounded border border-gray-300 text-sm"
+                                  placeholder="Describe what a good answer should include..."
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="allowLate"
+                  checked={formData.allowLate}
+                  onChange={(e) => setFormData({ ...formData, allowLate: e.target.checked })}
+                  className="w-4 h-4 rounded border-gray-300"
+                />
+                <label htmlFor="allowLate" className="text-sm text-gray-700">
+                  Allow late submissions
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    resetForm();
+                    setQuestions([]);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-black text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+                >
+                  {isSubmitting ? "Creating..." : "Create Assignment"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -613,6 +946,111 @@ export default function TeacherAssignmentsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* View Assignment Modal */}
+      {isViewModalOpen && selectedAssignment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedAssignment.title}</h2>
+                <p className="text-sm text-gray-500 mt-1">{selectedAssignment.subject?.name || "N/A"}</p>
+              </div>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              {/* Assignment Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Type</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedAssignment.type}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Max Score</p>
+                  <p className="text-lg font-semibold text-gray-900">{selectedAssignment.maxScore}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Due Date</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {selectedAssignment.dueAt ? new Date(selectedAssignment.dueAt).toLocaleDateString() : "N/A"}
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Submissions</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {selectedAssignment.submissions?.length || 0} / 26
+                  </p>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedAssignment.description && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Description</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{selectedAssignment.description}</p>
+                </div>
+              )}
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-600 font-medium">Pending Grading</p>
+                  <p className="text-2xl font-bold text-blue-900 mt-1">
+                    {(selectedAssignment.submissions?.filter((s: any) => !s.grade) || []).length}
+                  </p>
+                </div>
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-600 font-medium">Graded</p>
+                  <p className="text-2xl font-bold text-green-900 mt-1">
+                    {(selectedAssignment.submissions?.filter((s: any) => s.grade) || []).length}
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setIsViewModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setIsViewModalOpen(false);
+                    handleViewSubmissions(selectedAssignment);
+                  }}
+                  className="flex-1 px-4 py-2 bg-black text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                >
+                  View Submissions & Grade
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Submissions Modal */}
+      {selectedAssignment && (
+        <SubmissionsModal
+          isOpen={isSubmissionsModalOpen}
+          onClose={() => setIsSubmissionsModalOpen(false)}
+          assignmentTitle={selectedAssignment.title}
+          assignmentId={selectedAssignment.id}
+          maxScore={selectedAssignment.maxScore}
+          submissions={selectedAssignment.submissions || []}
+        />
       )}
     </div>
   );

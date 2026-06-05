@@ -11,6 +11,8 @@ export async function apiClient<T>(
   options?: RequestInit
 ): Promise<T> {
   const token = getAuthToken();
+  
+  console.log("[API CLIENT] Request:", { endpoint, hasToken: !!token });
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
@@ -20,6 +22,8 @@ export async function apiClient<T>(
       ...options?.headers,
     },
   });
+
+  console.log("[API CLIENT] Response status:", response.status, "for endpoint:", endpoint);
 
   // Handle 401 Unauthorized - redirect to login
   if (response.status === 401) {
@@ -32,15 +36,19 @@ export async function apiClient<T>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: response.statusText }));
+    console.error("[API CLIENT] Error response:", error);
     throw new Error(error.message || `API Error: ${response.statusText}`);
   }
 
   // Handle 204 No Content (e.g., DELETE operations)
   if (response.status === 204 || response.headers.get("content-length") === "0") {
+    console.log("[API CLIENT] No content response for:", endpoint);
     return undefined as T;
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log("[API CLIENT] Response data for", endpoint, ":", data);
+  return data;
 }
 
 // Upload file to Cloudinary
