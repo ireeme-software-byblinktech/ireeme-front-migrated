@@ -23,7 +23,7 @@ export default function StudentElectionsPage() {
     queryKey: ["student-elections"],
     queryFn: async () => {
       const data = await electionsApi.getElections();
-      return data.filter((e: Election) => e.status === "ACTIVE" || (e.status === "CLOSED" && e.resultsPublished));
+      return data.filter((e: Election) => e.status === "ACTIVE" || (e.status === "COMPLETED" && e.resultsPublished));
     },
   });
 
@@ -46,7 +46,7 @@ export default function StudentElectionsPage() {
       if (!activeElection?.id) return null;
       return await electionsApi.getResults(activeElection.id);
     },
-    enabled: !!activeElection?.id && activeElection.status === "CLOSED" && activeElection.resultsPublished,
+    enabled: !!activeElection?.id && activeElection.status === "COMPLETED" && activeElection.resultsPublished,
   });
 
   // Vote mutation
@@ -116,8 +116,8 @@ export default function StudentElectionsPage() {
           <div className="w-24 h-24 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckSquare size={44} strokeWidth={2.5} />
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">No Active Elections</h1>
-          <p className="text-lg text-gray-500 max-w-sm mx-auto mb-10 leading-relaxed font-medium">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 tracking-tight">No Active Elections</h1>
+          <p className="text-sm text-gray-500 max-w-sm mx-auto mb-10 leading-relaxed font-medium">
             There are currently no elections open for voting. Please check back later.
           </p>
           <button 
@@ -132,7 +132,7 @@ export default function StudentElectionsPage() {
   }
 
   // Show results if election is closed and results are published
-  if (activeElection.status === "CLOSED" && activeElection.resultsPublished) {
+  if (activeElection.status === "COMPLETED" && activeElection.resultsPublished) {
     return (
       <div className="space-y-6 max-w-[1240px] w-full pb-12">
         <div className="flex items-center justify-between">

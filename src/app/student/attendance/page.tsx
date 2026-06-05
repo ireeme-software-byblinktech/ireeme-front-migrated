@@ -2,106 +2,31 @@
 
 import { useState } from "react";
 import { StatCard, Card, CardBody } from "@/components/ui";
-import { DataTable, Column, Pagination } from "@/components/ui/DataTable";
+import { DataTable, Column } from "@/components/ui/DataTable";
 import { Select } from "@/components/ui/FormElements";
-import { GraduationCap, BookOpen, FileText, BarChart2, Edit, Download, Filter } from "lucide-react";
+import { GraduationCap, BookOpen, FileText, BarChart2, Download, Filter } from "lucide-react";
+import { useStudentAttendance, useStudentDashboard, useStudentProfile } from "@/hooks/api/useStudentAPI";
 
-const attendanceStats = [
-  {
-    label: "Attendance rate",
-    value: "78%",
-    icon: <GraduationCap size={18} />,
-    progress: 78,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Days attended",
-    value: 128,
-    icon: <BookOpen size={18} />,
-    progress: 85,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Absent days",
-    value: 30,
-    icon: <FileText size={18} />,
-    progress: 30,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  },
-  {
-    label: "Late attendance",
-    value: 3,
-    icon: <BarChart2 size={18} />,
-    progress: 15,
-    trend: { value: "3.6", direction: "up" as const, label: "This month" }
-  }
-];
-
-// Attendance data
 interface AttendanceRecord {
   id: string;
   date: string;
   subject: string;
-  term: string;
-  arrival: string;
-  arrivalStatus: "On Time" | "Late";
-  status: "Present" | "Absent";
+  status: "Present" | "Absent" | "Late" | "Excused";
 }
-
-const attendanceData: AttendanceRecord[] = [
-  {
-    id: "1",
-    date: "20-07-2025",
-    subject: "Mathematics",
-    term: "Term 1",
-    arrival: "8:00 AM",
-    arrivalStatus: "On Time",
-    status: "Present"
-  },
-  {
-    id: "2",
-    date: "20-07-2025",
-    subject: "Mathematics",
-    term: "Term 1",
-    arrival: "8:00 AM",
-    arrivalStatus: "On Time",
-    status: "Present"
-  },
-  {
-    id: "3",
-    date: "20-07-2025",
-    subject: "Mathematics",
-    term: "Term 1",
-    arrival: "8:00 AM",
-    arrivalStatus: "On Time",
-    status: "Present"
-  },
-  {
-    id: "4",
-    date: "20-07-2025",
-    subject: "Mathematics",
-    term: "Term 1",
-    arrival: "8:00 AM",
-    arrivalStatus: "On Time",
-    status: "Present"
-  },
-  {
-    id: "5",
-    date: "20-07-2025",
-    subject: "Mathematics",
-    term: "Term 1",
-    arrival: "8:00 AM",
-    arrivalStatus: "On Time",
-    status: "Present"
-  }
-];
 
 export default function AttendancePage() {
   const [statusFilter, setStatusFilter] = useState("All status");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
 
-  const itemsPerPage = 10;
+  const { data: profile } = useStudentProfile();
+  const { data: dashboardData } = useStudentDashboard(profile?.id);
+  const { data: attendanceResponse, isLoading } = useStudentAttendance(profile?.id, 1);
+
+  const attendanceData: AttendanceRecord[] = attendanceResponse?.data?.map((record: any) => ({
+    id: record.id,
+    date: new Date(record.date).toLocaleDateString(),
+    subject: record.subject || "General",
+    status: record.status.charAt(0).toUpperCase() + record.status.slice(1).toLowerCase() as any,
+  })) || [];
 
   const filteredData = attendanceData.filter(record => {
     if (statusFilter === "All status") return true;
@@ -118,84 +43,67 @@ export default function AttendancePage() {
     },
     {
       key: "subject",
-      header: "Subject",
+      header: "Subject/Class",
       render: (_, row) => (
         <div className="text-gray-600">{row.subject}</div>
       )
     },
     {
-      key: "term",
-      header: "Term",
-      render: (_, row) => (
-        <div className="text-gray-600">{row.term}</div>
-      )
-    },
-    {
-      key: "arrival",
-      header: "Arrival",
-      render: (_, row) => (
-        <div className="text-gray-600">{row.arrival}</div>
-      )
-    },
-    {
-      key: "arrivalStatus",
-      header: "Arrival status",
-      render: (_, row) => (
-        <span className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium inline-block min-w-[90px] text-center">
-          {row.arrivalStatus}
-        </span>
-      )
-    },
-    {
       key: "status",
       header: "Status",
-      render: (_, row) => (
-        <span className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium inline-block min-w-[90px] text-center">
-          {row.status}
-        </span>
-      )
-    },
-    {
-      key: "action",
-      header: "Action",
-      align: "right",
-      render: (_, row) => (
-        <button
-          onClick={() => {
-            setSelectedRecord(row);
-            setIsEditModalOpen(true);
-          }}
-          className="text-gray-600 hover:text-gray-900 p-2"
-        >
-          <Edit size={16} />
-        </button>
-      )
+      render: (_, row) => {
+        let colorClass = "bg-black text-white";
+        if (row.status === "Present") colorClass = "bg-green-600 text-white";
+        if (row.status === "Absent") colorClass = "bg-red-600 text-white";
+        if (row.status === "Late") colorClass = "bg-orange-500 text-white";
+
+        return (
+          <span className={`${colorClass} px-4 py-2 rounded-md text-sm font-medium inline-block min-w-[90px] text-center`}>
+            {row.status}
+          </span>
+        );
+      }
     }
   ];
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Attendance</h1>
-        <p className="text-sm text-gray-500">Manage your class attendance patterns using our platform</p>
+        <p className="text-sm text-gray-500">View your class attendance patterns</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="stats-grid">
-        {attendanceStats.map((stat, index) => (
-          <StatCard
-            key={index}
-            label={stat.label}
-            value={stat.value.toString()}
-            icon={stat.icon}
-            progress={stat.progress}
-            trend={stat.trend}
-          />
-        ))}
+        <StatCard
+          label="Attendance rate"
+          value={dashboardData ? `${dashboardData.overview.averageAttendance}%` : "-"}
+          icon={<GraduationCap size={18} />}
+          progress={dashboardData?.overview.averageAttendance || 0}
+          trend={{ value: "0", direction: "up", label: "This month" }}
+        />
+        <StatCard
+          label="Total Records"
+          value={attendanceResponse?.total?.toString() || "-"}
+          icon={<BookOpen size={18} />}
+          progress={100}
+          trend={{ value: "0", direction: "up", label: "This month" }}
+        />
+        <StatCard
+          label="Absent"
+          value={attendanceData.filter(r => r.status === "Absent").length.toString()}
+          icon={<FileText size={18} />}
+          progress={30}
+          trend={{ value: "0", direction: "up", label: "This month" }}
+        />
+        <StatCard
+          label="Late"
+          value={attendanceData.filter(r => r.status === "Late").length.toString()}
+          icon={<BarChart2 size={18} />}
+          progress={15}
+          trend={{ value: "0", direction: "up", label: "This month" }}
+        />
       </div>
 
-      {/* Attendance Record History */}
       <Card>
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Attendance record history</h2>
@@ -208,7 +116,8 @@ export default function AttendancePage() {
                 options={[
                   { value: "All status", label: "All status" },
                   { value: "Present", label: "Present" },
-                  { value: "Absent", label: "Absent" }
+                  { value: "Absent", label: "Absent" },
+                  { value: "Late", label: "Late" }
                 ]}
                 className="w-32"
               />
@@ -220,165 +129,22 @@ export default function AttendancePage() {
           </div>
         </div>
         <CardBody>
-          {/* Table */}
-          <DataTable
-            columns={columns as unknown as Column<Record<string, unknown>>[]}
-            data={filteredData as unknown as Record<string, unknown>[]}
-            keyField="id"
-            className="assignments-table"
-            pageSize={10}
-            paginationClassName="pagination-rounded"
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns as unknown as Column<Record<string, unknown>>[]}
+              data={filteredData as unknown as Record<string, unknown>[]}
+              keyField="id"
+              className="assignments-table"
+              pageSize={10}
+              paginationClassName="pagination-rounded"
+            />
+          )}
         </CardBody>
       </Card>
-
-      {/* Edit Attendance Modal */}
-      {isEditModalOpen && selectedRecord && (
-        <EditAttendanceModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          record={selectedRecord}
-        />
-      )}
     </div>
   );
 }
-
-// Edit Attendance Modal Component
-function EditAttendanceModal({
-  isOpen,
-  onClose,
-  record
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  record: AttendanceRecord;
-}) {
-  const [formData, setFormData] = useState({
-    date: record.date,
-    subject: record.subject,
-    term: record.term,
-    arrival: record.arrival,
-    arrivalStatus: record.arrivalStatus,
-    status: record.status
-  });
-
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you'd call an API here
-    onClose();
-  };
-
-  return (
-    <>
-      <div className="fixed inset-0 z-[9999]">
-        <div className="absolute left-0 top-0 w-64 h-full bg-transparent pointer-events-none"></div>
-        <div className="absolute left-64 top-0 right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm"></div>
-        <div className="absolute left-64 top-0 right-0 bottom-0 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl relative z-10 max-h-[90vh] flex flex-col">
-            <div className="bg-black text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Edit Attendance</h2>
-              <button onClick={onClose} className="text-white hover:text-gray-300">✕</button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Subject *</label>
-                    <input
-                      type="text"
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Date *</label>
-                    <input
-                      type="text"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Arrival Time *</label>
-                    <input
-                      type="text"
-                      value={formData.arrival}
-                      onChange={(e) => setFormData({ ...formData, arrival: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Term *</label>
-                    <select
-                      value={formData.term}
-                      onChange={(e) => setFormData({ ...formData, term: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
-                    >
-                      <option value="Term 1">Term 1</option>
-                      <option value="Term 2">Term 2</option>
-                      <option value="Term 3">Term 3</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Arrival status *</label>
-                    <select
-                      value={formData.arrivalStatus}
-                      onChange={(e) => setFormData({ ...formData, arrivalStatus: e.target.value as any })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
-                    >
-                      <option value="On Time">On Time</option>
-                      <option value="Late">Late</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Status *</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:border-gray-400 bg-transparent"
-                    >
-                      <option value="Present">Present</option>
-                      <option value="Absent">Absent</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center gap-4 pt-4">
-                  <button
-                    type="submit"
-                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-                  >
-                    Save changes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
-                  >
-                    cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
