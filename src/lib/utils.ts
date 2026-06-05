@@ -51,3 +51,4 @@ export function stringToColor(str: string): string {
   const h = Math.abs(hash) % 360;
   return `hsl(${h}, 60%, 88%)`;
 }
+

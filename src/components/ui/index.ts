@@ -24,3 +24,4 @@ export { DeleteStockModal } from './DeleteStockModal';
 export { AddDocumentModal } from './AddDocumentModal';
 export { ViewDocumentModal } from './ViewDocumentModal';
 export { DeleteDocumentModal } from './DeleteDocumentModal';
+

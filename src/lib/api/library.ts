@@ -1,19 +1,28 @@
 import { apiClient } from "./client";
 
+// ─── Types ────────────────────────────────────────────────────────────────
+
 export interface Book {
   id: string;
   title: string;
   author: string;
-  isbn: string | null;
-  publisher: string | null;
-  publishedYear: number | null;
-  category: string;
-  quantity: number;
-  availableQuantity: number;
-  description: string | null;
-  coverImage: string | null;
-  location: string | null;
+  isbn?: string | null;
+  genre?: string;
+  category?: string;
+  publisher?: string | null;
+  publishedYear?: number | null;
+  totalCopies?: number;
+  availableCopies?: number;
+  quantity?: number;
+  availableQuantity?: number;
+  available?: number;
+  description?: string | null;
+  coverImage?: string | null;
+  coverUrl?: string;
+  location?: string | null;
+  schoolId?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Borrowing {
@@ -22,26 +31,66 @@ export interface Borrowing {
   studentId: string;
   borrowedAt: string;
   dueDate: string;
-  returnedAt: string | null;
-  status: "BORROWED" | "RETURNED" | "OVERDUE";
-  book: {
+  returnedAt?: string | null;
+  schoolId?: string;
+  status?: "BORROWED" | "RETURNED" | "OVERDUE";
+  book?: {
     id: string;
     title: string;
     author: string;
-    category: string;
-    coverImage: string | null;
-  };
-  student: {
-    studentNumber: string;
-    user: {
+    category?: string;
+    coverImage?: string | null;
+  } & Book;
+  student?: {
+    id?: string;
+    studentNumber?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    user?: {
       firstName: string;
       lastName: string;
     };
   };
 }
 
-export interface BooksQueryParams {
+export interface CreateBookDto {
+  title: string;
+  author: string;
+  isbn?: string;
+  genre?: string;
+  category?: string;
+  publisher?: string;
+  publishedYear?: number;
+  totalCopies?: number;
+  quantity?: number;
+  description?: string;
+  coverImage?: string;
+  coverUrl?: string;
+  location?: string;
+}
+
+export interface UpdateBookDto {
+  title?: string;
+  author?: string;
+  isbn?: string;
+  genre?: string;
+  category?: string;
+  totalCopies?: number;
+  quantity?: number;
+  coverUrl?: string;
+  coverImage?: string;
+}
+
+export interface CreateBorrowingDto {
+  bookId: string;
+  studentId: string;
+  dueDate: string;
+}
+
+export interface QueryBooksDto {
   search?: string;
+  genre?: string;
   category?: string;
   page?: number;
   limit?: number;
@@ -54,38 +103,41 @@ export interface BooksResponse {
   limit: number;
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages?: number;
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────
+
 export const libraryApi = {
   // Books
-  getBooks: (params?: BooksQueryParams) => {
+  getBooks: (params?: QueryBooksDto) => {
     const query = new URLSearchParams();
     if (params?.search) query.append("search", params.search);
+    if (params?.genre) query.append("genre", params.genre);
     if (params?.category) query.append("category", params.category);
     if (params?.page) query.append("page", params.page.toString());
     if (params?.limit) query.append("limit", params.limit.toString());
-
-    return apiClient<BooksResponse>(`/api/v1/library/books?${query.toString()}`);
+    const queryStr = query.toString();
+    return apiClient<PaginatedResponse<Book>>(`/api/v1/library/books${queryStr ? `?${queryStr}` : ""}`);
   },
 
   getBookById: (id: string) => apiClient<Book>(`/api/v1/library/books/${id}`),
 
-  createBook: (data: {
-    title: string;
-    author: string;
-    isbn?: string;
-    publisher?: string;
-    publishedYear?: number;
-    category: string;
-    quantity: number;
-    description?: string;
-    coverImage?: string;
-    location?: string;
-  }) =>
+  // Alias for compatibility
+  getBook: (id: string) => apiClient<Book>(`/api/v1/library/books/${id}`),
+
+  createBook: (data: CreateBookDto) =>
     apiClient<Book>("/api/v1/library/books", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  updateBook: (id: string, data: Partial<Book>) =>
+  updateBook: (id: string, data: UpdateBookDto) =>
     apiClient<Book>(`/api/v1/library/books/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
@@ -97,7 +149,19 @@ export const libraryApi = {
     }),
 
   // Borrowings
-  borrowBook: (data: { bookId: string; studentId: string; dueDate: string }) =>
+  getBorrowings: (params?: { status?: string; page?: number; limit?: number }) => {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : "";
+    return apiClient<PaginatedResponse<Borrowing>>(`/api/v1/library/borrowings${queryString}`);
+  },
+
+  borrowBook: (data: CreateBorrowingDto) =>
+    apiClient<Borrowing>("/api/v1/library/borrowings", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  // Alias for compatibility
+  createBorrowing: (data: CreateBorrowingDto) =>
     apiClient<Borrowing>("/api/v1/library/borrowings", {
       method: "POST",
       body: JSON.stringify(data),

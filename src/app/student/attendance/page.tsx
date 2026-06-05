@@ -21,10 +21,10 @@ export default function AttendancePage() {
   const { data: dashboardData } = useStudentDashboard(profile?.id);
   const { data: attendanceResponse, isLoading } = useStudentAttendance(profile?.id, 1);
 
-  const attendanceData: AttendanceRecord[] = attendanceResponse?.data?.map(record => ({
+  const attendanceData: AttendanceRecord[] = attendanceResponse?.data?.map((record: any) => ({
     id: record.id,
     date: new Date(record.date).toLocaleDateString(),
-    subject: "General", // API returns general attendance if subject is not provided, or subject-specific via relation
+    subject: record.subject || "General",
     status: record.status.charAt(0).toUpperCase() + record.status.slice(1).toLowerCase() as any,
   })) || [];
 

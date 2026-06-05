@@ -5,3 +5,4 @@ export interface Assignment {
   dueDate: string;
   status: "pending" | "submitted" | "graded";
 }
+

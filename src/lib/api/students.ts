@@ -65,7 +65,7 @@ export interface UpdateStudentDto {
 
 export const studentsApi = {
     getMyProfile: () =>
-        apiClient<Student>("/api/v1/students/me/profile"),
+        apiClient<Student>("/students/me/profile"),
 
     getStudents: async (params?: {
         page?: number;
@@ -83,7 +83,7 @@ export const studentsApi = {
         if (params?.isActive !== undefined) cleanParams.isActive = String(params.isActive);
 
         const queryString = new URLSearchParams(cleanParams).toString();
-        const url = `/api/v1/students${queryString ? `?${queryString}` : ''}`;
+        const url = `/students${queryString ? `?${queryString}` : ''}`;
 
         const response = await apiClient<StudentsResponse>(url);
 
@@ -101,22 +101,23 @@ export const studentsApi = {
     },
 
     getStudent: (id: string) =>
-        apiClient<Student>(`/api/v1/students/${id}`),
+        apiClient<Student>(`/students/${id}`),
 
     createStudent: (data: CreateStudentDto) =>
-        apiClient<Student>("/api/v1/students", {
+        apiClient<Student>("/students", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     updateStudent: (id: string, data: UpdateStudentDto) =>
-        apiClient<Student>(`/api/v1/students/${id}`, {
+        apiClient<Student>(`/students/${id}`, {
             method: "PATCH",
             body: JSON.stringify(data),
         }),
 
     deleteStudent: (id: string) =>
-        apiClient<void>(`/api/v1/students/${id}`, {
+        apiClient<void>(`/students/${id}`, {
             method: "DELETE",
         }),
 };
+

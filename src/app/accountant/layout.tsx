@@ -34,3 +34,4 @@ export default function AccountantLayout({ children }: { children: React.ReactNo
     </AppLayout>
   );
 }
+

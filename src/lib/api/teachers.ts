@@ -58,36 +58,37 @@ export interface UpdateTeacherDto {
 export const teachersApi = {
     getTeachers: (params?: { page?: number; limit?: number; search?: string }) =>
         apiClient<TeachersResponse>(
-            `/api/v1/teachers?${new URLSearchParams(params as any).toString()}`
+            `/teachers?${new URLSearchParams(params as any).toString()}`
         ),
 
     getTeacher: (id: string) =>
-        apiClient<Teacher>(`/api/v1/teachers/${id}`),
+        apiClient<Teacher>(`/teachers/${id}`),
 
     createTeacher: (data: CreateTeacherDto) =>
-        apiClient<Teacher>("/api/v1/teachers", {
+        apiClient<Teacher>("/teachers", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     updateTeacher: (id: string, data: UpdateTeacherDto) =>
-        apiClient<Teacher>(`/api/v1/teachers/${id}`, {
+        apiClient<Teacher>(`/teachers/${id}`, {
             method: "PATCH",
             body: JSON.stringify(data),
         }),
 
     deleteTeacher: (id: string) =>
-        apiClient<void>(`/api/v1/teachers/${id}`, {
+        apiClient<void>(`/teachers/${id}`, {
             method: "DELETE",
         }),
 
     assignSubject: (teacherId: string, subjectId: string) =>
-        apiClient<void>(`/api/v1/teachers/${teacherId}/subjects/${subjectId}`, {
+        apiClient<void>(`/teachers/${teacherId}/subjects/${subjectId}`, {
             method: "POST",
         }),
 
     removeSubject: (teacherId: string, subjectId: string) =>
-        apiClient<void>(`/api/v1/teachers/${teacherId}/subjects/${subjectId}`, {
+        apiClient<void>(`/teachers/${teacherId}/subjects/${subjectId}`, {
             method: "DELETE",
         }),
 };
+

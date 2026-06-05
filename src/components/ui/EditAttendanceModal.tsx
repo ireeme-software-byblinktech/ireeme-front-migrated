@@ -90,3 +90,4 @@ export function EditAttendanceModal({ isOpen, onClose, onSave, data }: EditAtten
         </div>
     );
 }
+

@@ -7,3 +7,4 @@ export default function DisciplineLayout({ children }: { children: React.ReactNo
     </AppLayout>
   );
 }
+

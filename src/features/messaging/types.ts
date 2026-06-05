@@ -6,3 +6,4 @@ export interface Message {
   timestamp: string;
   read: boolean;
 }
+

@@ -284,3 +284,4 @@ export function AddTeacherModal({ isOpen, onClose }: AddTeacherModalProps) {
     </div>
   );
 }
+

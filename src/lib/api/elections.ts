@@ -40,6 +40,8 @@ export interface Election {
 export interface VotingStatus {
   hasVoted: boolean;
   votedAt?: string;
+  votedPositions?: number;
+  totalPositions?: number;
 }
 
 export interface ElectionResults {
@@ -58,18 +60,68 @@ export interface ElectionResults {
   }>;
 }
 
+export interface CreateElectionDto {
+  title: string;
+  description?: string;
+  startAt: string;
+  endAt: string;
+}
+
+export interface AddCandidateDto {
+  positionId: string;
+  studentId: string;
+  bio?: string;
+  photoUrl?: string;
+}
+
+export interface CastVoteDto {
+  positionId: string;
+  candidateId: string;
+  electionId?: string;
+}
+
 export const electionsApi = {
   getAll: () => apiClient<Election[]>("/api/v1/elections"),
-  
+
   getElections: () => apiClient<Election[]>("/api/v1/elections"),
 
   getById: (id: string) => apiClient<Election>(`/api/v1/elections/${id}`),
 
+  getElection: (id: string) => apiClient<Election>(`/api/v1/elections/${id}`),
+
+  createElection: (data: CreateElectionDto) =>
+    apiClient<Election>("/api/v1/elections", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  addPosition: (electionId: string, data: { name: string; minVotes?: number; maxVotes?: number }) =>
+    apiClient<Position>(`/api/v1/elections/${electionId}/positions`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  addCandidate: (data: AddCandidateDto) =>
+    apiClient<Candidate>("/api/v1/elections/candidates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  openVoting: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/open`, {
+      method: "POST",
+    }),
+
+  closeVoting: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/close`, {
+      method: "POST",
+    }),
+
   getVotingStatus: (electionId: string) =>
     apiClient<VotingStatus>(`/api/v1/elections/${electionId}/voting-status`),
 
-  castVote: (data: { positionId: string; candidateId: string }) =>
-    apiClient<{ message: string }>("/api/v1/elections/vote", {
+  castVote: (data: CastVoteDto) =>
+    apiClient<{ success: boolean; message: string }>("/api/v1/elections/vote", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -82,4 +134,14 @@ export const electionsApi = {
 
   getResults: (electionId: string) =>
     apiClient<ElectionResults>(`/api/v1/elections/${electionId}/results`),
+
+  publishResults: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/publish-results`, {
+      method: "POST",
+    }),
+
+  unpublishResults: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/unpublish-results`, {
+      method: "POST",
+    }),
 };

@@ -113,3 +113,4 @@ export function SchoolModal({ isOpen, onClose, onConfirm, initialData, mode }: S
         </Modal>
     );
 }
+

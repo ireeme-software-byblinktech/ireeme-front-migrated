@@ -12,3 +12,4 @@ export default function ParentLayout({ children }: { children: React.ReactNode }
     </AppLayout>
   );
 }
+

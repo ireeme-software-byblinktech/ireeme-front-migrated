@@ -23,8 +23,6 @@ export function AppLayout({
   avatarUrl,
   notificationCount = 0,
 }: AppLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
   return (
     <div className="app-layout">
       <Sidebar 
@@ -32,19 +30,18 @@ export function AppLayout({
         userName={userName}
         avatarUrl={avatarUrl} 
         userEmail={userEmail}
-        isOpen={sidebarOpen}
       />
-      <main className={`app-main ${!sidebarOpen ? 'app-main--sidebar-closed' : ''}`}>
+      <main className="app-main">
         <Topbar
           title={pageTitle}
           role={role}
           userName={userName}
           avatarUrl={avatarUrl}
           notificationCount={notificationCount}
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
         <div className="app-content">{children}</div>
       </main>
     </div>
   );
 }
+

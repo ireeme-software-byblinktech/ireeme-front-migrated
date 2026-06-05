@@ -125,3 +125,4 @@ export function AdminStatCard({
         </motion.div>
     );
 }
+

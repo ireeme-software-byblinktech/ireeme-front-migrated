@@ -36,3 +36,4 @@ export const attendancesApi = {
     getStudentSummary: (studentId: string, from: string, to: string) =>
         apiClient<AttendanceSummary[]>(`/attendance/summary/${studentId}?from=${from}&to=${to}`),
 };
+

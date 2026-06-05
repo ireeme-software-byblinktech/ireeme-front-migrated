@@ -25,7 +25,7 @@ export default function AdminDashboard() {
     // Fetch current user
     const { data: user } = useQuery({
         queryKey: ["current-user"],
-        queryFn: () => apiClient<{ firstName: string; lastName: string }>("/api/v1/auth/me"),
+        queryFn: () => apiClient<{ firstName: string; lastName: string }>("/auth/me"),
     });
 
     const stats = [
@@ -291,3 +291,4 @@ export default function AdminDashboard() {
         </div>
     );
 }
+

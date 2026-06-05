@@ -23,3 +23,4 @@ export const updateStudentSchema = z.object({
 
 export type CreateStudentInput = z.infer<typeof createStudentSchema>;
 export type UpdateStudentInput = z.infer<typeof updateStudentSchema>;
+

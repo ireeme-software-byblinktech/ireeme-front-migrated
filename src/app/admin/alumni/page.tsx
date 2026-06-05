@@ -33,7 +33,7 @@ export default function AdminAlumniPage() {
     // Fetch classes for filter
     const { data: classes } = useQuery({
         queryKey: ["classes"],
-        queryFn: () => apiClient<Array<{ id: string; name: string; stream: string | null }>>("/api/v1/classes"),
+        queryFn: () => apiClient<Array<{ id: string; name: string; stream: string | null }>>("/classes"),
     });
 
     // Fetch alumni students (isActive = false)
@@ -246,3 +246,4 @@ export default function AdminAlumniPage() {
         </div>
     );
 }
+

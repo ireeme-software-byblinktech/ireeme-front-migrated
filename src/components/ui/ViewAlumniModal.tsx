@@ -83,3 +83,4 @@ export function ViewAlumniModal({ isOpen, onClose, data }: ViewAlumniModalProps)
         </div>
     );
 }
+

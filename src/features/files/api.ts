@@ -12,14 +12,15 @@ export const filesApi = {
     const formData = new FormData();
     formData.append("file", file);
     
-    return apiClient<FileUploadResponse>("/api/v1/files/upload", {
+    return apiClient<FileUploadResponse>("/files/upload", {
       method: "POST",
       body: formData,
     });
   },
 
   getDownloadUrl: (key: string) =>
-    apiClient<{ url: string }>(`/api/v1/files/${key}/url`, {
+    apiClient<{ url: string }>(`/files/${key}/url`, {
       method: "GET",
     }),
 };
+

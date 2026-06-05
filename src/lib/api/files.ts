@@ -33,6 +33,10 @@ export const filesApi = {
     formData.append("file", file);
 
     const token = getAuthToken();
+
+    console.log("Uploading file:", file.name, "Size:", file.size, "Type:", file.type);
+    console.log("Auth token present:", !!token);
+
     const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
       method: "POST",
       headers: {
@@ -51,10 +55,25 @@ export const filesApi = {
   },
 
   // Get file download URL
-  getFileUrl: (key: string) =>
-    apiClient<{ url: string; expiresIn: number }>(`/api/v1/files/${key}/url`),
+  getFileUrl: async (key: string): Promise<{ url: string; expiresIn: number }> => {
+    const token = getAuthToken();
+    const encodedKey = encodeURIComponent(key);
 
-  // Delete a file (if backend supports it)
+    const response = await fetch(`${API_BASE_URL}/api/v1/files/${encodedKey}/url`, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(error.message || "Failed to get file URL");
+    }
+
+    return response.json();
+  },
+
+  // Delete a file
   deleteFile: (key: string) =>
     apiClient<void>(`/api/v1/files/${key}`, {
       method: "DELETE",

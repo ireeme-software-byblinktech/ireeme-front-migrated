@@ -87,22 +87,22 @@ export interface CasesResponse {
 export const disciplineApi = {
   // Offense Types
   getOffenseTypes: () =>
-    apiClient<OffenseType[]>("/api/v1/discipline/offense-types"),
+    apiClient<OffenseType[]>("/discipline/offense-types"),
 
   createOffenseType: (data: CreateOffenseTypeDto) =>
-    apiClient<OffenseType>("/api/v1/discipline/offense-types", {
+    apiClient<OffenseType>("/discipline/offense-types", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateOffenseType: (id: string, data: Partial<CreateOffenseTypeDto>) =>
-    apiClient<OffenseType>(`/api/v1/discipline/offense-types/${id}`, {
+    apiClient<OffenseType>(`/discipline/offense-types/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   deleteOffenseType: (id: string) =>
-    apiClient<void>(`/api/v1/discipline/offense-types/${id}`, {
+    apiClient<void>(`/discipline/offense-types/${id}`, {
       method: "DELETE",
     }),
 
@@ -116,45 +116,46 @@ export const disciplineApi = {
 
     const query = searchParams.toString();
     return apiClient<CasesResponse>(
-      `/api/v1/discipline/cases${query ? `?${query}` : ""}`
+      `/discipline/cases${query ? `?${query}` : ""}`
     );
   },
 
   getCaseById: (id: string) =>
-    apiClient<DisciplineCase>(`/api/v1/discipline/cases/${id}`),
+    apiClient<DisciplineCase>(`/discipline/cases/${id}`),
 
   createCase: (data: CreateCaseDto) =>
-    apiClient<DisciplineCase>("/api/v1/discipline/cases", {
+    apiClient<DisciplineCase>("/discipline/cases", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   closeCase: (id: string) =>
-    apiClient<DisciplineCase>(`/api/v1/discipline/cases/${id}/close`, {
+    apiClient<DisciplineCase>(`/discipline/cases/${id}/close`, {
       method: "PATCH",
     }),
 
   deleteCase: (id: string) =>
-    apiClient<void>(`/api/v1/discipline/cases/${id}`, {
+    apiClient<void>(`/discipline/cases/${id}`, {
       method: "DELETE",
     }),
 
   // Student Score
   getStudentScore: (studentId: string) =>
-    apiClient<StudentScore>(`/api/v1/discipline/student/${studentId}/score`),
+    apiClient<StudentScore>(`/discipline/student/${studentId}/score`),
 
   // Appeals
   submitAppeal: (caseId: string, data: AppealCaseDto) =>
-    apiClient<DisciplineCase>(`/api/v1/discipline/cases/${caseId}/appeal`, {
+    apiClient<DisciplineCase>(`/discipline/cases/${caseId}/appeal`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   resolveAppeal: (caseId: string, status: "APPROVED" | "REJECTED") =>
     apiClient<DisciplineCase>(
-      `/api/v1/discipline/cases/${caseId}/appeal/${status}`,
+      `/discipline/cases/${caseId}/appeal/${status}`,
       {
         method: "PATCH",
       }
     ),
 };
+

@@ -1,176 +1,274 @@
 "use client";
 
-import { StatCard } from "@/components/ui";
-import { DataTable } from "@/components/ui/DataTable";
-import { Search, ListFilter, Plus, Eye, Pencil, Trash2, GraduationCap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Card, CardBody, StatCard } from "@/components/ui";
+import { DataTable, Column } from "@/components/ui/DataTable";
+import { Button } from "@/components/ui/Button";
+import { BriefcaseMedical, AlertCircle, CheckCircle, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import {
-    AddMedicalCaseModal,
-    UpdateMedicalCaseModal,
-    ViewMedicalCaseModal,
-    DeleteConfirmationModal
-} from "@/components/nurse/HealthRecordModals";
-
-const STATS = [
-    { label: "In Progress", value: "308", icon: <GraduationCap size={28} />, progress: 75, meta: { male: "61%", female: "39%" } },
-    { label: "Critical", value: "308", icon: <GraduationCap size={28} />, progress: 45, meta: { male: "61%", female: "39%" } },
-    { label: "Completed Today", value: "308", icon: <GraduationCap size={28} />, progress: 60, meta: { male: "61%", female: "39%" } },
-    { label: "Waiting", value: "308", icon: <GraduationCap size={28} />, progress: 25, meta: { male: "61%", female: "39%" } },
-];
-
-const CASES = [
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "In Progress" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-    { id: "MC-2025-001", student: "John Doe", class: "S5 MCB", date: "02-02-2026", diagnosis: "Critical" },
-];
+import { healthApi, MedicalCase, CreateMedicalCaseDto } from "@/lib/api/health";
+import { studentsApi, Student } from "@/lib/api/students";
+import { toast } from "@/lib/utils/toast";
 
 export default function MedicalCasesPage() {
-    const [cases, setCases] = useState(CASES);
-    const [activeModal, setActiveModal] = useState<"add" | "edit" | "view" | "delete" | null>(null);
-    const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [cases, setCases] = useState<MedicalCase[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  
+  const [formData, setFormData] = useState<CreateMedicalCaseDto>({
+    studentId: "",
+    diagnosis: "",
+    symptoms: "",
+  });
 
-    const handleAdd = () => {
-        const newCase = {
-            id: `MC-2025-00${cases.length + 1}`,
-            student: "New Case Student",
-            class: "S1 A",
-            date: new Date().toISOString().split('T')[0],
-            diagnosis: "New Case"
-        };
-        setCases([newCase, ...cases]);
-    };
+  useEffect(() => {
+    fetchStudents();
+    fetchAllCases();
+  }, []);
 
-    const handleUpdate = () => {
-        setCases(cases.map(item =>
-            item.id === selectedRecord.id ? { ...item, student: item.student + " (Updated)" } : item
-        ));
-    };
+  const fetchStudents = async () => {
+    try {
+      const response = await studentsApi.getStudents({ limit: 50, isActive: true });
+      setStudents(response.data);
+    } catch (error) {
+      console.error("Failed to fetch students:", error);
+      toast.error("Failed to load students");
+    }
+  };
 
-    const handleDelete = () => {
-        setCases(cases.filter(item => item.id !== selectedRecord.id));
-    };
+  const fetchAllCases = async () => {
+    setLoading(true);
+    try {
+      const response = await studentsApi.getStudents({ limit: 50, isActive: true });
+      const allCases: MedicalCase[] = [];
+      
+      // Fetch cases for each student
+      for (const student of response.data) {
+        try {
+          const studentCases = await healthApi.getMedicalCases(student.id);
+          const casesArray = Array.isArray(studentCases) ? studentCases : [];
+          allCases.push(...casesArray);
+        } catch (error) {
+          // Skip students with no cases
+          console.log(`No cases for student ${student.id}`);
+        }
+      }
+      
+      // Sort by date, newest first
+      allCases.sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime());
+      setCases(allCases);
+    } catch (error) {
+      console.error("Failed to fetch cases:", error);
+      toast.error("Failed to load medical cases");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const COLUMNS = [
-        { key: "checkbox", header: "", render: () => <input type="checkbox" className="rounded-md h-4 w-4 border-gray-300 accent-black cursor-pointer" /> },
-        { key: "id", header: "CASE ID" },
-        { key: "student", header: "STUDENT" },
-        { key: "class", header: "CLASS" },
-        { key: "date", header: "DATE" },
-        {
-            key: "diagnosis",
-            header: "DIAGNOSIS",
-            render: (v: any) => (
-                <span className="bg-black text-white px-8 py-2 rounded-lg font-bold text-[10px] uppercase tracking-wider block text-center max-w-[140px]">
-                    {String(v)}
-                </span>
-            )
-        },
-        {
-            key: "actions",
-            header: "Action",
-            render: (_: any, row: any) => (
-                <div className="flex items-center gap-4 text-gray-900">
-                    <button
-                        onClick={() => { setSelectedRecord(row); setActiveModal("view"); }}
-                        className="hover:scale-110 transition-transform"
-                    >
-                        <Eye size={18} />
-                    </button>
-                    <button
-                        onClick={() => { setSelectedRecord(row); setActiveModal("edit"); }}
-                        className="hover:scale-110 transition-transform"
-                    >
-                        <Pencil size={18} />
-                    </button>
-                    <button
-                        onClick={() => { setSelectedRecord(row); setActiveModal("delete"); }}
-                        className="hover:scale-110 transition-transform"
-                    >
-                        <Trash2 size={18} />
-                    </button>
-                </div>
-            )
-        },
-    ];
+  const handleCreateCase = async () => {
+    if (!formData.studentId || !formData.diagnosis || !formData.symptoms) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
 
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-        >
-            <div className="space-y-1">
-                <h1 className="text-[28px] font-black text-gray-900 tracking-tight">Medical Cases</h1>
-            </div>
+    try {
+      const newCase = await healthApi.createMedicalCase(formData);
+      setCases([newCase, ...cases]);
+      toast.success("Medical case created successfully");
+      setShowAddModal(false);
+      setFormData({ studentId: "", diagnosis: "", symptoms: "" });
+    } catch (error) {
+      console.error("Failed to create case:", error);
+      toast.error("Failed to create medical case");
+    }
+  };
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {STATS.map((stat, i) => (
-                    <StatCard
-                        key={i}
-                        label={stat.label}
-                        value={stat.value}
-                        icon={stat.icon}
-                        progress={stat.progress}
-                        meta={stat.meta}
-                    />
-                ))}
-            </div>
+  const handleCloseCase = async (id: string) => {
+    if (!confirm("Are you sure you want to close this case?")) return;
 
-            <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden min-h-[600px]">
-                <div className="p-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    {/* Search Field */}
-                    <div className="relative w-full max-w-lg">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search by caseID or student name..."
-                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50/50 border border-gray-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-black text-sm transition-all shadow-inner"
-                        />
-                    </div>
-                    {/* Filters & Actions */}
-                    <div className="flex items-center gap-3">
-                        <div className="relative group flex items-center gap-2 px-6 py-3.5 border border-gray-100 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all cursor-pointer">
-                            <ListFilter size={18} />
-                            <span>Filter Status</span>
-                            <select className="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
-                                <option value="">All Status</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Critical">Critical</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                        <button
-                            onClick={() => setActiveModal("add")}
-                            className="bg-black text-white px-8 py-3.5 rounded-xl font-black text-sm flex items-center gap-2 shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                        >
-                            New Case +
-                        </button>
-                    </div>
-                </div>
+    try {
+      const updated = await healthApi.closeMedicalCase(id);
+      setCases(cases.map(c => c.id === id ? updated : c));
+      toast.success("Medical case closed");
+    } catch (error) {
+      console.error("Failed to close case:", error);
+      toast.error("Failed to close medical case");
+    }
+  };
 
-                <div className="px-8 pb-8">
-                    <DataTable
-                        columns={COLUMNS}
-                        data={cases}
-                        className="assignments-table rounded-2xl overflow-hidden"
-                    />
-                </div>
-            </div>
-
-            {/* Modals */}
-            <AddMedicalCaseModal open={activeModal === "add"} onClose={() => setActiveModal(null)} onConfirm={handleAdd} />
-            <UpdateMedicalCaseModal open={activeModal === "edit"} onClose={() => setActiveModal(null)} record={selectedRecord} onConfirm={handleUpdate} />
-            <ViewMedicalCaseModal open={activeModal === "view"} onClose={() => setActiveModal(null)} record={selectedRecord} />
-            <DeleteConfirmationModal open={activeModal === "delete"} onClose={() => setActiveModal(null)} onConfirm={handleDelete} />
-        </motion.div>
+  const getStatusBadge = (status: string) => {
+    return status === "OPEN" ? (
+      <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+        OPEN
+      </span>
+    ) : (
+      <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800">
+        CLOSED
+      </span>
     );
+  };
+
+  const columns: Column<MedicalCase>[] = [
+    {
+      key: "student",
+      header: "Student",
+      render: (_, row) => (
+        <div>
+          <div className="font-bold">
+            {row.student?.user?.firstName || 'Unknown'} {row.student?.user?.lastName || ''}
+          </div>
+          <div className="text-xs text-gray-500">{row.student?.studentNumber || 'N/A'}</div>
+        </div>
+      )
+    },
+    {
+      key: "diagnosis",
+      header: "Diagnosis",
+      render: (v) => <span className="font-bold">{String(v)}</span>
+    },
+    {
+      key: "symptoms",
+      header: "Symptoms",
+      render: (v) => String(v)
+    },
+    {
+      key: "openedAt",
+      header: "Opened",
+      render: (v) => new Date(String(v)).toLocaleDateString()
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (v) => getStatusBadge(String(v))
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (_, row) => (
+        row.status === "OPEN" ? (
+          <button
+            onClick={() => handleCloseCase(row.id)}
+            className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+            title="Close Case"
+          >
+            <CheckCircle size={18} />
+          </button>
+        ) : null
+      )
+    },
+  ];
+
+  const stats = {
+    total: cases.length,
+    open: cases.filter(c => c.status === "OPEN").length,
+    closed: cases.filter(c => c.status === "CLOSED").length,
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard label="Total Cases" value={stats.total.toString()} icon={<BriefcaseMedical size={28} />} progress={100} />
+        <StatCard label="Open Cases" value={stats.open.toString()} icon={<AlertCircle size={28} />} progress={60} />
+        <StatCard label="Closed Cases" value={stats.closed.toString()} icon={<CheckCircle size={28} />} progress={90} />
+      </div>
+
+      {/* Main Content */}
+      <div className="bg-white p-6 rounded-3xl border border-gray-50 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-black">Medical Cases</h2>
+          <Button onClick={() => setShowAddModal(true)} className="bg-black text-white rounded-xl px-6">
+            <Plus size={18} className="mr-2" />
+            Open New Case
+          </Button>
+        </div>
+
+        {/* Cases Table */}
+        <Card className="overflow-hidden border-none shadow-sm rounded-2xl">
+          <CardBody className="p-0">
+            {loading ? (
+              <div className="p-8 text-center text-gray-500">Loading cases...</div>
+            ) : cases.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">No medical cases recorded</div>
+            ) : (
+              <DataTable columns={columns} data={cases} keyField="id" />
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Add Case Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl"
+          >
+            <h3 className="text-2xl font-black mb-6">Open Medical Case</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Student *</label>
+                <select
+                  value={formData.studentId}
+                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black"
+                  required
+                >
+                  <option value="">-- Select student --</option>
+                  {students.map(student => (
+                    <option key={student.id} value={student.id}>
+                      {student.user.firstName} {student.user.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Diagnosis *</label>
+                <input
+                  type="text"
+                  value={formData.diagnosis}
+                  onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="e.g., Chronic Headache"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Symptoms *</label>
+                <textarea
+                  value={formData.symptoms}
+                  onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black"
+                  placeholder="Describe symptoms..."
+                  rows={4}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 py-4 bg-gray-200 text-black text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:bg-gray-300 transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCase}
+                className="flex-1 py-4 bg-black text-white text-[14px] font-black rounded-[18px] uppercase tracking-wider hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10"
+              >
+                Open Case
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </motion.div>
+  );
 }
+

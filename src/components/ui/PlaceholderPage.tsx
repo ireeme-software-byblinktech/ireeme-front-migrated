@@ -34,3 +34,4 @@ export function PlaceholderPage({ title, subtitle, role, description }: Placehol
     </div>
   );
 }
+

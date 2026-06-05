@@ -1,113 +1,68 @@
 import { apiClient } from "./client";
 
 export interface AttendanceRecord {
-    id: string;
-    studentId: string;
-    date: string;
-    status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
-    remarks?: string;
-    student: {
-        studentNumber: string;
-        user: {
-            firstName: string;
-            lastName: string;
-            email: string;
-        };
-    };
+  id: string;
+  studentId: string;
+  status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+  note?: string;
+  date: string;
+  classId?: string;
+  // additional fields as needed, e.g., student info
 }
 
 export interface TeacherAttendanceRecord {
-    id: string;
-    teacherId: string;
-    date: string;
-    status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
-    checkInTime?: string;
-    checkOutTime?: string;
-    remarks?: string;
-    teacher: {
-        employeeNum: string;
-        user: {
-            firstName: string;
-            lastName: string;
-            email: string;
-        };
-    };
+  id: string;
+  teacherId: string;
+  status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+  note?: string;
+  date: string;
+  checkInTime?: string;
+  checkOutTime?: string;
 }
 
-export interface DailySummaryResponse {
-    date: string;
-    classId: string | null;
-    totalStudents: number;
-    present: number;
-    absent: number;
-    late: number;
-    excused: number;
-    attendanceRate: number;
-    records: AttendanceRecord[];
-}
+/**
+ * Fetch attendance records for a specific class on a given date.
+ * Assumes an endpoint `/attendance/class/:classId?date=YYYY-MM-DD` exists.
+ */
+export const getAttendanceByClass = (classId: string, date: string) =>
+  apiClient<AttendanceRecord[]>(`/attendance/class/${classId}?date=${date}`);
 
-export interface TeacherDailySummaryResponse {
-    date: string;
-    totalTeachers: number;
-    present: number;
-    absent: number;
-    late: number;
-    excused: number;
-    attendanceRate: number;
-    records: TeacherAttendanceRecord[];
-}
+/**
+ * Bulk mark attendance for a class on a specific date.
+ * Payload matches the backend MarkBulkAttendanceDto.
+ */
+export const markBulkAttendance = (
+  classId: string,
+  date: string,
+  records: Array<{ studentId: string; status: AttendanceRecord['status']; note?: string }>,
+) =>
+  apiClient<void>("/attendance/mark-bulk", {
+    method: "POST",
+    body: JSON.stringify({ classId, date, records }),
+  });
 
-export interface MarkBulkAttendanceDto {
-    classId: string;
-    date: string;
-    records: {
-        studentId: string;
-        status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
-        remarks?: string;
-    }[];
-}
-
-export interface MarkBulkTeacherAttendanceDto {
-    date: string;
-    records: {
-        teacherId: string;
-        status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
-        note?: string;
-        checkInTime?: string;
-        checkOutTime?: string;
-    }[];
-}
-
+// API object for use with React Query
 export const attendanceApi = {
-    markBulk: (data: MarkBulkAttendanceDto) =>
-        apiClient("/api/v1/attendance/mark-bulk", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
-
-    markTeacherBulk: (data: MarkBulkTeacherAttendanceDto) =>
-        apiClient("/api/v1/attendance/mark-teacher-bulk", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
-
-    getStudentAttendance: (studentId: string, params?: { page?: number; limit?: number }) =>
-        apiClient<{ data: AttendanceRecord[]; total: number; page: number; limit: number }>(
-            `/api/v1/attendance/student/${studentId}?${new URLSearchParams(params as any).toString()}`
-        ),
-
-    getDailySummary: (classId: string | undefined, date: string) => {
-        const params = new URLSearchParams({ date });
-        if (classId) {
-            params.append('classId', classId);
-        }
-        return apiClient<DailySummaryResponse>(
-            `/api/v1/attendance/daily-summary?${params.toString()}`
-        );
-    },
-
-    getTeacherDailySummary: (date: string) =>
-        apiClient<TeacherDailySummaryResponse>(
-            `/api/v1/attendance/teacher-daily-summary?date=${date}`
-        ),
+  getDailySummary: async (classId?: string, date?: string) =>
+    apiClient<AttendanceRecord[]>(
+      `/attendance/daily${classId ? `?classId=${classId}` : ''}${date ? `&date=${date}` : ''}`
+    ),
+  
+  getTeacherDailySummary: async (date?: string) =>
+    apiClient<TeacherAttendanceRecord[]>(
+      `/attendance/teacher-daily${date ? `?date=${date}` : ''}`
+    ),
+  
+  markBulk: async (data: { classId: string; date: string; records: Array<{ studentId: string; status: string; note?: string }> }) =>
+    apiClient<void>("/attendance/mark-bulk", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  
+  markTeacherBulk: async (data: { date: string; records: Array<{ teacherId: string; status: string; note?: string }> }) =>
+    apiClient<void>("/attendance/mark-teacher-bulk", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
+

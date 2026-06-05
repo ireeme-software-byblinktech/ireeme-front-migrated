@@ -120,3 +120,4 @@ export function SearchInput({ containerClassName, className, ...props }: SearchI
     </div>
   );
 }
+

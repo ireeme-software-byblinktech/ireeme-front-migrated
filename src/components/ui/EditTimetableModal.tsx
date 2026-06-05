@@ -227,3 +227,4 @@ export function EditTimetableModal({ isOpen, onClose, initialData }: EditTimetab
     </div>
   );
 }
+
