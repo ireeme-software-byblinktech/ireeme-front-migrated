@@ -32,7 +32,8 @@ import {
   FolderOpen,
   Heart,
   Trophy,
-  Globe
+  Globe,
+  Bell
 } from "lucide-react";
 
 // ─── TYPES ────────────────────────────────────────────────────
@@ -533,6 +534,14 @@ export function Sidebar({ role, userName = "User", userEmail, avatarUrl, isOpen 
 
       {/* User footer */}
       <div className="sidebar-footer">
+        <Link href={`/${role}/notifications`} className="sidebar-nav-item sidebar-footer-item">
+          <Bell size={20} className="sidebar-nav-icon" />
+          <span className="sidebar-nav-label">Notifications</span>
+        </Link>
+        <Link href={`/${role}/profile`} className="sidebar-nav-item sidebar-footer-item">
+          <User size={20} className="sidebar-nav-icon" />
+          <span className="sidebar-nav-label">Profile</span>
+        </Link>
         <Link href={`/${role}/settings`} className="sidebar-nav-item sidebar-footer-item">
           <Settings size={20} className="sidebar-nav-icon" />
           <span className="sidebar-nav-label">Settings</span>

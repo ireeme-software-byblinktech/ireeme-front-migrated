@@ -4,10 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/FormElements";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Sparkles, Eye, EyeOff, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { API_BASE_URL } from "@/lib/api/client";
-import { toast } from "@/lib/utils/toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,10 +14,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
@@ -26,63 +27,42 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Important: allow cookies to be set
         body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.message || "Invalid email or password";
-        toast.error(errorMessage);
+        setError(errorData.message || "Invalid email or password");
         setLoading(false);
         return;
       }
 
       const data = await response.json();
 
-      // Store both access and refresh tokens in localStorage (as backup)
+      // Store the access token in localStorage
       localStorage.setItem("accessToken", data.accessToken);
-      if (data.refreshToken) {
-        localStorage.setItem("refreshToken", data.refreshToken);
-      }
 
-      // Store user data
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
+      // Decode JWT to get user role
+      const decodedToken = JSON.parse(atob(data.accessToken.split('.')[1]));
+      const userRole = decodedToken.roles?.[0];
+      
+      const roleRoutes: Record<string, string> = {
+        TEACHER: "/teacher",
+        STUDENT: "/student",
+        PARENT: "/parent",
+        SCHOOL_ADMIN: "/admin",
+        SUPER_ADMIN: "/super-admin",
+        NURSE: "/nurse",
+        ACCOUNTANT: "/accountant",
+        LIBRARIAN: "/librarian",
+        DISCIPLINE_OFFICER: "/discipline",
+      };
 
-      toast.success("Login successful! Redirecting...");
-      
-      // Decode JWT to get user roles (JWT format: header.payload.signature)
-      const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
-      const roles = payload.roles || [];
-      
-      // Role-based routing
-      if (roles.includes('NURSE')) {
-        router.push("/nurse");
-      } else if (roles.includes('LIBRARIAN')) {
-        router.push("/librarian");
-      } else if (roles.includes('DISCIPLINE_OFFICER')) {
-        router.push("/discipline");
-      } else if (roles.includes('ACCOUNTANT')) {
-        router.push("/accountant");
-      } else if (roles.includes('TEACHER')) {
-        router.push("/teacher");
-      } else if (roles.includes('STUDENT')) {
-        router.push("/student");
-      } else if (roles.includes('PARENT')) {
-        router.push("/parent");
-      } else if (roles.includes('SCHOOL_ADMIN')) {
-        router.push("/admin");
-      } else if (roles.includes('SUPER_ADMIN')) {
-        router.push("/super-admin");
-      } else {
-        router.push("/admin"); // Default fallback
-      }
+      const redirectPath = roleRoutes[userRole] || "/admin";
+      router.push(redirectPath);
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage = "Unable to connect to server. Please try again.";
-      toast.error(errorMessage);
+      setError("Unable to connect to server. Please try again.");
       setLoading(false);
     }
   };
@@ -129,6 +109,13 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 ml-1">Email or Phone</label>
               <input
@@ -218,7 +205,6 @@ export default function LoginPage() {
             <div className="space-y-1 text-sm text-gray-700">
               <p><span className="font-bold">Admin:</span> admin@gmail.com / admin@123</p>
               <p><span className="font-bold">Teacher:</span> john.smith@blinkacademy.com / Password123!</p>
-              <p><span className="font-bold">Librarian:</span> librarian@rca8800.com / Password123!</p>
               <p><span className="font-bold">Student:</span> alice.williams@student.com / Password123!</p>
             </div>
           </div>

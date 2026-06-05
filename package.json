@@ -18,20 +18,13 @@
     "@tanstack/react-query": "^5.28.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
-    "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
+    "jodit-react": "^5.3.21",
     "lucide-react": "^0.363.0",
     "next": "^16.2.2",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.51.0",
-    "react-hot-toast": "^2.6.0",
     "react-international-phone": "^4.8.0",
-<<<<<<< HEAD
-    "socket.io-client": "^4.8.3",
-=======
-    "recharts": "^3.8.1",
->>>>>>> a0a2acf46a584eaf8758c7aef42b49373441bbcb
     "tailwind-merge": "^3.5.0",
     "zod": "^3.22.4"
   },

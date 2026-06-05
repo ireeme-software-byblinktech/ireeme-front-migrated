@@ -1,119 +1,55 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-// Get auth token from storage
+// Get auth token from storage (your colleague will implement this)
 const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token") || localStorage.getItem("accessToken");
+  return localStorage.getItem("accessToken");
 };
-
-// Get refresh token from storage
-const getRefreshToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("refreshToken");
-};
-
-// Set tokens in storage
-const setTokens = (accessToken: string, refreshToken?: string) => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("accessToken", accessToken);
-  if (refreshToken) {
-    localStorage.setItem("refreshToken", refreshToken);
-  }
-};
-
-// Clear tokens from storage
-const clearTokens = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-};
-
-// Refresh access token
-async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = getRefreshToken();
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // Important: send cookies
-      body: JSON.stringify({ refreshToken }), // Send as fallback
-    });
-
-    if (!response.ok) {
-      clearTokens();
-      return null;
-    }
-
-    const data = await response.json();
-    setTokens(data.accessToken, data.refreshToken);
-    return data.accessToken;
-  } catch (error) {
-    clearTokens();
-    return null;
-  }
-}
 
 export async function apiClient<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
-  let token = getAuthToken();
-  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const token = getAuthToken();
+  
+  console.log("[API CLIENT] Request:", { endpoint, hasToken: !!token });
 
-  const makeRequest = async (authToken: string | null) => {
-    return fetch(url, {
-      ...options,
-      credentials: "include", // Important: send cookies with every request
-      headers: {
-        "Content-Type": "application/json",
-        ...(authToken && { Authorization: `Bearer ${authToken}` }),
-        ...options?.headers,
-      },
-    });
-  };
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options?.headers,
+    },
+  });
 
-  let response = await makeRequest(token);
+  console.log("[API CLIENT] Response status:", response.status, "for endpoint:", endpoint);
 
-  if (response.status === 401 && !endpoint.includes("/auth/")) {
-    const newToken = await refreshAccessToken();
-    if (newToken) {
-      response = await makeRequest(newToken);
-    } else {
-      if (typeof window !== "undefined") {
-        clearTokens();
-        window.location.href = "/login";
-      }
-      throw new Error("Session expired. Please login again.");
-    }
-  }
-
+  // Handle 401 Unauthorized - redirect to login
   if (response.status === 401) {
     if (typeof window !== "undefined") {
-      clearTokens();
+      localStorage.removeItem("accessToken");
       window.location.href = "/login";
     }
     throw new Error("Session expired. Please login again.");
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const errorMessage = errorData.message || response.statusText || "Unknown Error";
-    throw new Error(errorMessage);
+    const error = await response.json().catch(() => ({ message: response.statusText }));
+    console.error("[API CLIENT] Error response:", error);
+    throw new Error(error.message || `API Error: ${response.statusText}`);
   }
 
   // Handle 204 No Content (e.g., DELETE operations)
   if (response.status === 204 || response.headers.get("content-length") === "0") {
+    console.log("[API CLIENT] No content response for:", endpoint);
     return undefined as T;
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log("[API CLIENT] Response data for", endpoint, ":", data);
+  return data;
 }
-
-// Export token management functions
-export { setTokens, clearTokens };
 
 // Upload file to Cloudinary
 export async function uploadToCloudinary(file: File): Promise<string> {
