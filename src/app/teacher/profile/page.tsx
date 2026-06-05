@@ -42,7 +42,7 @@ export default function TeacherProfilePage() {
     queryKey: ["user-profile"],
     queryFn: async () => {
       console.log('[PROFILE PAGE] Fetching user profile...');
-      const response = await apiClient<UserProfile>("/api/v1/users/profile");
+      const response = await apiClient<UserProfile>("/users/profile");
       console.log('[PROFILE PAGE] User profile response:', response);
       return response;
     },
@@ -54,7 +54,7 @@ export default function TeacherProfilePage() {
     queryKey: ["teacher-details"],
     queryFn: async () => {
       console.log('[PROFILE PAGE] Fetching teacher details...');
-      const response = await apiClient<TeacherDetails>("/api/v1/teachers/details");
+      const response = await apiClient<TeacherDetails>("/teachers/details");
       console.log('[PROFILE PAGE] Teacher details response:', response);
       return response;
     },
@@ -77,7 +77,7 @@ export default function TeacherProfilePage() {
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { firstName: string; lastName: string; phoneNumber?: string }) => {
       console.log('[UPDATE PROFILE] Sending update request with:', data);
-      const response = await apiClient<UserProfile>("/api/v1/users/profile", {
+      const response = await apiClient<UserProfile>("/users/profile", {
         method: "PATCH",
         body: JSON.stringify(data),
       });
@@ -404,3 +404,4 @@ export default function TeacherProfilePage() {
     </div>
   );
 }
+

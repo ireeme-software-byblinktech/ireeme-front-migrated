@@ -220,3 +220,4 @@ export function EditStudentModal({ isOpen, onClose, student }: EditStudentModalP
     </div>
   );
 }
+

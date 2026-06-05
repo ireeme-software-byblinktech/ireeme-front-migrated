@@ -6,3 +6,4 @@ export interface Transaction {
   status: "pending" | "completed";
   date: string;
 }
+

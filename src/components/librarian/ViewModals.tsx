@@ -295,3 +295,4 @@ export function ViewMemberModal({ isOpen, onClose, member, activeLoanCount = 0 }
     </div>
   );
 }
+

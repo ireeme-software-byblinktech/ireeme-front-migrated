@@ -86,7 +86,7 @@ export default function TeacherAssignmentsPage() {
   const { data: assignmentsData, isLoading } = useQuery({
     queryKey: ["assignments"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/assignments");
+      const response = await apiClient("/assignments");
       return response as any[];
     },
     staleTime: 1000 * 60 * 5,
@@ -96,7 +96,7 @@ export default function TeacherAssignmentsPage() {
   const { data: classesData, isLoading: isLoadingClasses } = useQuery({
     queryKey: ["teacher-classes"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/classes/assigned");
+      const response = await apiClient("/teachers/classes/assigned");
       return response as { classes: Array<{ id: string; name: string }> };
     },
     staleTime: 1000 * 60 * 5,
@@ -106,7 +106,7 @@ export default function TeacherAssignmentsPage() {
   const { data: subjectsData, isLoading: isLoadingSubjects } = useQuery({
     queryKey: ["teacher-subjects"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/subjects/taught");
+      const response = await apiClient("/teachers/subjects/taught");
       return response as { subjects: Array<{ id: string; name: string; code: string }> };
     },
     staleTime: 1000 * 60 * 5,
@@ -118,7 +118,7 @@ export default function TeacherAssignmentsPage() {
 
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (assignmentId: string) => {
-      await apiClient(`/api/v1/assignments/${assignmentId}`, {
+      await apiClient(`/assignments/${assignmentId}`, {
         method: "DELETE",
       });
     },
@@ -137,7 +137,7 @@ export default function TeacherAssignmentsPage() {
 
   const createAssignmentMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiClient("/api/v1/assignments", {
+      const response = await apiClient("/assignments", {
         method: "POST",
         body: JSON.stringify(data),
       });
@@ -158,7 +158,7 @@ export default function TeacherAssignmentsPage() {
 
   const updateAssignmentMutation = useMutation({
     mutationFn: async (data: { id: string; payload: any }) => {
-      await apiClient(`/api/v1/assignments/${data.id}`, {
+      await apiClient(`/assignments/${data.id}`, {
         method: "PATCH",
         body: JSON.stringify(data.payload),
       });
@@ -301,20 +301,20 @@ export default function TeacherAssignmentsPage() {
 
   return (
     <div className="pb-10">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-black mb-1">Assignments</h1>
-          <p className="text-[#64748B] text-base">Create and manage assignments across all classes</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-black mb-1">Assignments</h1>
+          <p className="text-[#64748B] text-sm sm:text-base">Create and manage assignments across all classes</p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-black text-white px-6 py-4 rounded-lg font-semibold text-md hover:opacity-90 flex items-center gap-2"
+          className="bg-black text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg font-semibold text-sm sm:text-md hover:opacity-90 flex items-center gap-2 w-full sm:w-auto justify-center"
         >
           Create Assignment <Plus size={20} />
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <StatCard
           label="Total Assignments"
           value={stats.total}
@@ -356,7 +356,7 @@ export default function TeacherAssignmentsPage() {
           <p className="text-gray-500">Create your first assignment to get started</p>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {assignments.map((assignment: any) => (
             <AssignmentCard
               key={assignment.id}
@@ -408,8 +408,8 @@ export default function TeacherAssignmentsPage() {
       )}
 
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-end z-50 p-4">
-          <div className="bg-white rounded-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto mr-20">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-6">
+          <div className="bg-white rounded-lg p-6 sm:p-8 w-full max-w-2xl sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-2">Create Assignment</h2>
             <p className="text-gray-600 mb-6">Create a new assignment with questions or an external link</p>
             
@@ -503,7 +503,7 @@ export default function TeacherAssignmentsPage() {
                 {formErrors.classId && <p className="text-red-600 text-xs mt-1">{formErrors.classId}</p>}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-2">Type</label>
                   <select
@@ -1055,3 +1055,4 @@ export default function TeacherAssignmentsPage() {
     </div>
   );
 }
+

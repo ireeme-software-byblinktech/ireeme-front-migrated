@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, PanelLeft, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Avatar } from "@/components/ui/Shared";
 import Link from "next/link";
 import { useState } from "react";
@@ -13,7 +13,6 @@ interface TopbarProps {
   userEmail?: string;
   avatarUrl?: string;
   notificationCount?: number;
-  onToggleSidebar?: () => void;
 }
 
 
@@ -23,7 +22,6 @@ export function Topbar({
   userName = "User",
   avatarUrl,
   notificationCount = 0,
-  onToggleSidebar,
 }: TopbarProps) {
   const [search, setSearch] = useState("");
 
@@ -46,15 +44,6 @@ export function Topbar({
     <header className={`app-topbar-modern ${role === "accountant" ? "accountant-topbar" : ""}`}>
       {/* Left Section */}
       <div className="topbar-left-section">
-        {/* Sidebar Toggle */}
-        <button
-          className="topbar-sidebar-toggle"
-          onClick={onToggleSidebar}
-          aria-label="Toggle sidebar"
-        >
-          <PanelLeft size={20} />
-        </button>
-
         {/* Conditional: Page Title for Accountant or Search for others */}
         {title ? (
           <div>
@@ -104,3 +93,4 @@ export function Topbar({
     </header>
   );
 }
+

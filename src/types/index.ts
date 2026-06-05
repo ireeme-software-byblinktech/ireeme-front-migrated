@@ -7,3 +7,4 @@ export type { HealthRecord } from "@/features/health/types";
 export type { Transaction } from "@/features/finance/types";
 export type { Book, Borrowing } from "@/features/library/types";
 export type { Message } from "@/features/messaging/types";
+

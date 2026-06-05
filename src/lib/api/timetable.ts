@@ -31,25 +31,26 @@ export interface CreateSlotDto {
 
 export const timetableApi = {
     getByClass: (classId: string) =>
-        apiClient<TimetableSlot[]>(`/api/v1/timetable/class/${classId}`),
+        apiClient<TimetableSlot[]>(`/timetable/class/${classId}`),
 
     getByTeacher: (teacherId: string) =>
-        apiClient<TimetableSlot[]>(`/api/v1/timetable/teacher/${teacherId}`),
+        apiClient<TimetableSlot[]>(`/timetable/teacher/${teacherId}`),
 
     getByStudent: (studentId: string) =>
-        apiClient<TimetableSlot[]>(`/api/v1/timetable/student/${studentId}`),
+        apiClient<TimetableSlot[]>(`/timetable/student/${studentId}`),
 
     getMine: () =>
-        apiClient<TimetableSlot[]>("/api/v1/timetable/mine"),
+        apiClient<TimetableSlot[]>("/timetable/mine"),
 
     createSlot: (data: CreateSlotDto) =>
-        apiClient<TimetableSlot>("/api/v1/timetable", {
+        apiClient<TimetableSlot>("/timetable", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     deleteSlot: (id: string) =>
-        apiClient<void>(`/api/v1/timetable/${id}`, {
+        apiClient<void>(`/timetable/${id}`, {
             method: "DELETE",
         }),
 };
+

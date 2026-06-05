@@ -40,7 +40,7 @@ export const filesApi = {
     console.log("Uploading file:", file.name, "Size:", file.size, "Type:", file.type);
     console.log("Auth token present:", !!token);
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
+    const response = await fetch(`${API_BASE_URL}/files/upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ export const filesApi = {
     // URL encode the key to handle slashes in the path
     const encodedKey = encodeURIComponent(key);
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/files/${encodedKey}/url`, {
+    const response = await fetch(`${API_BASE_URL}/files/${encodedKey}/url`, {
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
@@ -79,3 +79,4 @@ export const filesApi = {
     return response.json();
   },
 };
+

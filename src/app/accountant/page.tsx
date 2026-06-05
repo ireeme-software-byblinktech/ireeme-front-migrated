@@ -278,9 +278,8 @@ export default function AccountantDashboard() {
 
       {/* Payment Chart */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between w-full">
-            <h2 className="text-lg font-semibold text-gray-900">Payment per month</h2>
+        <CardHeader title="Payment per month">
+          <div className="flex items-center justify-end w-full">
             <Select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
@@ -398,9 +397,7 @@ export default function AccountantDashboard() {
 
       {/* Paid Students Table */}
       <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Paid Students</h2>
-        </CardHeader>
+        <CardHeader title="Paid Students"></CardHeader>
         <CardBody>
           {/* Table */}
           <div className="mb-6">
@@ -452,3 +449,4 @@ export default function AccountantDashboard() {
     </div>
   );
 }
+

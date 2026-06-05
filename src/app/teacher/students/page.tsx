@@ -56,7 +56,7 @@ export default function TeacherStudentsPage() {
   const { data: studentsData, isLoading } = useQuery<StudentsResponse>({
     queryKey: ["teachers", "students"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/students");
+      const response = await apiClient("/teachers/students");
       return response as StudentsResponse;
     },
     staleTime: 1000 * 60 * 5,
@@ -211,17 +211,17 @@ export default function TeacherStudentsPage() {
   return (
     <div className="pb-10 relative">
       <div className="mb-8">
-        <h1 className="text-[28px] font-bold mb-2">My Students</h1>
-        <p className="text-gray-500 font-medium text-[15px]">Monitor student performance across all your classes and subjects</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-[28px] font-bold mb-2">My Students</h1>
+        <p className="text-gray-500 font-medium text-sm sm:text-base">Monitor student performance across all your classes and subjects</p>
       </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center bg-white border-[1.5px] border-gray-200 rounded-lg px-4 py-2.5 w-[350px]">
-          <Search size={18} className="text-gray-400 mr-2" />
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 items-stretch sm:items-center sm:justify-between">
+        <div className="flex items-center bg-white border-[1.5px] border-gray-200 rounded-lg px-3 sm:px-4 py-2.5 flex-1 sm:w-[350px]">
+          <Search size={18} className="text-gray-400 mr-2 flex-shrink-0" />
           <input 
             type="text" 
             placeholder="Search students..."
-            className="w-full bg-transparent outline-none text-[14px] text-gray-700"
+            className="w-full bg-transparent outline-none text-sm sm:text-[14px] text-gray-700"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -229,41 +229,41 @@ export default function TeacherStudentsPage() {
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-[14px] font-bold transition-colors ${
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg text-xs sm:text-[14px] font-bold transition-colors whitespace-nowrap ${
               showFilters || activeFilterCount > 0
                 ? "bg-black text-white"
                 : "bg-white border-[1.5px] border-gray-200 text-gray-700 hover:border-gray-300"
             }`}
           >
             <Filter size={16} />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
             {activeFilterCount > 0 && (
               <span className="ml-1 bg-white text-black px-2 py-0.5 rounded-full text-xs font-bold">
                 {activeFilterCount}
               </span>
             )}
           </button>
-          <button className="bg-black text-white px-6 rounded-lg text-[14px] font-bold flex items-center gap-2 hover:opacity-90 transition-opacity h-11">
-            <Download size={16} /> Export
+          <button className="bg-black text-white px-3 sm:px-6 py-2.5 rounded-lg text-xs sm:text-[14px] font-bold flex items-center gap-2 hover:opacity-90 transition-opacity whitespace-nowrap">
+            <Download size={16} /> <span className="hidden sm:inline">Export</span>
           </button>
         </div>
       </div>
 
       {showFilters && (
-        <div className="bg-white border-[1.5px] border-gray-200 rounded-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-[16px] text-black">Filters</h3>
+        <div className="bg-white border-[1.5px] border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0 mb-4">
+            <h3 className="font-bold text-base sm:text-[16px] text-black">Filters</h3>
             {activeFilterCount > 0 && (
               <button 
                 onClick={clearAllFilters}
-                className="text-[13px] font-bold text-gray-600 hover:text-black transition-colors flex items-center gap-1"
+                className="text-xs sm:text-[13px] font-bold text-gray-600 hover:text-black transition-colors flex items-center gap-1 justify-start sm:justify-end"
               >
                 <X size={14} /> Clear All
               </button>
             )}
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div>
               <label className="block text-[13px] font-bold text-gray-700 mb-3">Grade Level</label>
               <div className="space-y-2">
@@ -297,7 +297,7 @@ export default function TeacherStudentsPage() {
                       onChange={() => handleFilterChange("performanceLevel", option.value)}
                       className="w-4 h-4 rounded border-gray-300"
                     />
-                    <span className="text-[13px] text-gray-600">{option.label}</span>
+                    <span className="text-xs sm:text-[13px] text-gray-600">{option.label}</span>
                   </label>
                 ))}
               </div>
@@ -349,25 +349,25 @@ export default function TeacherStudentsPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6">
-        <span className="text-[14px] text-gray-500 font-medium">Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, sortedStudents.length)} of {sortedStudents.length} students</span>
-        <div className="flex items-center bg-[#F3F4F6] rounded-full p-1 border border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-6">
+        <span className="text-xs sm:text-[14px] text-gray-500 font-medium">Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, sortedStudents.length)} of {sortedStudents.length} students</span>
+        <div className="flex items-center bg-[#F3F4F6] rounded-full p-1 border border-gray-200 w-fit">
           <button 
             onClick={() => setViewMode("Grid")}
-            className={`px-5 py-1.5 rounded-full text-[13px] font-bold shadow-sm transition-colors ${viewMode === "Grid" ? "bg-black text-white" : "text-gray-500 hover:text-black"}`}
+            className={`px-4 sm:px-5 py-1 sm:py-1.5 rounded-full text-xs sm:text-[13px] font-bold shadow-sm transition-colors ${viewMode === "Grid" ? "bg-black text-white" : "text-gray-500 hover:text-black"}`}
           >
             Grid
           </button>
           <button 
             onClick={() => setViewMode("Table")}
-            className={`px-5 py-1.5 rounded-full text-[13px] font-bold shadow-sm transition-colors ${viewMode === "Table" ? "bg-black text-white" : "text-gray-500 hover:text-black"}`}
+            className={`px-4 sm:px-5 py-1 sm:py-1.5 rounded-full text-xs sm:text-[13px] font-bold shadow-sm transition-colors ${viewMode === "Table" ? "bg-black text-white" : "text-gray-500 hover:text-black"}`}
           >
             Table
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-10 text-[#374151]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 text-[#374151]">
         <StatCard
           label="Total Students"
           value={String(students.length)}
@@ -401,7 +401,7 @@ export default function TeacherStudentsPage() {
       {viewMode === "Grid" ? (
         <>
           {paginatedStudents.length > 0 ? (
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {paginatedStudents.map(student => (
                 <div key={student.id} className="bg-white border-[1.5px] border-gray-200 rounded-2xl p-6 flex flex-col hover:shadow-sm transition-shadow">
                   <div className="flex items-start justify-between mb-6">
@@ -764,3 +764,4 @@ export default function TeacherStudentsPage() {
     </div>
   );
 }
+

@@ -168,3 +168,4 @@ export default function AlumniEventsPage() {
     </div>
   );
 }
+

@@ -61,3 +61,4 @@ export const AssignmentPagination: React.FC<AssignmentPaginationProps> = ({
     </div>
   );
 };
+

@@ -1247,3 +1247,4 @@ export function AddPermissionModal({ open, onClose, onConfirm, students, formDat
     </Modal>
   );
 }
+

@@ -71,3 +71,4 @@ export function AddPositionModal({ isOpen, onClose, onAdd }: AddPositionModalPro
         </div>
     );
 }
+

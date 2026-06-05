@@ -231,3 +231,4 @@ export function EditTeacherModal({ isOpen, onClose, teacher }: EditTeacherModalP
     </div>
   );
 }
+

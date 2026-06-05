@@ -353,3 +353,4 @@ export default function HomePermissionsPage() {
         </motion.div>
     );
 }
+

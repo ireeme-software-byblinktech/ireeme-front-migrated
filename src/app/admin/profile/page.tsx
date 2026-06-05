@@ -102,3 +102,4 @@ export default function AdminProfilePage() {
         </div>
     );
 }
+

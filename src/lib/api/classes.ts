@@ -15,5 +15,6 @@ export interface ClassesResponse {
 }
 
 export const classesApi = {
-    getClasses: () => apiClient<Class[]>("/api/v1/classes"),
+    getClasses: () => apiClient<Class[]>("/classes"),
 };
+

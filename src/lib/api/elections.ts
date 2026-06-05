@@ -62,41 +62,41 @@ export interface CastVoteDto {
 
 export const electionsApi = {
     getElections: () =>
-        apiClient<Election[]>("/api/v1/elections"),
+        apiClient<Election[]>("/elections"),
 
     getElection: (id: string) =>
-        apiClient<Election>(`/api/v1/elections/${id}`),
+        apiClient<Election>(`/elections/${id}`),
 
     createElection: (data: CreateElectionDto) =>
-        apiClient<Election>("/api/v1/elections", {
+        apiClient<Election>("/elections", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     addPosition: (electionId: string, data: { name: string; minVotes?: number; maxVotes?: number }) =>
-        apiClient<Position>(`/api/v1/elections/${electionId}/positions`, {
+        apiClient<Position>(`/elections/${electionId}/positions`, {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     addCandidate: (data: AddCandidateDto) =>
-        apiClient<Candidate>("/api/v1/elections/candidates", {
+        apiClient<Candidate>("/elections/candidates", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     openVoting: (electionId: string) =>
-        apiClient<Election>(`/api/v1/elections/${electionId}/open`, {
+        apiClient<Election>(`/elections/${electionId}/open`, {
             method: "POST",
         }),
 
     closeVoting: (electionId: string) =>
-        apiClient<Election>(`/api/v1/elections/${electionId}/close`, {
+        apiClient<Election>(`/elections/${electionId}/close`, {
             method: "POST",
         }),
 
     castVote: (data: CastVoteDto) =>
-        apiClient<{ success: boolean; message: string }>("/api/v1/elections/vote", {
+        apiClient<{ success: boolean; message: string }>("/elections/vote", {
             method: "POST",
             body: JSON.stringify(data),
         }),
@@ -115,15 +115,15 @@ export const electionsApi = {
                     percentage: number;
                 }>;
             }>;
-        }>(`/api/v1/elections/${electionId}/results`),
+        }>(`/elections/${electionId}/results`),
 
     publishResults: (electionId: string) =>
-        apiClient<Election>(`/api/v1/elections/${electionId}/publish-results`, {
+        apiClient<Election>(`/elections/${electionId}/publish-results`, {
             method: "POST",
         }),
 
     unpublishResults: (electionId: string) =>
-        apiClient<Election>(`/api/v1/elections/${electionId}/unpublish-results`, {
+        apiClient<Election>(`/elections/${electionId}/unpublish-results`, {
             method: "POST",
         }),
 
@@ -132,9 +132,10 @@ export const electionsApi = {
             hasVoted: boolean;
             votedPositions: number;
             totalPositions: number;
-        }>(`/api/v1/elections/${electionId}/voting-status`),
+        }>(`/elections/${electionId}/voting-status`),
 
     // Remote fallback methods mapping for compatibility
-    getAll: () => apiClient<Election[]>("/api/v1/elections"),
-    getById: (id: string) => apiClient<Election>(`/api/v1/elections/${id}`),
+    getAll: () => apiClient<Election[]>("/elections"),
+    getById: (id: string) => apiClient<Election>(`/elections/${id}`),
 };
+

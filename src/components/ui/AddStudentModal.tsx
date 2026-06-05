@@ -258,3 +258,4 @@ export function AddStudentModal({ isOpen, onClose }: AddStudentModalProps) {
     </div>
   );
 }
+

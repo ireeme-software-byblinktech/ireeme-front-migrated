@@ -27,3 +27,4 @@ export const updateTeacherSchema = z.object({
 
 export type CreateTeacherInput = z.infer<typeof createTeacherSchema>;
 export type UpdateTeacherInput = z.infer<typeof updateTeacherSchema>;
+

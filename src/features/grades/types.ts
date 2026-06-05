@@ -5,3 +5,4 @@ export interface Grade {
   maxScore: number;
   term: string;
 }
+

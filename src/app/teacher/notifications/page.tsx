@@ -64,7 +64,7 @@ export default function TeacherNotificationsPage() {
   // Fetch notifications
   const { data: response, isLoading, error } = useQuery({
     queryKey: ["notifications", page],
-    queryFn: () => apiClient<NotificationsResponse>(`/api/v1/notifications?page=${page}&limit=20`),
+    queryFn: () => apiClient<NotificationsResponse>(`/notifications?page=${page}&limit=20`),
     enabled: !!user,
   });
 
@@ -78,7 +78,7 @@ export default function TeacherNotificationsPage() {
   // Mark all as read mutation
   const markAllReadMutation = useMutation({
     mutationFn: () =>
-      apiClient("/api/v1/notifications/read-all", {
+      apiClient("/notifications/read-all", {
         method: "PATCH",
       }),
     onSuccess: () => {
@@ -89,7 +89,7 @@ export default function TeacherNotificationsPage() {
   // Mark one as read mutation
   const markOneReadMutation = useMutation({
     mutationFn: (notificationId: string) =>
-      apiClient(`/api/v1/notifications/${notificationId}/read`, {
+      apiClient(`/notifications/${notificationId}/read`, {
         method: "PATCH",
       }),
     onSuccess: () => {
@@ -279,3 +279,4 @@ export default function TeacherNotificationsPage() {
     </div>
   );
 }
+

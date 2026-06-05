@@ -1,4 +1,4 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
 
 // Get auth token from storage (your colleague will implement this)
 const getAuthToken = (): string | null => {
@@ -35,9 +35,23 @@ export async function apiClient<T>(
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
-    console.error("[API CLIENT] Error response:", error);
-    throw new Error(error.message || `API Error: ${response.statusText}`);
+    let error: any;
+    try {
+      const text = await response.text();
+      error = text ? JSON.parse(text) : {};
+    } catch (e) {
+      error = {};
+    }
+    
+    const errorMessage = error?.message || error?.error || response.statusText;
+    console.error("[API CLIENT] Error response:", { 
+      status: response.status, 
+      endpoint,
+      error,
+      errorMessage 
+    });
+    
+    throw new Error(errorMessage || `API Error: ${response.status}`);
   }
 
   // Handle 204 No Content (e.g., DELETE operations)
@@ -79,3 +93,4 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   const data = await response.json();
   return data.secure_url;
 }
+

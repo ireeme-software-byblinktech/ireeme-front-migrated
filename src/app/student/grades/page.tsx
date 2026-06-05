@@ -329,3 +329,4 @@ function EditGradeModal({ isOpen, onClose, grade }: { isOpen: boolean; onClose: 
     </div>
   );
 }
+

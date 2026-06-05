@@ -32,3 +32,4 @@ export const timetablesApi = {
 
     delete: (id: string) => apiClient(`/timetable/${id}`, { method: "DELETE" }),
 };
+

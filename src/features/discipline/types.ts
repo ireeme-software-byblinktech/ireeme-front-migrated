@@ -6,3 +6,4 @@ export interface DisciplineCase {
   status: "open" | "resolved";
   date: string;
 }
+

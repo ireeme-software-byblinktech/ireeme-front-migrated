@@ -41,7 +41,7 @@ export default function TeacherSchedulePage() {
     queryKey: ["school-settings"],
     queryFn: async () => {
       try {
-        const response = await apiClient<SchoolSettings>("/api/v1/school-settings");
+        const response = await apiClient<SchoolSettings>("/school-settings");
         return response;
       } catch (error) {
         console.error("Error fetching school settings:", error);
@@ -56,7 +56,7 @@ export default function TeacherSchedulePage() {
     queryFn: async () => {
       try {
         const response = await apiClient<{ slots: TimetableSlot[] }>(
-          "/api/v1/teachers/timetable-slots"
+          "/teachers/timetable-slots"
         );
         return response;
       } catch (error) {
@@ -103,14 +103,26 @@ export default function TeacherSchedulePage() {
     return teacherClasses.find(cls => cls.id === selectedClassId)?.name || "";
   }, [teacherClasses, selectedClassId]);
 
-  // Build time ranges from time slots
+  // Build time ranges from settings
   const timeRanges = useMemo(() => {
-    if (!settings || settings.timeSlots.length === 0) return [];
+    if (!settings) return [];
+    
+    // If no break/lunch times configured, generate default time slots
+    const breakTime = settings.breakTime || "10:00";
+    const lunchTime = settings.lunchTime || "12:00";
+    const periodDuration = settings.periodDuration || 45;
+    
+    // Generate time slots from 8:00 AM to 4:00 PM
+    const timeSlots: string[] = [];
+    for (let hour = 8; hour < 16; hour++) {
+      timeSlots.push(`${String(hour).padStart(2, '0')}:00`);
+      timeSlots.push(`${String(hour).padStart(2, '0')}:${periodDuration}`);
+    }
     
     const ranges = [];
-    for (let i = 0; i < settings.timeSlots.length - 1; i++) {
-      const startTime = settings.timeSlots[i];
-      const endTime = settings.timeSlots[i + 1];
+    for (let i = 0; i < timeSlots.length - 1; i++) {
+      const startTime = timeSlots[i];
+      const endTime = timeSlots[i + 1];
       ranges.push({
         startTime,
         endTime,
@@ -228,21 +240,21 @@ export default function TeacherSchedulePage() {
   return (
     <div className="pb-6">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-black mb-0">Timetable</h1>
-          <p className="text-gray-500 text-xs">Your weekly class schedule</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-2xl font-bold text-black mb-0">Timetable</h1>
+          <p className="text-gray-500 text-xs sm:text-sm">Your weekly class schedule</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={handleExport}
             disabled={isExporting || !selectedClassName || isLoading}
-            className="px-4 py-1 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center sm:justify-start gap-2 whitespace-nowrap order-2 sm:order-1"
           >
             <Download size={16} />
-            {isExporting ? "Exporting..." : "Export"}
+            <span className="hidden sm:inline">Export</span>
           </button>
-          <button className="px-4 py-1 bg-black text-white rounded-lg text-xs font-semibold hover:bg-gray-900 transition-colors">
+          <button className="px-3 sm:px-4 py-2 bg-black text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-gray-900 transition-colors whitespace-nowrap order-1 sm:order-2">
             Reminders
           </button>
         </div>
@@ -250,12 +262,12 @@ export default function TeacherSchedulePage() {
 
       {/* Class Selection */}
       {!isLoading && teacherClasses.length > 0 && (
-        <div className="mb-6 flex items-center gap-3">
-          <label className="text-sm font-semibold text-gray-700">Select Class:</label>
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3">
+          <label className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Select Class:</label>
           <select
             value={selectedClassId}
             onChange={(e) => setSelectedClassId(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium bg-white hover:border-gray-400 focus:border-black focus:outline-none transition-colors"
+            className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium bg-white hover:border-gray-400 focus:border-black focus:outline-none transition-colors flex-1 sm:flex-none"
           >
             <option value="">-- Choose a class --</option>
             {teacherClasses.map((cls) => (
@@ -292,13 +304,13 @@ export default function TeacherSchedulePage() {
       {!isLoading && settings && scheduleGrid && timeRanges.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {/* "Current Week" Label */}
-          <div className="px-3 py-2 border-b border-gray-200 bg-white">
-            <h2 className="text-sm font-semibold text-gray-900">Current Week</h2>
+          <div className="px-3 sm:px-3 py-2 border-b border-gray-200 bg-white">
+            <h2 className="text-xs sm:text-sm font-semibold text-gray-900">Current Week</h2>
           </div>
 
-          {/* Table */}
+          {/* Table - Responsive with horizontal scroll on mobile */}
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse text-xs sm:text-sm">
               {/* Header Row with Time Ranges */}
               <thead>
                 <tr className="bg-black text-white">
@@ -404,3 +416,4 @@ export default function TeacherSchedulePage() {
     </div>
   );
 }
+

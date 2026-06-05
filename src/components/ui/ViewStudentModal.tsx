@@ -69,3 +69,4 @@ export function ViewStudentModal({ isOpen, onClose, student }: ViewStudentModalP
     </div>
   );
 }
+

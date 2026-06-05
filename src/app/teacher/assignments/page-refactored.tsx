@@ -116,7 +116,7 @@ export default function TeacherAssignmentsPage() {
   const { data: assignmentsData, isLoading } = useQuery<AssignmentResponse>({
     queryKey: ["assignments"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/assignments");
+      const response = await apiClient("/assignments");
       return response as AssignmentResponse;
     },
     staleTime: 1000 * 60 * 5,
@@ -127,7 +127,7 @@ export default function TeacherAssignmentsPage() {
   // Create assignment mutation
   const createAssignmentMutation = useMutation({
     mutationFn: async (data: CreateAssignmentInput) => {
-      const response = await apiClient("/api/v1/assignments", {
+      const response = await apiClient("/assignments", {
         method: "POST",
         body: JSON.stringify(data),
       });
@@ -152,7 +152,7 @@ export default function TeacherAssignmentsPage() {
   // Delete assignment mutation
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (assignmentId: string) => {
-      const response = await apiClient(`/api/v1/assignments/${assignmentId}`, {
+      const response = await apiClient(`/assignments/${assignmentId}`, {
         method: "DELETE",
       });
       return response;
@@ -174,7 +174,7 @@ export default function TeacherAssignmentsPage() {
   // Update assignment mutation
   const updateAssignmentMutation = useMutation({
     mutationFn: async (data: { id: string; payload: CreateAssignmentInput }) => {
-      const response = await apiClient(`/api/v1/assignments/${data.id}`, {
+      const response = await apiClient(`/assignments/${data.id}`, {
         method: "PATCH",
         body: JSON.stringify(data.payload),
       });
@@ -745,3 +745,4 @@ export default function TeacherAssignmentsPage() {
     </div>
   );
 }
+

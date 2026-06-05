@@ -80,7 +80,7 @@ export default function TeacherGradesPage() {
   const { isLoading: statsLoading } = useQuery({
     queryKey: ["teacher-dashboard-stats"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/dashboard/stats");
+      const response = await apiClient("/teachers/dashboard/stats");
       return response as any;
     },
     staleTime: 1000 * 60 * 5,
@@ -90,7 +90,7 @@ export default function TeacherGradesPage() {
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
     queryKey: ["teacher-students"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/students");
+      const response = await apiClient("/teachers/students");
       return response as any;
     },
     staleTime: 1000 * 60 * 5,
@@ -100,7 +100,7 @@ export default function TeacherGradesPage() {
   const { data: classesData } = useQuery({
     queryKey: ["teacher-classes"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/students");
+      const response = await apiClient("/teachers/students");
       const students = (response as any)?.students || [];
       
       // Group students by class to get unique classes
@@ -158,10 +158,11 @@ export default function TeacherGradesPage() {
   ).filter(Boolean) as string[];
 
   // Get class names for filter
-  const classNames = (classesData || []).map((cls: any) => cls.name);
+  const classesArray = Array.isArray(classesData) ? classesData : [];
+  const classNames = classesArray.map((cls: any) => cls.name);
 
-  const classes: any[] = (classesData && classesData.length > 0) 
-    ? classesData
+  const classes: any[] = (classesArray && classesArray.length > 0) 
+    ? classesArray
     : [
         { id: 1, name: "Mathematics - Grade 5B", students: 26, average: 87.4 },
         { id: 2, name: "Mathematics - Grade 5A", students: 24, average: 85.2 },
@@ -191,18 +192,18 @@ export default function TeacherGradesPage() {
   return (
     <div className="pb-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-[28px] font-bold mb-2">Grades Management</h1>
-          <p className="text-gray-500 font-medium text-[15px]">Manage and track student grades across all classes</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-[28px] font-bold mb-2">Grades Management</h1>
+          <p className="text-gray-500 font-medium text-sm sm:text-base">Manage and track student grades across all classes</p>
         </div>
-        <button className="bg-black text-white px-8 py-3 rounded-md font-semibold text-[14px] hover:opacity-90 transition-opacity">
+        <button className="bg-black text-white px-4 sm:px-8 py-3 sm:py-3 rounded-md font-semibold text-sm sm:text-[14px] hover:opacity-90 transition-opacity whitespace-nowrap">
           Export All Grades
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8 text-[#374151]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 text-[#374151]">
         <StatCard
           label="Total Students"
           value={totalStudents}
@@ -234,29 +235,31 @@ export default function TeacherGradesPage() {
       </div>
 
       {/* Filter Row */}
-      <div className="flex items-center justify-end gap-4 mb-6">
-        <span className="text-sm font-semibold text-gray-500">Filter By:</span>
-        <FilterDropdown 
-          title="Select Class" 
-          options={classNames.length > 0 ? classNames : ["All Classes", "Year 2A", "Year 2B", "Year 2C", "Year 1A"]}
-          value={selectedClass || undefined}
-          onChange={setSelectedClass}
-        />
-        <FilterDropdown 
-          title="Course" 
-          options={uniqueSubjects.length > 0 ? uniqueSubjects : ["Mathematics", "Physics", "Java", "English", "DSA"]}
-          isBlack={true}
-          value={selectedCourse || undefined}
-          onChange={setSelectedCourse}
-        />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
+        <span className="text-xs sm:text-sm font-semibold text-gray-500">Filter By:</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
+          <FilterDropdown 
+            title="Select Class" 
+            options={classNames.length > 0 ? classNames : ["All Classes", "Year 2A", "Year 2B", "Year 2C", "Year 1A"]}
+            value={selectedClass || undefined}
+            onChange={setSelectedClass}
+          />
+          <FilterDropdown 
+            title="Course" 
+            options={uniqueSubjects.length > 0 ? uniqueSubjects : ["Mathematics", "Physics", "Java", "English", "DSA"]}
+            isBlack={true}
+            value={selectedCourse || undefined}
+            onChange={setSelectedCourse}
+          />
+        </div>
       </div>
 
       {/* Main Grid: Left (Classes + Dist) / Right (Quick Actions) */}
-      <div className="flex gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         
         {/* Left Column (takes up approx 2/3) */}
-        <div className="flex-[2]">
-          <h2 className="text-xl font-bold mb-6">Classes Overview</h2>
+        <div className="lg:col-span-2">
+          <h2 className="text-lg sm:text-xl font-bold mb-6">Classes Overview</h2>
           
           {classes.map((cls: any) => (
             <div key={cls.id} className="class-overview-card">
@@ -289,7 +292,7 @@ export default function TeacherGradesPage() {
             </div>
           ))}
 
-          <h2 className="text-xl font-bold mb-6 mt-12">Grade Distribution</h2>
+          <h2 className="text-lg sm:text-xl font-bold mb-6 mt-8 sm:mt-12">Grade Distribution</h2>
           <div className="bg-[#F9FAFB] rounded-2xl p-6 border-[1.5px] border-gray-200">
             {/* Row A */}
             <div className="mb-6">
@@ -338,8 +341,8 @@ export default function TeacherGradesPage() {
         </div>
 
         {/* Right Column (takes up approx 1/3) */}
-        <div className="flex-1">
-          <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold mb-6">Quick Actions</h2>
           <div className="bg-[#F9FAFB] border-[1.5px] border-gray-200 rounded-2xl p-6">
             <button 
               onClick={() => alert("Grade Pending Work - Navigate to pending assignments")}
@@ -437,3 +440,4 @@ export default function TeacherGradesPage() {
     </div>
   );
 }
+

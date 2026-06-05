@@ -23,7 +23,7 @@ export default function GradebookPage({ params }: { params: { id: string } }) {
   const { data: studentsData, isLoading } = useQuery({
     queryKey: ["teacher-students", className],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/students");
+      const response = await apiClient("/teachers/students");
       const students = (response as any)?.students || [];
       
       // Filter students by class

@@ -79,46 +79,47 @@ export const libraryApi = {
   // Books
   getBooks: (params?: QueryBooksDto) => {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    return apiClient<PaginatedResponse<Book>>(`/api/v1/library/books${queryString}`);
+    return apiClient<PaginatedResponse<Book>>(`/library/books${queryString}`);
   },
 
   getBook: (id: string) =>
-    apiClient<Book>(`/api/v1/library/books/${id}`),
+    apiClient<Book>(`/library/books/${id}`),
 
   createBook: (data: CreateBookDto) =>
-    apiClient<Book>("/api/v1/library/books", {
+    apiClient<Book>("/library/books", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   updateBook: (id: string, data: UpdateBookDto) =>
-    apiClient<Book>(`/api/v1/library/books/${id}`, {
+    apiClient<Book>(`/library/books/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   deleteBook: (id: string) =>
-    apiClient<void>(`/api/v1/library/books/${id}`, {
+    apiClient<void>(`/library/books/${id}`, {
       method: "DELETE",
     }),
 
   // Borrowings
   getBorrowings: (params?: { status?: string; page?: number; limit?: number }) => {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    return apiClient<PaginatedResponse<Borrowing>>(`/api/v1/library/borrowings${queryString}`);
+    return apiClient<PaginatedResponse<Borrowing>>(`/library/borrowings${queryString}`);
   },
 
   createBorrowing: (data: CreateBorrowingDto) =>
-    apiClient<Borrowing>("/api/v1/library/borrowings", {
+    apiClient<Borrowing>("/library/borrowings", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   returnBook: (id: string) =>
-    apiClient<Borrowing>(`/api/v1/library/borrowings/${id}/return`, {
+    apiClient<Borrowing>(`/library/borrowings/${id}/return`, {
       method: "PATCH",
     }),
 
   getStudentBorrowings: (studentId: string) =>
-    apiClient<Borrowing[]>(`/api/v1/library/borrowings/student/${studentId}`),
+    apiClient<Borrowing[]>(`/library/borrowings/student/${studentId}`),
 };
+

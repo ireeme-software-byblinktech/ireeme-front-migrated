@@ -36,7 +36,7 @@ export const GradeSubmissionModal: React.FC<GradeSubmissionModalProps> = ({
         throw new Error(`Score must be between 0 and ${submission.maxScore}`);
       }
 
-      const response = await apiClient("/api/v1/grades/submissions/" + submission.id + "/grade", {
+      const response = await apiClient("/grades/submissions/" + submission.id + "/grade", {
         method: "PATCH",
         body: JSON.stringify({
           score: scoreNum,
@@ -223,3 +223,4 @@ export const GradeSubmissionModal: React.FC<GradeSubmissionModalProps> = ({
     </div>
   );
 };
+

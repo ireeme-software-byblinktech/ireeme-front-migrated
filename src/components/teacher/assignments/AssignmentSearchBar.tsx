@@ -47,3 +47,4 @@ export const AssignmentSearchBar: React.FC<AssignmentSearchBarProps> = ({
     </div>
   );
 };
+

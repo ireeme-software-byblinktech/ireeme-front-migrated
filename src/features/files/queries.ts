@@ -20,3 +20,4 @@ export function useFileUrl(key: string | null) {
     staleTime: 10 * 60 * 1000, // 10 minutes (pre-signed URL expiry is usually 15 min)
   });
 }
+

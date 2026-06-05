@@ -12,5 +12,6 @@ export interface DashboardStats {
 }
 
 export const dashboardApi = {
-    getStats: () => apiClient<DashboardStats>("/api/v1/dashboard/stats"),
+    getStats: () => apiClient<DashboardStats>("/dashboard/stats"),
 };
+

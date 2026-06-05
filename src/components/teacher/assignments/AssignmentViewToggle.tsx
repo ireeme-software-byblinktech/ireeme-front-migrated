@@ -38,3 +38,4 @@ export const AssignmentViewToggle: React.FC<AssignmentViewToggleProps> = ({
     </div>
   );
 };
+

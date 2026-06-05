@@ -92,7 +92,7 @@ export default function TeacherAttendancePage() {
   const { data: studentsData } = useQuery({
     queryKey: ["teachers", "students"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/students");
+      const response = await apiClient("/teachers/students");
       return response as any;
     },
     staleTime: 1000 * 60 * 5,
@@ -120,8 +120,12 @@ export default function TeacherAttendancePage() {
   const { data: attendanceData, isLoading } = useQuery<AttendanceResponse>({
     queryKey: ["attendance", date],
     queryFn: async () => {
-      const response = await apiClient(`/api/v1/attendance/teacher/daily?date=${date}`);
-      return { data: response as AttendanceRecord[] };
+      const response = await apiClient(`/attendance/daily-summary?date=${date}`);
+      // Check if response is already an array or has a data property
+      if (Array.isArray(response)) {
+        return { data: response };
+      }
+      return response as AttendanceResponse;
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -129,7 +133,7 @@ export default function TeacherAttendancePage() {
   // Mutation for updating attendance status
   const updateStatusMutation = useMutation({
     mutationFn: async ({ recordId, status }: { recordId: string; status: string }) => {
-      return await apiClient(`/api/v1/attendance/${recordId}`, {
+      return await apiClient(`/attendance/${recordId}`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });
@@ -172,7 +176,7 @@ export default function TeacherAttendancePage() {
     document.body.removeChild(link);
   };
 
-  const allRecords = attendanceData?.data || [];
+  const allRecords = Array.isArray(attendanceData?.data) ? attendanceData.data : [];
 
   // Filter by selected class
   const records = selectedClass === "all" 
@@ -318,23 +322,23 @@ export default function TeacherAttendancePage() {
   return (
     <div className="pb-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Attendance</h1>
-          <p className="text-gray-500 mt-1">Track and manage student attendance</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-3xl font-semibold text-gray-900">Attendance</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">Track and manage student attendance</p>
         </div>
         <button
           onClick={generateReport}
           disabled={sortedRecords.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center justify-center sm:justify-start gap-2 px-4 sm:px-4 py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap text-sm sm:text-base"
         >
           <Download size={18} />
-          Generate Report
+          <span className="hidden sm:inline">Generate Report</span><span className="sm:hidden">Report</span>
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatCard
           label="Total Students"
           value={stats.total}
@@ -362,8 +366,8 @@ export default function TeacherAttendancePage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
-        <div className="flex items-center gap-4 mb-4">
+      <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6 mb-6">
+        <div className="flex flex-col gap-4 mb-4">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -374,7 +378,7 @@ export default function TeacherAttendancePage() {
                 setCurrentPage(1);
               }}
               placeholder="Search by student name or ID..."
-              className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+              className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none text-sm sm:text-base"
             />
           </div>
           <input
@@ -384,37 +388,41 @@ export default function TeacherAttendancePage() {
               setDate(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none"
+            className="px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-black focus:outline-none text-sm sm:text-base"
           />
         </div>
 
         {/* Filters in Row */}
-        <div className="flex items-center gap-4">
-          <FilterDropdown
-            title="Select Class"
-            options={classes.map((c: any) => ({ label: c.name, value: c.id }))}
-            value={classFilter || undefined}
-            onChange={(value) => {
-              setClassFilter(value);
-              setCurrentPage(1);
-            }}
-          />
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center">
+          <div className="flex-1">
+            <FilterDropdown
+              title="Select Class"
+              options={classes.map((c: any) => ({ label: c.name, value: c.id }))}
+              value={classFilter || undefined}
+              onChange={(value) => {
+                setClassFilter(value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
 
-          <FilterDropdown
-            title="Select Status"
-            options={[
-              { label: "All Statuses", value: "" },
-              { label: "PRESENT", value: "PRESENT" },
-              { label: "ABSENT", value: "ABSENT" },
-              { label: "LATE", value: "LATE" },
-              { label: "EXCUSED", value: "EXCUSED" },
-            ]}
-            value={statusFilter || ""}
-            onChange={(value) => {
-              setStatusFilter(value || null);
-              setCurrentPage(1);
-            }}
-          />
+          <div className="flex-1">
+            <FilterDropdown
+              title="Select Status"
+              options={[
+                { label: "All Statuses", value: "" },
+                { label: "PRESENT", value: "PRESENT" },
+                { label: "ABSENT", value: "ABSENT" },
+                { label: "LATE", value: "LATE" },
+                { label: "EXCUSED", value: "EXCUSED" },
+              ]}
+              value={statusFilter || ""}
+              onChange={(value) => {
+                setStatusFilter(value || null);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
 
           {(statusFilter || classFilter) && (
             <button
@@ -424,7 +432,7 @@ export default function TeacherAttendancePage() {
                 setSearch("");
                 setCurrentPage(1);
               }}
-              className="px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
+              className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200 whitespace-nowrap"
             >
               Clear Filters
             </button>
@@ -495,3 +503,4 @@ export default function TeacherAttendancePage() {
     </div>
   );
 }
+

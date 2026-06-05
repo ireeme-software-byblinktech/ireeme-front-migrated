@@ -50,3 +50,4 @@ export function DeleteStudentModal({ isOpen, onClose, studentName, onDelete, isD
     </div>
   );
 }
+

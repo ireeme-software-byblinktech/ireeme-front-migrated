@@ -182,3 +182,4 @@ export function AddCandidateModal({ isOpen, onClose, onAdd, positionTitle }: Add
         </div>
     );
 }
+

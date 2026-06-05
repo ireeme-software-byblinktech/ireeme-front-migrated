@@ -101,3 +101,4 @@ export type SortDirection = "asc" | "desc";
 export const ASSIGNMENT_TYPES = ["HOMEWORK", "CAT", "EXAM", "PROJECT", "QUIZ"];
 export const ASSIGNMENT_STATUSES = ["Active", "Graded", "Draft"];
 export const SUBMISSION_STATUSES = ["ALL", "Submitted", "Graded", "Not Submitted"];
+

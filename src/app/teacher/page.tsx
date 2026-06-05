@@ -54,53 +54,58 @@ interface CurrentUser {
 
 export default function TeacherDashboard() {
   // Fetch current user
-  const { data: user } = useQuery<CurrentUser>({
+  const { data: user, isError: userError } = useQuery<CurrentUser>({
     queryKey: ["auth", "me"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/auth/me");
+      const response = await apiClient("/auth/me");
       return response as CurrentUser;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
   });
 
   // Fetch dashboard stats
-  const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useQuery<DashboardStats>({
     queryKey: ["dashboard", "stats"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/dashboard/stats");
+      const response = await apiClient("/teachers/dashboard/stats");
       return response as DashboardStats;
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
+    retry: 1,
   });
 
   // Fetch today's schedule
-  const { data: scheduleData, isLoading: scheduleLoading } = useQuery<{ slots: ScheduleItem[] }>({
+  const { data: scheduleData, isLoading: scheduleLoading, isError: scheduleError } = useQuery<{ slots: ScheduleItem[] }>({
     queryKey: ["timetable", "today"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/timetable/today");
+      const response = await apiClient("/timetable/today");
       return response as { slots: ScheduleItem[] };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
   });
 
   // Fetch recent assignments
-  const { data: assignmentsData, isLoading: assignmentsLoading } = useQuery<{ data: Assignment[] }>({
+  const { data: assignmentsData, isLoading: assignmentsLoading, isError: assignmentsError } = useQuery<{ data: Assignment[] }>({
     queryKey: ["assignments", { limit: 3 }],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/assignments?limit=3");
+      const response = await apiClient("/assignments?limit=3");
       return response as { data: Assignment[] };
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
+    retry: 1,
   });
 
   // Fetch class performance
-  const { data: performanceData, isLoading: performanceLoading } = useQuery<{ classes: ClassPerformance[] }>({
+  const { data: performanceData, isLoading: performanceLoading, isError: performanceError } = useQuery<{ classes: ClassPerformance[] }>({
     queryKey: ["teachers", "performance"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/performance");
+      const response = await apiClient("/teachers/performance");
       return response as { classes: ClassPerformance[] };
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
   });
 
   const isLoading = statsLoading || scheduleLoading || assignmentsLoading || performanceLoading;
@@ -108,6 +113,22 @@ export default function TeacherDashboard() {
   const assignments = assignmentsData?.data || [];
   const performance = performanceData?.classes || [];
   const teacherName = user?.firstName || "Teacher";
+
+  // Show error if auth fails
+  if (userError) {
+    return (
+      <div className="pb-10">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <AlertTriangle size={32} className="mx-auto text-red-600 mb-3" />
+          <h2 className="text-lg font-bold text-red-900 mb-2">Authentication Required</h2>
+          <p className="text-red-700 mb-4">Please log in again to continue</p>
+          <Link href="/login" className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -153,13 +174,13 @@ export default function TeacherDashboard() {
     <div className="pb-10">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="text-[32px] font-bold text-black mb-1">Welcome back, {teacherName}</h1>
-        <p className="text-[#64748B] text-base">Here's what's happening with your classes today</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-black mb-1">Welcome back, {teacherName}</h1>
+        <p className="text-[#64748B] text-sm sm:text-base">Here's what's happening with your classes today</p>
       </div>
 
       {/* Stats Grid */}
       {stats ? (
-        <div className="grid grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard
             label="Total Students"
             value={stats.totalStudents.toString()}
@@ -190,7 +211,7 @@ export default function TeacherDashboard() {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white rounded-xl border border-gray-100 p-6">
               <div className="h-4 bg-gray-100 rounded w-24 mb-4"></div>
@@ -242,7 +263,7 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Two Column Layout: Assignments and Performance */}
-      <div className="grid grid-cols-2 gap-8 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
         {/* Recent Assignments */}
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -333,7 +354,7 @@ export default function TeacherDashboard() {
       {/* Quick Actions */}
       <div>
         <h2 className="text-xl font-bold text-black mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link href="/teacher/assignments/create" className="bg-white rounded-xl border border-gray-100 p-6 hover:border-gray-200 transition-colors text-center group">
             <FileText size={24} className="mx-auto text-gray-400 group-hover:text-black transition-colors mb-3" />
             <h3 className="font-bold text-black text-sm mb-1">Create Assignment</h3>
@@ -359,3 +380,4 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+

@@ -61,29 +61,30 @@ export const homePermissionsApi = {
   getAll: (page = 1, limit = 50, status?: HomePermissionStatus) => {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (status) params.append("status", status);
-    return apiClient<{ data: HomePermission[]; meta: any }>(`/api/v1/home-permissions?${params}`);
+    return apiClient<{ data: HomePermission[]; meta: any }>(`/home-permissions?${params}`);
   },
 
   getById: (id: string) =>
-    apiClient<HomePermission>(`/api/v1/home-permissions/${id}`),
+    apiClient<HomePermission>(`/home-permissions/${id}`),
 
   create: (data: CreateHomePermissionDto) =>
-    apiClient<HomePermission>("/api/v1/home-permissions", {
+    apiClient<HomePermission>("/home-permissions", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   update: (id: string, data: UpdateHomePermissionDto) =>
-    apiClient<HomePermission>(`/api/v1/home-permissions/${id}`, {
+    apiClient<HomePermission>(`/home-permissions/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   delete: (id: string) =>
-    apiClient<void>(`/api/v1/home-permissions/${id}`, {
+    apiClient<void>(`/home-permissions/${id}`, {
       method: "DELETE",
     }),
 
   getStats: () =>
-    apiClient<HomePermissionStats>("/api/v1/home-permissions/stats"),
+    apiClient<HomePermissionStats>("/home-permissions/stats"),
 };
+

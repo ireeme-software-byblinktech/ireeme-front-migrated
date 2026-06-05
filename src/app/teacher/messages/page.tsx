@@ -177,14 +177,14 @@ export default function TeacherMessagesPage() {
   // Fetch conversations
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery({
     queryKey: ["teacher-conversations"],
-    queryFn: () => apiClient<Conversation[]>("/api/v1/messages/conversations"),
+    queryFn: () => apiClient<Conversation[]>("/messages/conversations"),
     enabled: !!user,
   });
 
   // Fetch available contacts for teacher
   const { data: contacts = [], isLoading: contactsLoading } = useQuery({
     queryKey: ["teacher-contacts"],
-    queryFn: () => apiClient<User[]>("/api/v1/messages/contacts/teacher"),
+    queryFn: () => apiClient<User[]>("/messages/contacts/teacher"),
     enabled: !!user,
   });
 
@@ -206,7 +206,7 @@ export default function TeacherMessagesPage() {
   // Fetch messages for selected conversation
   const { data: messagesData } = useQuery({
     queryKey: ["conversation-messages", selectedConvId],
-    queryFn: () => apiClient<MessagesResponse>(`/api/v1/messages/messages/${selectedConvId}?page=1&limit=50`),
+    queryFn: () => apiClient<MessagesResponse>(`/messages/messages/${selectedConvId}?page=1&limit=50`),
     enabled: !!selectedConvId,
   });
 
@@ -215,7 +215,7 @@ export default function TeacherMessagesPage() {
   // Start conversation mutation
   const startConvMutation = useMutation({
     mutationFn: (recipientId: string) =>
-      apiClient<Conversation>("/api/v1/messages/conversation/start", {
+      apiClient<Conversation>("/messages/conversation/start", {
         method: "POST",
         body: JSON.stringify({ recipientId }),
       }),
@@ -233,7 +233,7 @@ export default function TeacherMessagesPage() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: (content: string) =>
-      apiClient("/api/v1/messages", {
+      apiClient("/messages", {
         method: "POST",
         body: JSON.stringify({ convId: selectedConvId, content }),
       }),
@@ -270,39 +270,39 @@ export default function TeacherMessagesPage() {
     : null;
 
   return (
-    <div className="flex h-[calc(100vh-100px)] -mt-4 bg-white border border-gray-100 rounded-md overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100vh-100px)] -mt-4 bg-white border border-gray-100 rounded-md overflow-hidden shadow-sm flex-col sm:flex-row">
       {/* Left Sidebar */}
-      <div className="w-[380px] border-r border-gray-100 flex flex-col bg-white">
-        <div className="p-5 space-y-4 border-b border-gray-50">
+      <div className="w-full sm:w-[380px] border-r sm:border-r border-b sm:border-b-0 border-gray-100 flex flex-col bg-white max-h-[40vh] sm:max-h-full">
+        <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 border-b border-gray-50">
           <div className="relative">
             <input
               type="text"
               placeholder={showNewChat ? "Search contacts..." : "Search conversations..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-50 border-none rounded-md outline-none py-2.5 px-4 pr-10 text-sm"
+              className="w-full bg-gray-50 border-none rounded-md outline-none py-2 sm:py-2.5 px-3 sm:px-4 pr-10 text-xs sm:text-sm"
             />
-            <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 flex-shrink-0" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <button
               onClick={() => {
                 setShowNewChat(!showNewChat);
                 setSearchQuery("");
               }}
               className={cn(
-                "flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium transition-all",
+                "flex items-center justify-center gap-2 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap",
                 showNewChat 
                   ? "bg-black text-white" 
                   : "bg-black text-white hover:bg-black/80"
               )}
             >
-              <Plus size={18} strokeWidth={2.5} />
-              New Chat
+              <Plus size={16} strokeWidth={2.5} />
+              <span className="hidden sm:inline">New Chat</span><span className="sm:hidden">New</span>
             </button>
-            <button className="flex items-center justify-center gap-2 py-2.5 bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-100 transition-all">
-              <Archive size={18} />
-              Archive
+            <button className="flex items-center justify-center gap-2 py-2 sm:py-2.5 bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-xs sm:text-sm font-medium hover:bg-gray-100 transition-all whitespace-nowrap">
+              <Archive size={16} />
+              <span className="hidden sm:inline">Archive</span>
             </button>
           </div>
         </div>
@@ -406,24 +406,24 @@ export default function TeacherMessagesPage() {
 
       {/* Chat Area */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col bg-[#F9FBFC]">
+        <div className="flex-1 flex flex-col bg-[#F9FBFC] w-full sm:w-auto">
           {/* Chat Header */}
-          <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
             <div>
-              <h3 className="font-semibold text-gray-900">{getOtherUserName(selectedConversation)}</h3>
-              <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Active</p>
+              <h3 className="font-semibold text-sm sm:text-base text-gray-900">{getOtherUserName(selectedConversation)}</h3>
+              <p className="text-[10px] sm:text-[11px] font-medium text-gray-400 uppercase tracking-wider">Active</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {[Phone, Video, Star, MoreVertical].map((Icon, i) => (
-                <button key={i} className="p-2.5 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all">
-                  <Icon size={20} strokeWidth={1.5} />
+                <button key={i} className="p-1.5 sm:p-2.5 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-all">
+                  <Icon size={18} strokeWidth={1.5} />
                 </button>
               ))}
             </div>
           </div>
 
           {/* Messages List */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-white flex flex-col">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 no-scrollbar bg-white flex flex-col">
             {messages.length === 0 ? (
               <div className="flex-1 flex items-center justify-center text-gray-400">
                 <p className="text-center">No messages yet. Start the conversation!</p>
@@ -488,37 +488,37 @@ export default function TeacherMessagesPage() {
           </div>
 
           {/* Message Input */}
-          <div className="relative p-6 bg-white border-t border-gray-100 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
+          <div className="relative p-4 sm:p-6 bg-white border-t border-gray-100 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
             {/* Emoji Picker */}
             {showEmojiPicker && (
-              <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-80">
+              <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2 sm:p-3 w-64 sm:w-80">
                 {/* Search Input */}
-                <div className="mb-3 pb-3 border-b border-gray-100">
+                <div className="mb-2 sm:mb-3 pb-2 sm:pb-3 border-b border-gray-100">
                   <input
                     type="text"
                     placeholder="Search emojis..."
                     value={emojiSearch}
                     onChange={(e) => setEmojiSearch(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-50 border border-gray-200 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
 
                 {/* Emoji Grid */}
-                <div className="grid grid-cols-8 gap-2 max-h-64 overflow-y-auto">
+                <div className="grid grid-cols-6 sm:grid-cols-8 gap-1 sm:gap-2 max-h-64 overflow-y-auto">
                   {filteredEmojis.length > 0 ? (
                     filteredEmojis.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleEmojiClick(item.emoji)}
-                        className="text-2xl hover:bg-gray-100 rounded p-1 transition-colors cursor-pointer"
+                        className="text-lg sm:text-2xl hover:bg-gray-100 rounded p-0.5 sm:p-1 transition-colors cursor-pointer"
                         title={item.category}
                       >
                         {item.emoji}
                       </button>
                     ))
                   ) : (
-                    <div className="col-span-8 text-center text-gray-400 text-sm py-4">
+                    <div className="col-span-6 sm:col-span-8 text-center text-gray-400 text-xs sm:text-sm py-4">
                       No emojis found
                     </div>
                   )}
@@ -526,7 +526,7 @@ export default function TeacherMessagesPage() {
               </div>
             )}
 
-            <div className="max-w-4xl mx-auto flex items-center gap-3">
+            <div className="max-w-4xl mx-auto flex items-center gap-2 sm:gap-3">
               {/* Emoji Picker Button */}
               <button
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -573,3 +573,4 @@ export default function TeacherMessagesPage() {
     </div>
   );
 }
+

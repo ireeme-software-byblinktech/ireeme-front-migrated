@@ -55,15 +55,16 @@ export interface StudentDashboard {
 export const useStudentProfile = () => {
     return useQuery<StudentProfile, Error>({
         queryKey: ['student-profile', 'me'],
-        queryFn: () => apiClient<StudentProfile>('/api/v1/students/me/profile'),
+        queryFn: () => apiClient<StudentProfile>('/students/me/profile'),
     });
 };
 
 export const useStudentDashboard = (studentId: string | undefined) => {
     return useQuery<StudentDashboard, Error>({
         queryKey: ['student-dashboard', studentId],
-        queryFn: () => apiClient<StudentDashboard>(`/api/v1/students/${studentId}/dashboard`),
+        queryFn: () => apiClient<StudentDashboard>(`/students/${studentId}/dashboard`),
         enabled: !!studentId, // Only fetch if we have a studentId
         staleTime: 5 * 60 * 1000, // Dashboard is cached in backend for 5 min, so standard 5m stale in frontend is good
     });
 };
+

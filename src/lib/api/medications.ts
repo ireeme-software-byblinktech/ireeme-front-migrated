@@ -30,25 +30,26 @@ export interface UpdateMedicationDto {
 
 export const medicationsApi = {
   getAll: (page = 1, limit = 100) =>
-    apiClient<Medication[]>(`/api/v1/medications?page=${page}&limit=${limit}`),
+    apiClient<Medication[]>(`/medications?page=${page}&limit=${limit}`),
 
   getById: (id: string) =>
-    apiClient<Medication>(`/api/v1/medications/${id}`),
+    apiClient<Medication>(`/medications/${id}`),
 
   create: (data: CreateMedicationDto) =>
-    apiClient<Medication>("/api/v1/medications", {
+    apiClient<Medication>("/medications", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   update: (id: string, data: UpdateMedicationDto) =>
-    apiClient<Medication>(`/api/v1/medications/${id}`, {
+    apiClient<Medication>(`/medications/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
 
   delete: (id: string) =>
-    apiClient<void>(`/api/v1/medications/${id}`, {
+    apiClient<void>(`/medications/${id}`, {
       method: "DELETE",
     }),
 };
+

@@ -96,3 +96,4 @@ export function SchoolCard({ school, onEdit, onToggle }: SchoolCardProps) {
     </motion.div>
   );
 }
+

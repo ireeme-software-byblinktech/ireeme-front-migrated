@@ -12,16 +12,17 @@ export interface CurrentUser {
 }
 
 export const authApi = {
-    getCurrentUser: () => apiClient<CurrentUser>("/api/v1/auth/me"),
+    getCurrentUser: () => apiClient<CurrentUser>("/auth/me"),
 
     login: (email: string, password: string) =>
-        apiClient<{ accessToken: string; refreshToken: string }>("/api/v1/auth/login", {
+        apiClient<{ accessToken: string; refreshToken: string }>("/auth/login", {
             method: "POST",
             body: JSON.stringify({ email, password }),
         }),
 
     logout: () =>
-        apiClient<void>("/api/v1/auth/logout", {
+        apiClient<void>("/auth/logout", {
             method: "POST",
         }),
 };
+

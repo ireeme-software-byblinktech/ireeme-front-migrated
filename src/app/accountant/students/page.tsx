@@ -346,13 +346,7 @@ export default function AccountantStudentsPage() {
           setIsEditModalOpen(false);
           setSelectedStudent(null);
         }}
-        student={selectedStudent ? {
-          name: selectedStudent.studentName,
-          code: selectedStudent.studentCode,
-          parentName: "Doe Dad",
-          paymentAmount: selectedStudent.amount || "30,000",
-          dateTime: selectedStudent.dateTime
-        } : undefined}
+        student={null}
       />
     </div>
   );

@@ -7,3 +7,4 @@ export const theme = {
     danger: "#EF4444",
   },
 };
+

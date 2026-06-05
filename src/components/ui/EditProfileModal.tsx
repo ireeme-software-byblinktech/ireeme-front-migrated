@@ -102,3 +102,4 @@ export function EditProfileModal({ isOpen, onClose, initialData }: EditProfileMo
         </Modal>
     );
 }
+

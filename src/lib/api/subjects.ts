@@ -19,37 +19,38 @@ export interface CreateSubjectDto {
 export const subjectsApi = {
     getSubjects: (classId?: string) => {
         const params = classId ? `?classId=${classId}` : '';
-        return apiClient<Subject[]>(`/api/v1/subjects${params}`);
+        return apiClient<Subject[]>(`/subjects${params}`);
     },
 
     getSubject: (id: string) =>
-        apiClient<Subject>(`/api/v1/subjects/${id}`),
+        apiClient<Subject>(`/subjects/${id}`),
 
     createSubject: (data: CreateSubjectDto) =>
-        apiClient<Subject>("/api/v1/subjects", {
+        apiClient<Subject>("/subjects", {
             method: "POST",
             body: JSON.stringify(data),
         }),
 
     updateSubject: (id: string, data: Partial<CreateSubjectDto>) =>
-        apiClient<Subject>(`/api/v1/subjects/${id}`, {
+        apiClient<Subject>(`/subjects/${id}`, {
             method: "PATCH",
             body: JSON.stringify(data),
         }),
 
     deleteSubject: (id: string) =>
-        apiClient<void>(`/api/v1/subjects/${id}`, {
+        apiClient<void>(`/subjects/${id}`, {
             method: "DELETE",
         }),
 
     assignTeacher: (subjectId: string, teacherId: string) =>
-        apiClient<void>(`/api/v1/subjects/${subjectId}/teachers`, {
+        apiClient<void>(`/subjects/${subjectId}/teachers`, {
             method: "POST",
             body: JSON.stringify({ teacherId }),
         }),
 
     removeTeacher: (subjectId: string, teacherId: string) =>
-        apiClient<void>(`/api/v1/subjects/${subjectId}/teachers/${teacherId}`, {
+        apiClient<void>(`/subjects/${subjectId}/teachers/${teacherId}`, {
             method: "DELETE",
         }),
 };
+

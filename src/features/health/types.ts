@@ -5,3 +5,4 @@ export interface HealthRecord {
   type: "checkup" | "medication" | "incident";
   notes: string;
 }
+

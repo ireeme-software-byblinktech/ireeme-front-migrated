@@ -45,7 +45,7 @@ export default function AdminStudentsPage() {
     // Fetch classes for filter
     const { data: classes } = useQuery({
         queryKey: ["classes"],
-        queryFn: () => apiClient<Array<{ id: string; name: string; stream: string | null }>>("/api/v1/classes"),
+        queryFn: () => apiClient<Array<{ id: string; name: string; stream: string | null }>>("/classes"),
     });
 
     // Fetch students
@@ -320,3 +320,4 @@ export default function AdminStudentsPage() {
         </div>
     );
 }
+

@@ -3,3 +3,4 @@ export interface AttendanceRecord {
   date: string;
   status: "present" | "absent" | "late" | "excused";
 }
+

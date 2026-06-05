@@ -363,3 +363,4 @@ export default function SuperAdminReportsPage() {
     </div>
   );
 }
+

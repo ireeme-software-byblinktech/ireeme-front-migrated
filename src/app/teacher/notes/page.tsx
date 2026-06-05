@@ -499,7 +499,7 @@ const EditNoteModal = ({ note, isOpen, onClose, onSave, isSaving, teacherClasses
         const formData = new FormData();
         formData.append("file", newFile);
 
-        const uploadResponse = await fetch("/api/v1/files/upload", {
+        const uploadResponse = await fetch("/files/upload", {
           method: "POST",
           body: formData,
           headers: {
@@ -692,7 +692,7 @@ export default function TeacherNotesPage() {
       // Track download only once per note session
       if (!trackedDownloadsRef.current.has(note.id)) {
         trackedDownloadsRef.current.add(note.id);
-        apiClient(`/api/v1/notes/${note.id}/increment-downloads`, {
+        apiClient(`/notes/${note.id}/increment-downloads`, {
           method: "PATCH",
         }).catch(err => console.error("Failed to track download:", err));
       }
@@ -712,7 +712,7 @@ export default function TeacherNotesPage() {
   const { data: notesData, isLoading } = useQuery<NotesResponse>({
     queryKey: ["notes"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/notes");
+      const response = await apiClient("/notes");
       return { data: response as Note[] };
     },
     staleTime: 1000 * 60 * 5,
@@ -722,7 +722,7 @@ export default function TeacherNotesPage() {
   const { data: classesData, isLoading: isLoadingClasses } = useQuery<ClassesResponse>({
     queryKey: ["teacher-classes"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/classes/assigned");
+      const response = await apiClient("/teachers/classes/assigned");
       return response as ClassesResponse;
     },
     staleTime: 1000 * 60 * 5,
@@ -732,7 +732,7 @@ export default function TeacherNotesPage() {
   const { data: subjectsData, isLoading: isLoadingSubjects } = useQuery<SubjectsResponse>({
     queryKey: ["teacher-subjects"],
     queryFn: async () => {
-      const response = await apiClient("/api/v1/teachers/subjects/taught");
+      const response = await apiClient("/teachers/subjects/taught");
       // Format the response to match SubjectsResponse interface
       return {
         data: response.subjects || []
@@ -760,7 +760,7 @@ export default function TeacherNotesPage() {
   // Create note mutation
   const createNoteMutation = useMutation({
     mutationFn: async (dto: any) => {
-      return await apiClient("/api/v1/notes", {
+      return await apiClient("/notes", {
         method: "POST",
         body: JSON.stringify(dto),
       });
@@ -778,7 +778,7 @@ export default function TeacherNotesPage() {
   // Delete note mutation
   const deleteNoteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiClient(`/api/v1/notes/${id}`, {
+      return await apiClient(`/notes/${id}`, {
         method: "DELETE",
       });
     },
@@ -796,7 +796,7 @@ export default function TeacherNotesPage() {
   // Update note mutation
   const updateNoteMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return await apiClient(`/api/v1/notes/${id}`, {
+      return await apiClient(`/notes/${id}`, {
         method: "PATCH",
         body: JSON.stringify(data),
       });
@@ -824,7 +824,7 @@ export default function TeacherNotesPage() {
       const formData = new FormData();
       formData.append("file", newFile);
 
-      const uploadResponse = await fetch("/api/v1/files/upload", {
+      const uploadResponse = await fetch("/files/upload", {
         method: "POST",
         body: formData,
         headers: {
@@ -867,7 +867,7 @@ export default function TeacherNotesPage() {
     // Track view only once per note session
     if (!trackedViewsRef.current.has(note.id)) {
       trackedViewsRef.current.add(note.id);
-      apiClient(`/api/v1/notes/${note.id}/increment-views`, {
+      apiClient(`/notes/${note.id}/increment-views`, {
         method: "PATCH",
       }).catch(err => console.error("Failed to track view:", err));
     }
@@ -941,50 +941,56 @@ export default function TeacherNotesPage() {
       
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-[28px] font-bold mb-2">Academic Notes</h1>
-        <p className="text-gray-500 font-medium text-[15px]">Upload and manage study materials for your students</p>
+        <h1 className="text-2xl sm:text-3xl lg:text-[28px] font-bold mb-2">Academic Notes</h1>
+        <p className="text-gray-500 font-medium text-sm sm:text-base">Upload and manage study materials for your students</p>
       </div>
 
       {/* Action Bar */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
         <div className="flex-1 bg-white border-[1.5px] border-gray-200 rounded-lg flex items-center px-4 py-2.5">
-          <Search size={18} className="text-gray-400 mr-2" />
+          <Search size={18} className="text-gray-400 mr-2 flex-shrink-0" />
           <input 
             type="text" 
             placeholder="Search notes by title, description, or chapter..."
-            className="w-full bg-transparent outline-none text-[14px] text-gray-700"
+            className="w-full bg-transparent outline-none text-sm sm:text-[14px] text-gray-700"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-black text-white px-6 rounded-lg text-[14px] font-bold flex items-center gap-2 hover:opacity-90 transition-opacity"
+          className="bg-black text-white px-4 sm:px-6 py-2.5 sm:py-2.5 rounded-lg text-sm sm:text-[14px] font-bold flex items-center justify-center sm:justify-start gap-2 hover:opacity-90 transition-opacity whitespace-nowrap"
         >
-          <Upload size={16} /> Upload Notes
+          <Upload size={16} /> <span className="hidden sm:inline">Upload Notes</span><span className="sm:hidden">Upload</span>
         </button>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-8">
-        <DropdownFilter 
-          title="All Subjects" 
-          options={allSubjects}
-          selected={selectedSubjects}
-          onChange={setSelectedSubjects}
-        />
-        <DropdownFilter 
-          title="All Classes" 
-          options={allClasses}
-          selected={selectedClasses}
-          onChange={setSelectedClasses}
-        />
-        <DropdownFilter 
-          title="All Types" 
-          options={allTypes}
-          selected={selectedTypes}
-          onChange={setSelectedTypes}
-        />
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
+        <div className="flex-1">
+          <DropdownFilter 
+            title="All Subjects" 
+            options={allSubjects}
+            selected={selectedSubjects}
+            onChange={setSelectedSubjects}
+          />
+        </div>
+        <div className="flex-1">
+          <DropdownFilter 
+            title="All Classes" 
+            options={allClasses}
+            selected={selectedClasses}
+            onChange={setSelectedClasses}
+          />
+        </div>
+        <div className="flex-1">
+          <DropdownFilter 
+            title="All Types" 
+            options={allTypes}
+            selected={selectedTypes}
+            onChange={setSelectedTypes}
+          />
+        </div>
         {(selectedSubjects.length > 0 || selectedClasses.length > 0 || selectedTypes.length > 0) && (
           <button
             onClick={() => {
@@ -992,7 +998,7 @@ export default function TeacherNotesPage() {
               setSelectedClasses([]);
               setSelectedTypes([]);
             }}
-            className="px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200"
+            className="px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-lg transition-colors border border-gray-200 whitespace-nowrap"
           >
             Clear Filters
           </button>
@@ -1000,7 +1006,7 @@ export default function TeacherNotesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-10 text-[#374151]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 text-[#374151]">
         <StatCard
           label="Total Notes"
           value={String(notes.length)}
@@ -1032,7 +1038,7 @@ export default function TeacherNotesPage() {
       </div>
 
       {/* Grid of Notes */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {isLoading ? (
           <div className="col-span-3 text-center py-12">
             <div className="inline-block animate-spin">
@@ -1268,3 +1274,4 @@ export default function TeacherNotesPage() {
     </div>
   );
 }
+

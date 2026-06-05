@@ -34,3 +34,4 @@ export const AssignmentTabs: React.FC<AssignmentTabsProps> = ({
     </div>
   );
 };
+

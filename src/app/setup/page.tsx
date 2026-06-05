@@ -79,7 +79,7 @@ export default function SetupPage() {
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
+      const response = await fetch(`${API_BASE_URL}/files/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ export default function SetupPage() {
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
+      const response = await fetch(`${API_BASE_URL}/files/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -136,7 +136,7 @@ export default function SetupPage() {
     try {
       // 1. Create Academic Term/Year
       if (academicYear.name) {
-        await apiClient("/api/v1/academic-terms", {
+        await apiClient("/academic-terms", {
           method: "POST",
           body: JSON.stringify({
             name: academicYear.name,
@@ -568,3 +568,4 @@ export default function SetupPage() {
     </div>
   );
 }
+

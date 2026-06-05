@@ -40,3 +40,4 @@ export const studentsApi = {
 export const teachersApi = {
     getAll: () => apiClient<any[]>("/teachers"),
 };
+

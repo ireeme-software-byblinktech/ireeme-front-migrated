@@ -60,3 +60,4 @@ export function DeleteTeacherModal({ isOpen, onClose, teacherName, onDelete, isD
     </div>
   );
 }
+
