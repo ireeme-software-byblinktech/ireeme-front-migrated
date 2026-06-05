@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { Card, CardBody } from "@/components/ui";
 import { DataTable, Column } from "@/components/ui/DataTable";
-import { Search, Filter, Upload, Eye, Download, Trash2 } from "lucide-react";
+import { Search, Filter, Upload, Eye, Download, Trash2, FileText, AlertCircle } from "lucide-react";
+import { useUploadFile } from "@/hooks/api/useFiles";
+import { useStudentProfile } from "@/hooks/api/useStudentAPI";
+import { formatDate } from "@/lib/utils";
 
 // Document data interface
 interface Document {
@@ -13,75 +16,8 @@ interface Document {
   fileType: string;
   uploadDate: string;
   status: "Private" | "Public" | "Shared";
+  key?: string;
 }
-
-// Sample document data
-const documentsData: Document[] = [
-  {
-    id: "1",
-    name: "Birth Certificate",
-    category: "Certificate",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "2",
-    name: "Birth Certificate",
-    category: "Certificate",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "3",
-    name: "Birth Certificate",
-    category: "Certificate",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "4",
-    name: "Birth Certificate",
-    category: "Certificate",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "5",
-    name: "Birth Certificate",
-    category: "Certificate",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "6",
-    name: "Birth Certificate",
-    category: "Certificate",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "7",
-    name: "Medical Clearance",
-    category: "Medical record",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  },
-  {
-    id: "8",
-    name: "Medical Clearance",
-    category: "Medical record",
-    fileType: "PDF",
-    uploadDate: "20-07-2025",
-    status: "Private"
-  }
-];
 
 export default function StudentDocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -92,7 +28,14 @@ export default function StudentDocumentsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [uploadedDocs, setUploadedDocs] = useState<Document[]>([]);
   const itemsPerPage = 8;
+
+  const { data: profile } = useStudentProfile();
+  const uploadFile = useUploadFile();
+
+  // Use uploaded documents instead of mock data
+  const documentsData: Document[] = uploadedDocs;
 
   // Filter data based on search and filters
   const filteredData = documentsData.filter(doc => {
@@ -252,50 +195,79 @@ export default function StudentDocumentsPage() {
       {/* Documents Table */}
       <Card>
         <CardBody className="p-0">
-          <div className="overflow-x-auto">
-            <DataTable
-              columns={columns as unknown as Column<Record<string, unknown>>[]}
-              data={paginatedData as unknown as Record<string, unknown>[]}
-              keyField="id"
-              className="assignments-table"
-            />
-          </div>
+          {filteredData.length === 0 ? (
+            <div className="text-center py-16 px-4">
+              <FileText size={64} className="mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-bold text-gray-900 mb-2">No documents yet</h3>
+              <p className="text-gray-500 mb-6">Upload your first document to get started</p>
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium flex items-center gap-2 mx-auto hover:bg-gray-800"
+              >
+                <Upload size={16} />
+                Upload Document
+              </button>
+              <div className="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-lg max-w-2xl mx-auto text-left">
+                <div className="flex gap-3">
+                  <AlertCircle size={20} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-blue-900 mb-1">Documents Feature</h4>
+                    <p className="text-sm text-blue-700">
+                      This feature allows you to securely upload and manage your academic documents. 
+                      Documents are stored using the file upload API and will persist in your student account.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <DataTable
+                  columns={columns as unknown as Column<Record<string, unknown>>[]}
+                  data={paginatedData as unknown as Record<string, unknown>[]}
+                  keyField="id"
+                  className="assignments-table"
+                />
+              </div>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-            <div className="text-sm text-gray-500">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 text-sm rounded ${
-                    currentPage === page
-                      ? "bg-black text-white"
-                      : "border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
+              {/* Pagination */}
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: Math.min(3, totalPages) }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 text-sm rounded ${
+                        currentPage === page
+                          ? "bg-black text-white"
+                          : "border border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </CardBody>
       </Card>
 
@@ -304,6 +276,9 @@ export default function StudentDocumentsPage() {
         <AddDocumentModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
+          onUpload={(doc) => {
+            setUploadedDocs(prev => [doc, ...prev]);
+          }}
         />
       )}
 
@@ -472,18 +447,56 @@ function DeleteDocumentModal({
 }
 
 // Add Document Modal Component
-function AddDocumentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function AddDocumentModal({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: () => void; onUpload: (doc: Document) => void }) {
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: ""
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadFile = useUploadFile();
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onClose();
+    if (!selectedFile || !formData.title || !formData.category) return;
+
+    setIsUploading(true);
+    try {
+      const result = await uploadFile.mutateAsync(selectedFile);
+      
+      // Create document object
+      const newDoc: Document = {
+        id: result.key,
+        name: formData.title,
+        category: formData.category,
+        fileType: selectedFile.type.split('/')[1].toUpperCase() || 'FILE',
+        uploadDate: formatDate(new Date().toISOString()),
+        status: "Private",
+        key: result.key
+      };
+
+      onUpload(newDoc);
+      onClose();
+      
+      // Reset form
+      setFormData({ title: "", category: "", description: "" });
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -571,14 +584,28 @@ function AddDocumentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                           <path d="M12 12l0 9" />
                         </svg>
                       </div>
-                      <p className="text-gray-600 font-medium mb-1">Upload a picture</p>
-                      <p className="text-gray-500 text-sm mb-4">Supported formats: Pdf, Docx, Jpg, PNG (Max 10MB)</p>
-                      <button
-                        type="button"
-                        className="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-                      >
-                        Upload
-                      </button>
+                      {selectedFile ? (
+                        <div className="mb-4">
+                          <p className="text-gray-700 font-bold mb-1">{selectedFile.name}</p>
+                          <p className="text-gray-500 text-sm">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-gray-600 font-medium mb-1">Upload a document</p>
+                          <p className="text-gray-500 text-sm mb-4">Supported formats: PDF, DOCX, JPG, PNG (Max 10MB)</p>
+                        </>
+                      )}
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          onChange={handleFileSelect}
+                          accept=".pdf,.docx,.jpg,.jpeg,.png"
+                          className="hidden"
+                        />
+                        <span className="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 inline-block">
+                          {selectedFile ? "Change File" : "Select File"}
+                        </span>
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -587,14 +614,16 @@ function AddDocumentModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
                 <div className="flex items-center justify-center gap-4 pt-4">
                   <button
                     type="submit"
-                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+                    disabled={isUploading || !selectedFile || !formData.title || !formData.category}
+                    className="bg-black text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Add document
+                    {isUploading ? "Uploading..." : "Add document"}
                   </button>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+                    disabled={isUploading}
+                    className="bg-white text-gray-700 border border-gray-300 px-8 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
                   >
                     cancel
                   </button>

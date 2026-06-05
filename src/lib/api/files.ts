@@ -1,71 +1,65 @@
-import { API_BASE_URL } from "./client";
+import { apiClient, API_BASE_URL } from "./client";
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
-export interface UploadedFile {
+export interface FileUploadResponse {
   key: string;
   url: string;
+  fileName: string;
+  size: number;
   mimeType: string;
-  sizeBytes: number;
 }
 
-export interface UploadFileResponse {
+export interface Document {
+  id: string;
   key: string;
-  url: string;
+  fileName: string;
+  fileType: string;
+  size: number;
+  category: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  status: "PRIVATE" | "PUBLIC" | "SHARED";
+  url?: string;
 }
-
-export interface GetFileUrlResponse {
-  url: string;
-}
-
-// ─── API Client ───────────────────────────────────────────────────────────
 
 const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("accessToken");
+  return localStorage.getItem("access_token") || localStorage.getItem("accessToken");
 };
 
 export const filesApi = {
-  // Upload a file to S3/MinIO
-  uploadFile: async (file: File): Promise<UploadFileResponse> => {
-    const token = getAuthToken();
-    
-    if (!token) {
-      throw new Error("Not authenticated. Please log in again.");
-    }
-
+  // Upload a file
+  upload: async (file: File): Promise<FileUploadResponse> => {
     const formData = new FormData();
     formData.append("file", file);
+
+    const token = getAuthToken();
 
     console.log("Uploading file:", file.name, "Size:", file.size, "Type:", file.type);
     console.log("Auth token present:", !!token);
 
-    const response = await fetch(`${API_BASE_URL}/files/upload`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        ...(token && { Authorization: `Bearer ${token}` }),
       },
+      credentials: "include",
       body: formData,
     });
 
-    console.log("Upload response status:", response.status);
-
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: response.statusText }));
-      console.error("Upload error:", error);
-      throw new Error(error.message || "Failed to upload file");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "File upload failed");
     }
 
     return response.json();
   },
 
-  // Get a pre-signed URL for a file
-  getFileUrl: async (key: string): Promise<GetFileUrlResponse> => {
+  // Get file download URL
+  getFileUrl: async (key: string): Promise<{ url: string; expiresIn: number }> => {
     const token = getAuthToken();
-    // URL encode the key to handle slashes in the path
     const encodedKey = encodeURIComponent(key);
 
-    const response = await fetch(`${API_BASE_URL}/files/${encodedKey}/url`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/files/${encodedKey}/url`, {
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },
@@ -78,5 +72,10 @@ export const filesApi = {
 
     return response.json();
   },
-};
 
+  // Delete a file
+  deleteFile: (key: string) =>
+    apiClient<void>(`/api/v1/files/${key}`, {
+      method: "DELETE",
+    }),
+};
