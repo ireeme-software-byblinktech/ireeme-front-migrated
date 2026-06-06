@@ -499,7 +499,7 @@ const EditNoteModal = ({ note, isOpen, onClose, onSave, isSaving, teacherClasses
         const formData = new FormData();
         formData.append("file", newFile);
 
-        const uploadResponse = await fetch("/files/upload", {
+        const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api/v1"}/files/upload`, {
           method: "POST",
           body: formData,
           headers: {
@@ -732,7 +732,7 @@ export default function TeacherNotesPage() {
   const { data: subjectsData, isLoading: isLoadingSubjects } = useQuery<SubjectsResponse>({
     queryKey: ["teacher-subjects"],
     queryFn: async () => {
-      const response = await apiClient("/teachers/subjects/taught");
+      const response = await apiClient("/teachers/subjects/taught") as any;
       // Format the response to match SubjectsResponse interface
       return {
         data: response.subjects || []
@@ -820,11 +820,11 @@ export default function TeacherNotesPage() {
     }
 
     try {
-      // Step 1: Upload file to S3/MinIO
+      // Step 1: Upload file to S3/MinIO via API client
       const formData = new FormData();
       formData.append("file", newFile);
 
-      const uploadResponse = await fetch("/files/upload", {
+      const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api/v1"}/files/upload`, {
         method: "POST",
         body: formData,
         headers: {

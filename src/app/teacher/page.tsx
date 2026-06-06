@@ -1,12 +1,13 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { StatCard } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
 import {
   Users, TrendingUp,
-  Clock, Award, MessageSquare, ArrowUpRight, AlertTriangle, FileText, BookOpen, CheckCircle
+  Clock, Award, MessageSquare, ArrowUpRight, AlertTriangle, FileText, BookOpen, CheckCircle, X, Check
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 
@@ -52,7 +53,25 @@ interface CurrentUser {
   email: string;
 }
 
+interface ClassStudent {
+  id: string;
+  firstName: string;
+  lastName: string;
+  studentCode?: string;
+}
+
+interface AttendanceRecord {
+  studentId: string;
+  status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
+  note?: string;
+}
+
 export default function TeacherDashboard() {
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
+  const queryClient = useQueryClient();
+  
   // Fetch current user
   const { data: user, isError: userError } = useQuery<CurrentUser>({
     queryKey: ["auth", "me"],
@@ -106,6 +125,56 @@ export default function TeacherDashboard() {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
+  });
+
+  // Fetch students grouped by class
+  const { data: studentsData } = useQuery({
+    queryKey: ["teachers", "students"],
+    queryFn: async () => {
+      const response = await apiClient("/teachers/students");
+      return response as any;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Get students for selected class
+  const classStudents = useMemo(() => {
+    if (!studentsData?.students || !selectedClass) return [];
+    if (selectedClass === "all") return studentsData.students;
+    return studentsData.students.filter((s: any) => s.grade === selectedClass);
+  }, [studentsData, selectedClass]);
+
+  // Get unique classes from students
+  const availableClasses = useMemo(() => {
+    if (!studentsData?.students) return [];
+    const classSet = new Set(studentsData.students.map((s: any) => s.grade));
+    return Array.from(classSet).filter(Boolean);
+  }, [studentsData]);
+
+  // Mark attendance mutation
+  const markAttendanceMutation = useMutation({
+    mutationFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const records = classStudents.map((student: any) => ({
+        studentId: student.id,
+        status: attendanceRecords[student.id] || "PRESENT",
+      }));
+
+      return await apiClient("/attendance/mark-bulk", {
+        method: "POST",
+        body: JSON.stringify({
+          classId: selectedClass && selectedClass !== "all" ? selectedClass : undefined,
+          date: today,
+          records,
+        }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      setShowAttendanceModal(false);
+      setAttendanceRecords({});
+      setSelectedClass(null);
+    },
   });
 
   const isLoading = statsLoading || scheduleLoading || assignmentsLoading || performanceLoading;
