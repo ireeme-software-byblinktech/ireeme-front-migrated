@@ -1,4 +1,5 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+// Remove any trailing /api/v1 to prevent double-prefixing since endpoints already include it
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/api\/v1\/?$/, '');
 
 // Get auth token from storage (your colleague will implement this)
 const getAuthToken = (): string | null => {
@@ -54,7 +55,6 @@ export async function apiClient<T>(
     throw new Error(errorMessage || `API Error: ${response.status}`);
   }
 
-  // Handle 204 No Content (e.g., DELETE operations)
   if (response.status === 204 || response.headers.get("content-length") === "0") {
     console.log("[API CLIENT] No content response for:", endpoint);
     return undefined as T;
@@ -93,4 +93,3 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   const data = await response.json();
   return data.secure_url;
 }
-

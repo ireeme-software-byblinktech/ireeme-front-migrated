@@ -1,9 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { Card, CardBody } from "@/components/ui";
 import { Download, Bell } from "lucide-react";
+import { useStudentTimetable } from "@/hooks/api/useStudentAPI";
 
-// Timetable data structure
 interface TimeSlot {
   time: string;
   subject?: string;
@@ -17,7 +18,7 @@ interface DaySchedule {
 
 const timeSlots = [
   "08:00 - 09:00",
-  "09:00 - 10:00", 
+  "09:00 - 10:00",
   "10:00 - 11:00",
   "11:00 - 12:00",
   "12:00 - 13:00",
@@ -26,88 +27,43 @@ const timeSlots = [
   "15:00 - 16:00"
 ];
 
-const timetableData: DaySchedule[] = [
-  {
-    day: "MONDAY",
-    slots: [
-      { time: "08:00 - 09:00", subject: "Mathematics", teacher: "Prof. Johnson" },
-      { time: "09:00 - 10:00", subject: "Mathematics", teacher: "Prof. Johnson" },
-      { time: "10:00 - 11:00", subject: "Physics", teacher: "Dr. Smith" },
-      { time: "11:00 - 12:00" },
-      { time: "12:00 - 13:00" }, // This will be lunch (handled by rowspan)
-      { time: "13:00 - 14:00", subject: "English", teacher: "Ms. Brown" },
-      { time: "14:00 - 15:00" },
-      { time: "15:00 - 16:00" }
-    ]
-  },
-  {
-    day: "TUESDAY", 
-    slots: [
-      { time: "08:00 - 09:00" },
-      { time: "09:00 - 10:00", subject: "Chemistry", teacher: "Prof. Williams" },
-      { time: "10:00 - 11:00" },
-      { time: "11:00 - 12:00", subject: "History", teacher: "Mr. Davis" },
-      { time: "12:00 - 13:00" }, // Lunch (handled by rowspan)
-      { time: "13:00 - 14:00" },
-      { time: "14:00 - 15:00", subject: "Computer Science", teacher: "Dr. Anderson" },
-      { time: "15:00 - 16:00" }
-    ]
-  },
-  {
-    day: "WEDNESDAY",
-    slots: [
-      { time: "08:00 - 09:00", subject: "Mathematics", teacher: "Prof. Johnson" },
-      { time: "09:00 - 10:00" },
-      { time: "10:00 - 11:00", subject: "Biology", teacher: "Dr. Martinez" },
-      { time: "11:00 - 12:00", subject: "Biology", teacher: "Dr. Martinez" },
-      { time: "12:00 - 13:00" }, // Lunch (handled by rowspan)
-      { time: "13:00 - 14:00" },
-      { time: "14:00 - 15:00" },
-      { time: "15:00 - 16:00", subject: "PE", teacher: "Coach Wilson" }
-    ]
-  },
-  {
-    day: "THURSDAY",
-    slots: [
-      { time: "08:00 - 09:00" },
-      { time: "09:00 - 10:00", subject: "Physics", teacher: "Dr. Smith" },
-      { time: "10:00 - 11:00" },
-      { time: "11:00 - 12:00", subject: "English", teacher: "Ms. Brown" },
-      { time: "12:00 - 13:00" }, // Lunch (handled by rowspan)
-      { time: "13:00 - 14:00" },
-      { time: "14:00 - 15:00", subject: "Art", teacher: "Ms. Taylor" },
-      { time: "15:00 - 16:00", subject: "Art", teacher: "Ms. Taylor" }
-    ]
-  },
-  {
-    day: "FRIDAY",
-    slots: [
-      { time: "08:00 - 09:00", subject: "Chemistry", teacher: "Prof. Williams" },
-      { time: "09:00 - 10:00" },
-      { time: "10:00 - 11:00", subject: "Computer Science", teacher: "Dr. Anderson" },
-      { time: "11:00 - 12:00", subject: "Computer Science", teacher: "Dr. Anderson" },
-      { time: "12:00 - 13:00" }, // Lunch (handled by rowspan)
-      { time: "13:00 - 14:00", subject: "History", teacher: "Mr. Davis" },
-      { time: "14:00 - 15:00" },
-      { time: "15:00 - 16:00" }
-    ]
-  },
-  {
-    day: "SATURDAY",
-    slots: [
-      { time: "08:00 - 09:00" },
-      { time: "09:00 - 10:00" },
-      { time: "10:00 - 11:00" },
-      { time: "11:00 - 12:00" },
-      { time: "12:00 - 13:00" }, // Lunch (handled by rowspan)
-      { time: "13:00 - 14:00" },
-      { time: "14:00 - 15:00" },
-      { time: "15:00 - 16:00" }
-    ]
-  }
-];
+const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
 export default function TimetablePage() {
+  const { data: realSlots, isLoading } = useStudentTimetable();
+
+  const timetableData = useMemo(() => {
+    // Initialize empty schedule
+    const schedule: DaySchedule[] = DAYS.map(day => ({
+      day,
+      slots: timeSlots.map(time => ({ time }))
+    }));
+
+    if (!realSlots) return schedule;
+
+    // Map API slots to schedule
+    realSlots.forEach(slot => {
+      // Assuming dayOfWeek: 1 = Monday, ..., 6 = Saturday
+      // If 0 = Sunday, 1 = Monday, adapt as needed. Assuming 1=Mon here.
+      const dayIndex = slot.dayOfWeek - 1;
+      if (dayIndex >= 0 && dayIndex < DAYS.length) {
+        // Find matching time slot by startTime (e.g., "08:00")
+        const timeIndex = timeSlots.findIndex(ts => ts.startsWith(slot.startTime));
+        if (timeIndex !== -1) {
+          schedule[dayIndex].slots[timeIndex] = {
+            time: timeSlots[timeIndex],
+            subject: slot.subject?.name || "Unknown",
+            teacher: slot.teacher?.user
+              ? `${slot.teacher.user.firstName} ${slot.teacher.user.lastName}`
+              : "TBA"
+          };
+        }
+      }
+    });
+
+    return schedule;
+  }, [realSlots]);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -128,81 +84,77 @@ export default function TimetablePage() {
         </div>
       </div>
 
-      {/* Week Range */}
       <div className="bg-gray-50 rounded-lg p-4">
-        <h2 className="text-lg font-semibold text-gray-900">Nov 24 - Nov 28, 2025</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Current Week</h2>
       </div>
 
-      {/* Timetable Grid */}
       <Card>
         <CardBody className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse table-fixed">
-              {/* Header Row */}
-              <thead>
-                <tr>
-                  <th className="bg-black text-white p-2 text-left font-semibold border border-gray-400 w-24">
-                    DAY / HOUR
-                  </th>
-                  {timeSlots.map((time, index) => (
-                    <th key={index} className="bg-black text-white p-2 text-center font-semibold border border-gray-400 text-xs w-28">
-                      {time}
+          {isLoading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse table-fixed">
+                <thead>
+                  <tr>
+                    <th className="bg-black text-white p-2 text-left font-semibold border border-gray-400 w-24">
+                      DAY / HOUR
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              
-              {/* Body Rows */}
-              <tbody>
-                {timetableData.map((dayData, dayIndex) => (
-                  <tr key={dayIndex}>
-                    {/* Day Column */}
-                    <td className="bg-gray-50 p-2 font-semibold text-gray-900 border border-gray-400 text-center text-xs">
-                      {dayData.day}
-                    </td>
-                    
-                    {/* Time Slot Columns */}
-                    {dayData.slots.map((slot, slotIndex) => {
-                      // Special handling for lunch column (12:00-13:00)
-                      if (slotIndex === 4) {
-                        // Only render lunch cell for the first row (Monday)
-                        if (dayIndex === 0) {
-                          return (
-                            <td key={slotIndex} className="border border-gray-400 p-1 align-middle text-center" rowSpan={6}>
-                              <div className="flex flex-col items-center justify-center h-full">
-                                <div className="text-lg font-bold text-gray-400 leading-tight">L</div>
-                                <div className="text-lg font-bold text-gray-400 leading-tight">U</div>
-                                <div className="text-lg font-bold text-gray-400 leading-tight">N</div>
-                                <div className="text-lg font-bold text-gray-400 leading-tight">C</div>
-                                <div className="text-lg font-bold text-gray-400 leading-tight">H</div>
-                              </div>
-                            </td>
-                          );
-                        } else {
-                          // Skip lunch cell for other rows since it's spanned
-                          return null;
-                        }
-                      }
-                      
-                      return (
-                        <td key={slotIndex} className="border border-gray-400 p-1 h-16 align-top">
-                          {slot.subject ? (
-                            <div className="text-xs">
-                              <div className="font-medium text-gray-900 mb-1 leading-tight">{slot.subject}</div>
-                              <div className="text-xs text-gray-500 leading-tight">{slot.teacher}</div>
-                            </div>
-                          ) : (
-                            // Empty cell
-                            <div></div>
-                          )}
-                        </td>
-                      );
-                    })}
+                    {timeSlots.map((time, index) => (
+                      <th key={index} className="bg-black text-white p-2 text-center font-semibold border border-gray-400 text-xs w-28">
+                        {time}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+
+                <tbody>
+                  {timetableData.map((dayData, dayIndex) => (
+                    <tr key={dayIndex}>
+                      <td className="bg-gray-50 p-2 font-semibold text-gray-900 border border-gray-400 text-center text-xs">
+                        {dayData.day}
+                      </td>
+
+                      {dayData.slots.map((slot, slotIndex) => {
+                        if (slotIndex === 4) {
+                          if (dayIndex === 0) {
+                            return (
+                              <td key={slotIndex} className="border border-gray-400 p-1 align-middle text-center bg-gray-100" rowSpan={6}>
+                                <div className="flex flex-col items-center justify-center h-full">
+                                  <div className="text-lg font-bold text-gray-400 leading-tight">L</div>
+                                  <div className="text-lg font-bold text-gray-400 leading-tight">U</div>
+                                  <div className="text-lg font-bold text-gray-400 leading-tight">N</div>
+                                  <div className="text-lg font-bold text-gray-400 leading-tight">C</div>
+                                  <div className="text-lg font-bold text-gray-400 leading-tight">H</div>
+                                </div>
+                              </td>
+                            );
+                          } else {
+                            return null;
+                          }
+                        }
+
+                        return (
+                          <td key={slotIndex} className={`border border-gray-400 p-1 h-16 align-top ${slot.subject ? 'bg-[rgba(235,235,235)]' : ''}`}>
+                            {slot.subject ? (
+                              <div className="text-xs">
+                                <div className="font-medium text-gray-900 mb-1 leading-tight">{slot.subject}</div>
+                                <div className="text-[10px] text-gray-500 leading-tight">{slot.teacher}</div>
+                              </div>
+                            ) : (
+                              <div></div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardBody>
       </Card>
     </div>

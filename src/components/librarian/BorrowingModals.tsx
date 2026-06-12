@@ -66,7 +66,7 @@ export function IssueBookModal({ isOpen, onClose }: IssueBookModalProps) {
   });
 
   const students = studentsResponse?.data || [];
-  const books = (booksResponse?.data || []).filter(book => book.availableCopies > 0);
+  const books = (booksResponse?.data || []).filter(book => (book.availableCopies || 0) > 0);
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   const selectedBook = books.find(b => b.id === selectedBookId);
@@ -215,7 +215,7 @@ export function IssueBookModal({ isOpen, onClose }: IssueBookModalProps) {
                           <div className="flex-1">
                             <div className="font-medium text-gray-900">{book.title}</div>
                             <div className="text-sm text-gray-500">
-                              {book.author} • {book.availableCopies} available
+                              {book.author} • {book.availableCopies || 0} available
                             </div>
                           </div>
                         </button>
@@ -324,8 +324,8 @@ export function ReturnBookModal({ isOpen, onClose }: ReturnBookModalProps) {
   const filteredBorrowings = borrowings.filter(b => 
     search === "" || 
     b.book?.title.toLowerCase().includes(search.toLowerCase()) ||
-    b.student?.firstName.toLowerCase().includes(search.toLowerCase()) ||
-    b.student?.lastName.toLowerCase().includes(search.toLowerCase())
+    (b.student?.firstName || "").toLowerCase().includes(search.toLowerCase()) ||
+    (b.student?.lastName || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const returnMutation = useMutation({

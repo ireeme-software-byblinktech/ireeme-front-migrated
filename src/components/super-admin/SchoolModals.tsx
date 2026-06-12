@@ -46,7 +46,7 @@ export function SchoolModal({ isOpen, onClose, onConfirm, initialData, mode }: S
 
     return (
         <Modal
-            isOpen={isOpen}
+            open={isOpen}
             onClose={onClose}
             title={mode === "add" ? "Add New School" : "Edit School"}
             className="max-w-xl"

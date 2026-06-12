@@ -117,6 +117,7 @@ export default function NurseDashboard() {
             
             const activeCases = allCases.filter(c => c.status === "OPEN").length;
             const todayAppointments = allAppointments.filter(a => {
+                if (!a.scheduledAt) return false;
                 const apptDate = new Date(a.scheduledAt);
                 apptDate.setHours(0, 0, 0, 0);
                 return apptDate.getTime() === today.getTime();
@@ -130,25 +131,31 @@ export default function NurseDashboard() {
             });
 
             // Transform recent cases for table
-            const casesData: CaseRow[] = allCases.slice(0, 9).map(c => ({
-                id: c.id,
-                student: `${c.student.user.firstName} ${c.student.user.lastName}`,
-                case: c.diagnosis,
-                class: c.student.studentNumber,
-                status: c.status,
-            }));
+            const casesData: CaseRow[] = allCases
+                .filter(c => c.student)
+                .slice(0, 9)
+                .map(c => ({
+                    id: c.id,
+                    student: `${c.student!.user.firstName} ${c.student!.user.lastName}`,
+                    case: c.diagnosis || '',
+                    class: c.student!.studentNumber,
+                    status: c.status,
+                }));
             setRecentCases(casesData);
 
             // Transform upcoming appointments
             const appointmentsData: AppointmentRow[] = allAppointments
-                .filter(a => new Date(a.scheduledAt) >= new Date())
-                .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
+                .filter(a => a.scheduledAt && a.student && new Date(a.scheduledAt) >= new Date())
+                .sort((a, b) => {
+                    if (!a.scheduledAt || !b.scheduledAt) return 0;
+                    return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+                })
                 .slice(0, 5)
                 .map(a => ({
                     id: a.id,
-                    name: `${a.student.user.firstName} ${a.student.user.lastName}`,
+                    name: `${a.student!.user.firstName} ${a.student!.user.lastName}`,
                     type: a.reason,
-                    time: new Date(a.scheduledAt).toLocaleTimeString('en-US', { 
+                    time: new Date(a.scheduledAt!).toLocaleTimeString('en-US', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                     }),

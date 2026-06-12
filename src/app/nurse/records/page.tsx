@@ -55,7 +55,11 @@ export default function HealthRecordsPage() {
     try {
       const allRecords = await healthApi.getAllHealthRecords();
       // Sort by date, newest first
-      allRecords.sort((a, b) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime());
+      allRecords.sort((a, b) => {
+        const dateA = a.visitDate ? new Date(a.visitDate).getTime() : 0;
+        const dateB = b.visitDate ? new Date(b.visitDate).getTime() : 0;
+        return dateB - dateA;
+      });
       setRecords(allRecords);
     } catch (error) {
       console.error("Failed to fetch records:", error);

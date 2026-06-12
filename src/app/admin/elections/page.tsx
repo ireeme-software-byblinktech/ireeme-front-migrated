@@ -227,7 +227,7 @@ export default function AdminElectionsPage() {
                             <div className={cn(
                                 "flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all shadow-sm",
                                 currentElection?.status === "ACTIVE" ? "bg-[#008A44] text-white" :
-                                currentElection?.status === "CLOSED" ? "bg-[#EE1D23] text-white" :
+                                currentElection?.status === "COMPLETED" ? "bg-[#EE1D23] text-white" :
                                 "bg-gray-400 text-white"
                             )}>
                                 {currentElection?.status || "DRAFT"}

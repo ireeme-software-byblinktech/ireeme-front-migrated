@@ -49,7 +49,7 @@ export default function DocumentsPage() {
 
         setUploading(true);
         try {
-            const result = await filesApi.uploadFile(file);
+            const result = await filesApi.upload(file);
             
             const newDoc: Document = {
                 id: crypto.randomUUID(),

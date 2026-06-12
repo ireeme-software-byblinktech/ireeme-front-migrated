@@ -4,6 +4,31 @@ import { useState } from "react";
 import { StatCard } from "@/components/ui";
 import { GraduationCap, BookOpen, FileText, BarChart2, ExternalLink } from "lucide-react";
 
+/**
+ * CAREER GUIDANCE PAGE - Backend Integration Needed
+ * 
+ * This page currently uses hardcoded mock data for career paths.
+ * 
+ * TO INTEGRATE WITH BACKEND:
+ * 1. Create backend module: ireeme-backend/src/modules/career-guidance/
+ * 2. Create API endpoints:
+ *    - GET /api/v1/career-guidance/paths - Get all career paths
+ *    - GET /api/v1/career-guidance/paths/:id - Get career path details
+ *    - GET /api/v1/career-guidance/recommendations/:studentId - Get personalized recommendations
+ *    - GET /api/v1/career-guidance/counselors - Get available counselors
+ *    - GET /api/v1/career-guidance/workshops - Get upcoming workshops
+ *    - GET /api/v1/career-guidance/resources - Get learning resources
+ * 3. Create frontend API file: lib/api/career-guidance.ts
+ * 4. Create React Query hooks: hooks/api/useCareerGuidance.ts
+ * 5. Replace mock data with real API calls in this file
+ * 
+ * BACKEND DATA MODEL SUGGESTION:
+ * - CareerPath: id, title, description, category, requiredSubjects[], minGrade, jobMarket, salaryRange
+ * - Counselor: id, name, title, specialization, experience, rating, availability
+ * - Workshop: id, title, description, date, time, instructor, maxParticipants, status
+ * - Resource: id, title, description, type, items[]
+ */
+
 // Stats data array
 const statsData = [
   {

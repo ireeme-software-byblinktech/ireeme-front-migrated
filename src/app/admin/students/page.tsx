@@ -109,7 +109,7 @@ export default function AdminStudentsPage() {
         {
             key: "gender",
             header: "Gender",
-            render: (v) => <span className="text-gray-500">{v || "N/A"}</span>
+            render: (v: unknown) => <span className="text-gray-500">{(v as string | null | undefined) || "N/A"}</span>
         },
         {
             key: "studentNumber",

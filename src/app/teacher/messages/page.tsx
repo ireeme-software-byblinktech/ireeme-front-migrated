@@ -192,7 +192,7 @@ export default function TeacherMessagesPage() {
   const existingConvUserIds = new Set(
     conversations.flatMap(conv => 
       conv.members
-        .filter(m => m.user.firstName !== user?.name)
+        .filter(m => user?.firstName && m.user.firstName !== user.firstName)
         .map(m => `${m.user.firstName}${m.user.lastName}`)
     )
   );
@@ -258,7 +258,7 @@ export default function TeacherMessagesPage() {
 
   const getOtherUserName = (conv: Conversation) => {
     if (!user) return "Unknown";
-    const other = conv.members.find(m => m.user.firstName !== user.name);
+    const other = conv.members.find(m => m.user.firstName !== user.firstName);
     if (other) {
       return `${other.user.firstName} ${other.user.lastName}`;
     }
@@ -378,7 +378,7 @@ export default function TeacherMessagesPage() {
                 >
                   <div className="relative shrink-0">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-stone-900 to-stone-700 flex items-center justify-center text-sm font-semibold text-white">
-                      {conv.members[0]?.user.firstName?.[0]}{conv.members[0]?.user.lastName?.[0]}
+                      {conv.members?.[0]?.user.firstName?.[0]}{conv.members?.[0]?.user.lastName?.[0]}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 space-y-1">

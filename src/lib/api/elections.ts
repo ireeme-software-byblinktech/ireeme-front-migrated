@@ -1,141 +1,147 @@
 import { apiClient } from "./client";
 
-export interface Election {
+export interface Candidate {
+  id: string;
+  positionId: string;
+  studentId: string;
+  bio: string | null;
+  photoUrl: string | null;
+  student: {
     id: string;
-    schoolId: string;
-    title: string;
-    startAt: string;
-    endAt: string;
-    status: "DRAFT" | "ACTIVE" | "CLOSED";
-    resultsPublished: boolean;
-    positions: Position[];
-    createdAt: string;
-    updatedAt: string;
+    studentNumber: string;
+    user: {
+      firstName: string;
+      lastName: string;
+      email: string;
+    };
+  };
 }
 
 export interface Position {
-    id: string;
-    electionId: string;
-    name: string;
-    minVotes: number;
-    maxVotes: number;
-    candidates: Candidate[];
+  id: string;
+  electionId: string;
+  name: string;
+  maxCandidates: number;
+  candidates: Candidate[];
 }
 
-export interface Candidate {
-    id: string;
+export interface Election {
+  id: string;
+  title: string;
+  description: string | null;
+  startAt: string;
+  endAt: string;
+  status: "UPCOMING" | "ACTIVE" | "COMPLETED";
+  resultsPublished: boolean;
+  positions: Position[];
+  createdAt: string;
+}
+
+export interface VotingStatus {
+  hasVoted: boolean;
+  votedAt?: string;
+  votedPositions?: number;
+  totalPositions?: number;
+}
+
+export interface ElectionResults {
+  electionId: string;
+  totalVotes: number;
+  positions: Array<{
     positionId: string;
-    studentId: string;
-    bio: string | null;
-    imageUrl: string | null;
-    student: {
-        studentNumber: string;
-        user: {
-            firstName: string;
-            lastName: string;
-            avatarUrl: string | null;
-        };
-    };
-    voteCount?: number;
+    positionTitle: string;
+    totalVotes: number;
+    candidates: Array<{
+      candidateId: string;
+      studentName: string;
+      voteCount: number;
+      percentage: number;
+    }>;
+  }>;
 }
 
 export interface CreateElectionDto {
-    title: string;
-    startAt: string;
-    endAt: string;
-    positions: {
-        name: string;
-        maxVotes: number;
-    }[];
+  title: string;
+  description?: string;
+  startAt: string;
+  endAt: string;
 }
 
 export interface AddCandidateDto {
-    positionId: string;
-    studentId: string;
-    bio: string;
+  positionId: string;
+  studentId: string;
+  bio?: string;
+  photoUrl?: string;
 }
 
 export interface CastVoteDto {
-    positionId: string;
-    candidateId: string;
+  positionId: string;
+  candidateId: string;
+  electionId?: string;
 }
 
 export const electionsApi = {
-    getElections: () =>
-        apiClient<Election[]>("/elections"),
+  getAll: () => apiClient<Election[]>("/api/v1/elections"),
 
-    getElection: (id: string) =>
-        apiClient<Election>(`/elections/${id}`),
+  getElections: () => apiClient<Election[]>("/api/v1/elections"),
 
-    createElection: (data: CreateElectionDto) =>
-        apiClient<Election>("/elections", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
+  getById: (id: string) => apiClient<Election>(`/api/v1/elections/${id}`),
 
-    addPosition: (electionId: string, data: { name: string; minVotes?: number; maxVotes?: number }) =>
-        apiClient<Position>(`/elections/${electionId}/positions`, {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
+  getElection: (id: string) => apiClient<Election>(`/api/v1/elections/${id}`),
 
-    addCandidate: (data: AddCandidateDto) =>
-        apiClient<Candidate>("/elections/candidates", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
+  createElection: (data: CreateElectionDto) =>
+    apiClient<Election>("/api/v1/elections", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
-    openVoting: (electionId: string) =>
-        apiClient<Election>(`/elections/${electionId}/open`, {
-            method: "POST",
-        }),
+  addPosition: (electionId: string, data: { name: string; minVotes?: number; maxVotes?: number }) =>
+    apiClient<Position>(`/api/v1/elections/${electionId}/positions`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
-    closeVoting: (electionId: string) =>
-        apiClient<Election>(`/elections/${electionId}/close`, {
-            method: "POST",
-        }),
+  addCandidate: (data: AddCandidateDto) =>
+    apiClient<Candidate>("/api/v1/elections/candidates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
-    castVote: (data: CastVoteDto) =>
-        apiClient<{ success: boolean; message: string }>("/elections/vote", {
-            method: "POST",
-            body: JSON.stringify(data),
-        }),
+  openVoting: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/open`, {
+      method: "POST",
+    }),
 
-    getResults: (electionId: string) =>
-        apiClient<{
-            electionId: string;
-            positions: Array<{
-                positionId: string;
-                positionTitle: string;
-                totalVotes: number;
-                candidates: Array<{
-                    candidateId: string;
-                    studentName: string;
-                    voteCount: number;
-                    percentage: number;
-                }>;
-            }>;
-        }>(`/elections/${electionId}/results`),
+  closeVoting: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/close`, {
+      method: "POST",
+    }),
 
-    publishResults: (electionId: string) =>
-        apiClient<Election>(`/elections/${electionId}/publish-results`, {
-            method: "POST",
-        }),
+  getVotingStatus: (electionId: string) =>
+    apiClient<VotingStatus>(`/api/v1/elections/${electionId}/voting-status`),
 
-    unpublishResults: (electionId: string) =>
-        apiClient<Election>(`/elections/${electionId}/unpublish-results`, {
-            method: "POST",
-        }),
+  castVote: (data: CastVoteDto) =>
+    apiClient<{ success: boolean; message: string }>("/api/v1/elections/vote", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
-    getVotingStatus: (electionId: string) =>
-        apiClient<{
-            hasVoted: boolean;
-            votedPositions: number;
-            totalPositions: number;
-        }>(`/elections/${electionId}/voting-status`),
+  vote: (data: { electionId: string; candidateId: string }) =>
+    apiClient<{ message: string }>("/api/v1/elections/vote", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
-    // Remote fallback methods mapping for compatibility
-    getAll: () => apiClient<Election[]>("/elections"),
-    getById: (id: string) => apiClient<Election>(`/elections/${id}`),
+  getResults: (electionId: string) =>
+    apiClient<ElectionResults>(`/api/v1/elections/${electionId}/results`),
+
+  publishResults: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/publish-results`, {
+      method: "POST",
+    }),
+
+  unpublishResults: (electionId: string) =>
+    apiClient<Election>(`/api/v1/elections/${electionId}/unpublish-results`, {
+      method: "POST",
+    }),
 };
-

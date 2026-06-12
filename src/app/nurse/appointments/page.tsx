@@ -57,7 +57,7 @@ export default function AppointmentsPage() {
       }
       
       // Sort by date, newest first
-      allAppointments.sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+      allAppointments.sort((a, b) => new Date(b.scheduledAt ?? '').getTime() - new Date(a.scheduledAt ?? '').getTime());
       setAppointments(allAppointments);
     } catch (error) {
       console.error("Failed to fetch appointments:", error);

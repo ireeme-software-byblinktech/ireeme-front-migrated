@@ -24,3 +24,23 @@ export interface User {
   exp?: number;
 }
 
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+export interface RegisterDto {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken?: string;
+  user?: User;
+}
+

@@ -303,10 +303,10 @@ export default function AdminTimetablesPage() {
                                                         onClick={() => handleEditSlot(dayData.dayOfWeek, slot)}
                                                         className="border border-gray-200 p-2 h-20 align-top hover:bg-gray-50 transition-colors group cursor-pointer relative"
                                                     >
-                                                        {slot.subject ? (
+                                                        {(slot as TimeSlot)?.subject ? (
                                                             <div className="flex flex-col h-full overflow-hidden">
-                                                                <div className="font-bold text-gray-900 mb-0.5 leading-tight text-[10px] uppercase truncate">{slot.subject}</div>
-                                                                <div className="text-[9px] text-gray-500 font-medium truncate">{slot.teacher}</div>
+                                                                <div className="font-bold text-gray-900 mb-0.5 leading-tight text-[10px] uppercase truncate">{(slot as TimeSlot)?.subject || "-"}</div>
+                                                                <div className="text-[9px] text-gray-500 font-medium truncate">{(slot as TimeSlot)?.teacher || "-"}</div>
                                                                 <div className="mt-auto opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
                                                                     <Edit3 size={10} className="text-gray-400" />
                                                                 </div>

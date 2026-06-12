@@ -136,9 +136,9 @@ export default function BooksPage() {
 
       // ── Summary stats row ─────────────────────────────────────────────────────
       const totalTitles = exportBooks.length;
-      const totalCopiesCount = exportBooks.reduce((sum, b) => sum + b.totalCopies, 0);
+      const totalCopiesCount = exportBooks.reduce((sum, b) => sum + (b.totalCopies ?? 0), 0);
       const availableBooksCount = exportBooks.filter(b => (b.availableCopies ?? b.available ?? 0) > 0).length;
-      const borrowedCopiesCount = exportBooks.reduce((sum, b) => sum + (b.totalCopies - (b.availableCopies ?? b.available ?? 0)), 0);
+      const borrowedCopiesCount = exportBooks.reduce((sum, b) => sum + ((b.totalCopies ?? 0) - (b.availableCopies ?? b.available ?? 0)), 0);
 
       const stats = [
         { label: "TOTAL TITLES", value: totalTitles },
@@ -333,8 +333,8 @@ export default function BooksPage() {
 
   const totalBooks = normalizedBooks.length;
   const availableBooks = normalizedBooks.filter(b => b.availableCopies > 0).length;
-  const borrowedBooks = normalizedBooks.reduce((sum, b) => sum + (b.totalCopies - b.availableCopies), 0);
-  const totalCopies = normalizedBooks.reduce((sum, b) => sum + b.totalCopies, 0);
+  const borrowedBooks = normalizedBooks.reduce((sum, b) => sum + ((b.totalCopies ?? 0) - (b.availableCopies ?? 0)), 0);
+  const totalCopies = normalizedBooks.reduce((sum, b) => sum + (b.totalCopies ?? 0), 0);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {

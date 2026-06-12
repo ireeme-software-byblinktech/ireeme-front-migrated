@@ -36,12 +36,12 @@ export default function AdminStudentDetailPage({ params }: { params: { id: strin
       />
 
       {/* Profile Header */}
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="mb-4">
         <CardBody>
           <div className="flex items-center gap-5 flex-wrap">
             <Avatar name={student.name} size="xl" />
             <div>
-              <h2 style={{ fontSize: 20, fontWeight: 700 }}>{student.name}</h2>
+              <h2 className="text-xl font-bold">{student.name}</h2>
               <p className="text-muted text-sm mb-2">ID: {student.studentId} · Class {student.class}</p>
               <StatusBadge status={student.status} />
             </div>
@@ -55,12 +55,12 @@ export default function AdminStudentDetailPage({ params }: { params: { id: strin
       </Card>
 
       <div className="stats-grid">
-        <StatCard label="Average Score" value={`${student.avgScore}%`} icon={<span style={{ fontSize: 22 }}>📊</span>} color="blue" />
-        <StatCard label="Attendance Rate" value={`${student.attendance}%`} icon={<span style={{ fontSize: 22 }}>✅</span>} color="green" />
-        <StatCard label="Class Rank" value="#5" icon={<span style={{ fontSize: 22 }}>🏆</span>} color="orange" />
+        <StatCard label="Average Score" value={`${student.avgScore}%`} icon={<span style={{ fontSize: 22 }}>📊</span>} />
+        <StatCard label="Attendance Rate" value={`${student.attendance}%`} icon={<span style={{ fontSize: 22 }}>✅</span>} />
+        <StatCard label="Class Rank" value="#5" icon={<span style={{ fontSize: 22 }}>🏆</span>} />
       </div>
 
-      <div className="grid-2" style={{ marginTop: 16 }}>
+      <div className="grid-2 mt-4">
         <Card>
           <CardBody>
             <h3 className="card-title mb-4">Personal Info</h3>
