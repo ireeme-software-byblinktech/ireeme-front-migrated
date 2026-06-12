@@ -116,10 +116,10 @@ export default function MedicationsPage() {
     };
 
     const STATS = [
-        { label: "Total Items", value: stats.total.toString(), icon: <Pill />, progress: 100, trend: null },
-        { label: "In Stock", value: stats.inStock.toString(), icon: <Pill />, progress: stats.total > 0 ? (stats.inStock / stats.total) * 100 : 0, trend: null },
-        { label: "Low Stock", value: stats.lowStock.toString(), icon: <Pill />, progress: stats.total > 0 ? (stats.lowStock / stats.total) * 100 : 0, trend: null },
-        { label: "Out of Stock", value: stats.outOfStock.toString(), icon: <Pill />, progress: stats.total > 0 ? (stats.outOfStock / stats.total) * 100 : 0, trend: null },
+        { label: "Total Items", value: stats.total.toString(), icon: <Pill />, progress: 100, trend: undefined },
+        { label: "In Stock", value: stats.inStock.toString(), icon: <Pill />, progress: stats.total > 0 ? (stats.inStock / stats.total) * 100 : 0, trend: undefined },
+        { label: "Low Stock", value: stats.lowStock.toString(), icon: <Pill />, progress: stats.total > 0 ? (stats.lowStock / stats.total) * 100 : 0, trend: undefined },
+        { label: "Out of Stock", value: stats.outOfStock.toString(), icon: <Pill />, progress: stats.total > 0 ? (stats.outOfStock / stats.total) * 100 : 0, trend: undefined },
     ];
 
     const COLUMNS = [

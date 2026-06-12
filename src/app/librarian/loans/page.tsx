@@ -64,8 +64,8 @@ export default function LoansPage() {
       const filtered = exportBorrowings.filter(b => 
         searchQuery === "" ||
         b.book?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.student?.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.student?.lastName.toLowerCase().includes(searchQuery.toLowerCase())
+        b.student?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.student?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       if (filtered.length === 0) {
@@ -141,8 +141,8 @@ export default function LoansPage() {
       const filtered = exportBorrowings.filter(b => 
         searchQuery === "" ||
         b.book?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.student?.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.student?.lastName.toLowerCase().includes(searchQuery.toLowerCase())
+        b.student?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.student?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       if (filtered.length === 0) {
@@ -316,8 +316,8 @@ export default function LoansPage() {
   const filteredBorrowings = borrowings.filter(b => 
     searchQuery === "" ||
     b.book?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.student?.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.student?.lastName.toLowerCase().includes(searchQuery.toLowerCase())
+    b.student?.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    b.student?.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const loanCols: Column<Borrowing>[] = [

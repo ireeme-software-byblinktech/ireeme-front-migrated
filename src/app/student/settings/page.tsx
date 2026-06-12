@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { User, Bell, Shield, Monitor, Check, Camera, Loader2 } from "lucide-react";
+import { User, Bell, Shield, Monitor, Check, Camera, Loader2, LogOut, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { studentsApi } from "@/lib/api/students";
 import { toast } from "@/lib/utils/toast";

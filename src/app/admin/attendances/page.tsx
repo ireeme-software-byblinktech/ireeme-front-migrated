@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { EditAttendanceModal } from "@/components/ui/EditAttendanceModal";
 import { classesApi } from "@/lib/api/classes";
-import { attendanceApi, AttendanceRecord } from "@/lib/api/attendance";
+import { attendanceApi, AttendanceRecord, TeacherAttendanceRecord, DailySummary, TeacherDailySummary } from "@/lib/api/attendance";
 import { toast } from "@/lib/utils/toast";
 
 export default function AdminAttendancesPage() {
@@ -158,7 +158,7 @@ export default function AdminAttendancesPage() {
     const filteredData = useMemo(() => {
         if (!attendanceData?.records) return [];
         return attendanceData.records.filter(item => {
-            const fullName = `${item.student.user.firstName} ${item.student.user.lastName}`.toLowerCase();
+            const fullName = `${item.student?.user.firstName ?? ''} ${item.student?.user.lastName ?? ''}`.toLowerCase();
             return fullName.includes(nameFilter.toLowerCase());
         });
     }, [attendanceData, nameFilter]);
@@ -166,7 +166,7 @@ export default function AdminAttendancesPage() {
     const filteredTeacherData = useMemo(() => {
         if (!teacherAttendanceData?.records) return [];
         return teacherAttendanceData.records.filter(item => {
-            const fullName = `${item.teacher.user.firstName} ${item.teacher.user.lastName}`.toLowerCase();
+            const fullName = `${item.teacher?.user.firstName ?? ''} ${item.teacher?.user.lastName ?? ''}`.toLowerCase();
             return fullName.includes(nameFilter.toLowerCase());
         });
     }, [teacherAttendanceData, nameFilter]);
@@ -183,14 +183,14 @@ export default function AdminAttendancesPage() {
             header: viewType === "Teachers" ? "Teacher Name" : "Student Name",
             render: (_, row) => (
                 <span className="font-medium text-gray-900">
-                    {row.student.user.firstName} {row.student.user.lastName}
+                    {row.student?.user.firstName} {row.student?.user.lastName}
                 </span>
             )
         },
         {
             key: "student",
             header: "Email-address",
-            render: (_, row) => <span className="text-gray-500">{row.student.user.email}</span>
+            render: (_, row) => <span className="text-gray-500">{row.student?.user.email}</span>
         },
         {
             key: "date",
@@ -248,7 +248,7 @@ export default function AdminAttendancesPage() {
         }
     ];
 
-    const teacherColumns: Column<any>[] = [
+    const teacherColumns: Column<TeacherAttendanceRecord>[] = [
         {
             key: "select",
             header: <input type="checkbox" className="w-4 h-4 rounded border-gray-300 accent-black cursor-pointer" />,
@@ -260,14 +260,14 @@ export default function AdminAttendancesPage() {
             header: "Teacher Name",
             render: (_, row) => (
                 <span className="font-medium text-gray-900">
-                    {row.teacher.user.firstName} {row.teacher.user.lastName}
+                    {row.teacher?.user.firstName} {row.teacher?.user.lastName}
                 </span>
             )
         },
         {
             key: "teacher",
             header: "Email-address",
-            render: (_, row) => <span className="text-gray-500">{row.teacher.user.email}</span>
+            render: (_, row) => <span className="text-gray-500">{row.teacher?.user.email}</span>
         },
         {
             key: "date",

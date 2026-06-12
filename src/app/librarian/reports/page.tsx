@@ -168,8 +168,8 @@ export default function LibraryReports() {
                         book.author,
                         book.isbn || "N/A",
                         book.genre || "General",
-                        book.totalCopies.toString(),
-                        book.availableCopies.toString(),
+                        (book.totalCopies ?? 0).toString(),
+                        (book.availableCopies ?? 0).toString(),
                         timesBorrowed.toString()
                     ];
                 });
@@ -212,8 +212,8 @@ export default function LibraryReports() {
                     item.book.author,
                     item.book.genre || "General",
                     item.timesBorrowed.toString(),
-                    item.book.availableCopies.toString(),
-                    item.book.totalCopies.toString()
+                    (item.book.availableCopies ?? 0).toString(),
+                    (item.book.totalCopies ?? 0).toString()
                 ]);
                 filename = `Popular_Books_Report_${new Date().toISOString().slice(0, 10)}.csv`;
                 break;

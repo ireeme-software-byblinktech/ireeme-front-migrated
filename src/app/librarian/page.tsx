@@ -105,10 +105,10 @@ export default function LibrarianDashboard() {
             author: book.author,
             category: book.genre || "General",
             issues: bookBorrowCounts[book.id] || 0,
-            available: book.availableCopies,
-            total: book.totalCopies,
-            color: book.availableCopies > book.totalCopies / 2 ? "bg-emerald-500" : 
-                   book.availableCopies > 0 ? "bg-amber-500" : "bg-red-500"
+            available: book.availableCopies ?? 0,
+            total: book.totalCopies ?? 0,
+            color: (book.availableCopies ?? 0) > (book.totalCopies ?? 0) / 2 ? "bg-emerald-500" : 
+                   (book.availableCopies ?? 0) > 0 ? "bg-amber-500" : "bg-red-500"
         }))
         .sort((a, b) => b.issues - a.issues)
         .slice(0, 4);

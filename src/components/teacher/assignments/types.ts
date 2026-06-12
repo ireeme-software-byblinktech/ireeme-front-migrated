@@ -101,4 +101,14 @@ export type SortDirection = "asc" | "desc";
 export const ASSIGNMENT_TYPES = ["HOMEWORK", "CAT", "EXAM", "PROJECT", "QUIZ"];
 export const ASSIGNMENT_STATUSES = ["Active", "Graded", "Draft"];
 export const SUBMISSION_STATUSES = ["ALL", "Submitted", "Graded", "Not Submitted"];
+export const MOCK_SUBJECTS: Subject[] = [
+  { id: "math", name: "Mathematics" },
+  { id: "eng", name: "English" },
+  { id: "sci", name: "Science" },
+  { id: "his", name: "History" },
+  { id: "geo", name: "Geography" },
+  { id: "bio", name: "Biology" },
+  { id: "chem", name: "Chemistry" },
+  { id: "phy", name: "Physics" },
+];
 

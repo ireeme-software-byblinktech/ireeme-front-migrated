@@ -330,7 +330,7 @@ export default function TeacherAssignmentsPage() {
     const newQuestion: Question = {
       id: `q-${Date.now()}`,
       text: "",
-      type: assignmentVariant,
+      type: assignmentVariant.toUpperCase() as "MCQ" | "OPEN",
       options:
         assignmentVariant === "MCQ"
           ? [
