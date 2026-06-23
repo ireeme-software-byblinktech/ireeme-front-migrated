@@ -36,6 +36,7 @@ export default function StudentHealthPage() {
       icon: <FileText size={20} />,
       progress: Math.min(100, healthRecords.length * 10),
       trend: { value: healthRecords.filter(r => {
+        if (!r.date) return false;
         const date = new Date(r.date);
         const monthAgo = new Date();
         monthAgo.setMonth(monthAgo.getMonth() - 1);
@@ -158,7 +159,7 @@ export default function StudentHealthPage() {
                       <div>
                         <h4 className="font-bold text-gray-900 text-lg">{appointment.reason}</h4>
                         <p className="text-base text-gray-500 mt-1">
-                          {formatDate(appointment.appointmentDate, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                          {appointment.appointmentDate && formatDate(appointment.appointmentDate, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
                         </p>
                       </div>
                     </div>
@@ -193,10 +194,10 @@ export default function StudentHealthPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-bold text-gray-900 text-base">{record.chiefComplaint}</h4>
-                        <p className="text-sm text-gray-500 mt-1">{formatDate(record.date)}</p>
+                        <p className="text-sm text-gray-500 mt-1">{record.date ? formatDate(record.date) : ""}</p>
                       </div>
                       <span className="text-sm text-gray-500">
-                        {record.nurse.user.firstName} {record.nurse.user.lastName}
+                        {record.nurse?.user ? `${record.nurse.user.firstName} ${record.nurse.user.lastName}` : ""}
                       </span>
                     </div>
                     {(record.diagnosis || record.treatment) && (
@@ -245,7 +246,7 @@ export default function StudentHealthPage() {
                 <div>
                   <h5 className="text-sm text-gray-500 mb-1.5">Last Checkup</h5>
                   <p className="text-base font-bold text-gray-900">
-                    {healthRecords.length > 0 ? formatDate(healthRecords[0].date) : "No checkups yet"}
+                    {healthRecords.length > 0 && healthRecords[0].date ? formatDate(healthRecords[0].date) : "No checkups yet"}
                   </p>
                 </div>
               </div>

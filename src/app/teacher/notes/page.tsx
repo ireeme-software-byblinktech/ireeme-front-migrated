@@ -732,7 +732,7 @@ export default function TeacherNotesPage() {
   const { data: subjectsData, isLoading: isLoadingSubjects } = useQuery<SubjectsResponse>({
     queryKey: ["teacher-subjects"],
     queryFn: async () => {
-      const response = await apiClient("/teachers/subjects/taught");
+      const response = await apiClient<{ subjects?: any[] }>("/teachers/subjects/taught");
       // Format the response to match SubjectsResponse interface
       return {
         data: response.subjects || []
