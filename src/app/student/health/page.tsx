@@ -36,6 +36,7 @@ export default function StudentHealthPage() {
       icon: <FileText size={20} />,
       progress: Math.min(100, healthRecords.length * 10),
       trend: { value: healthRecords.filter(r => {
+        if (!r.date) return false;
         const date = new Date(r.date);
         const monthAgo = new Date();
         monthAgo.setMonth(monthAgo.getMonth() - 1);
