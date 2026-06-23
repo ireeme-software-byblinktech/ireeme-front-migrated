@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { libraryApi, BooksQueryParams } from '@/lib/api/library';
+import { libraryApi, QueryBooksDto } from '@/lib/api/library';
 
-export const useBooks = (params?: BooksQueryParams) => {
+export const useBooks = (params?: QueryBooksDto) => {
   return useQuery({
     queryKey: ['books', params],
     queryFn: () => libraryApi.getBooks(params),

@@ -197,7 +197,7 @@ export default function StudentHealthPage() {
                         <p className="text-sm text-gray-500 mt-1">{record.date ? formatDate(record.date) : ""}</p>
                       </div>
                       <span className="text-sm text-gray-500">
-                        {record.nurse.user.firstName} {record.nurse.user.lastName}
+                        {record.nurse?.user ? `${record.nurse.user.firstName} ${record.nurse.user.lastName}` : ""}
                       </span>
                     </div>
                     {(record.diagnosis || record.treatment) && (
