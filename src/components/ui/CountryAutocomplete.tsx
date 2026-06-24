@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, Search } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
 
 interface Country {
   name: {
@@ -39,10 +40,7 @@ export function CountryAutocomplete({
     const fetchCountries = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,cca2,flag"
-        );
-        const data: Country[] = await response.json();
+        const data: Country[] = await apiClient("/countries");
         const sorted = data.sort((a, b) =>
           a.name.common.localeCompare(b.name.common)
         );
