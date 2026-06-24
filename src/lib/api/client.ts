@@ -17,7 +17,9 @@ export async function apiClient<T>(
   
   console.log("[API CLIENT] Request:", { endpoint, hasToken: !!token });
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const fullUrl = `${API_BASE_URL}/api/v1${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  
+  const response = await fetch(fullUrl, {
     ...options,
     headers: {
       "Content-Type": "application/json",
