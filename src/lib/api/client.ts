@@ -1,5 +1,7 @@
-// Remove any trailing /api/v1 to prevent double-prefixing since endpoints already include it
-export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/api\/v1\/?$/, '');
+// Remove any trailing /api/v1 and any trailing slashes to prevent double-prefixing
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001")
+  .replace(/\/api\/v1\/?$/, '')
+  .replace(/\/+$/, '');
 
 // Get auth token from storage (your colleague will implement this)
 const getAuthToken = (): string | null => {
