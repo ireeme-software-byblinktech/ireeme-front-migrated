@@ -79,7 +79,7 @@ export default function SetupPage() {
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/files/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ export default function SetupPage() {
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/files/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
