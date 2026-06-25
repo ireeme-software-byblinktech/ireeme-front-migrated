@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/FormElements";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Sparkles, Eye, EyeOff, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { API_BASE_URL } from "@/lib/api/client";
+import { authApi } from "@/lib/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,22 +22,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.message || "Invalid email or password");
-        setLoading(false);
-        return;
-      }
-
-      const data = await response.json();
+      const data = await authApi.login(email, password);
 
       // Store the access token in localStorage
       localStorage.setItem("accessToken", data.accessToken);
@@ -60,9 +45,9 @@ export default function LoginPage() {
 
       const redirectPath = roleRoutes[userRole] || "/admin";
       router.push(redirectPath);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      setError("Unable to connect to server. Please try again.");
+      setError(error.message || "Unable to connect to server. Please try again.");
       setLoading(false);
     }
   };

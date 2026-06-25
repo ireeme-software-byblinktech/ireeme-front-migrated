@@ -6,7 +6,7 @@ import { CountryAutocomplete } from "@/components/ui/CountryAutocomplete";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Building2, User, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { API_BASE_URL } from "@/lib/api/client";
+import { authApi } from "@/lib/api/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -38,20 +38,7 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to register institution");
-      }
-
-      const data = await response.json();
+      const data = await authApi.register(formData);
 
       // Store the access token
       localStorage.setItem("accessToken", data.accessToken);
