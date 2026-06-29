@@ -33,12 +33,14 @@ export function CountryAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(value);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch countries on mount
   useEffect(() => {
     const fetchCountries = async () => {
       setLoading(true);
+      setError(null);
       try {
         const data: Country[] = await apiClient("/countries");
         const sorted = data.sort((a, b) =>
@@ -48,6 +50,7 @@ export function CountryAutocomplete({
         setFilteredCountries(sorted);
       } catch (error) {
         console.error("Failed to fetch countries:", error);
+        setError("Failed to load countries");
       } finally {
         setLoading(false);
       }
@@ -122,7 +125,11 @@ export function CountryAutocomplete({
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-[300px] overflow-y-auto">
-          {loading ? (
+          {error ? (
+            <div className="p-4 text-center text-red-500 text-sm">
+              {error}
+            </div>
+          ) : loading ? (
             <div className="p-4 text-center text-gray-500 text-sm">
               Loading countries...
             </div>
