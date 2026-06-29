@@ -3,6 +3,9 @@ export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhos
   .replace(/\/api\/v1\/?$/, '')
   .replace(/\/+$/, '');
 
+// List of public endpoints that should not trigger 401 redirect
+const PUBLIC_ENDPOINTS = ['/countries', '/health', '/health/ready', '/health/live'];
+
 // Get auth token from storage (your colleague will implement this)
 const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;
@@ -30,8 +33,13 @@ export async function apiClient<T>(
 
   console.log("[API CLIENT] Response status:", response.status, "for endpoint:", endpoint);
 
-  // Handle 401 Unauthorized - redirect to login
-  if (response.status === 401) {
+  // Check if this is a public endpoint
+  const isPublicEndpoint = PUBLIC_ENDPOINTS.some(publicEndpoint => 
+    endpoint.startsWith(publicEndpoint)
+  );
+
+  // Handle 401 Unauthorized - redirect to login only for non-public endpoints
+  if (response.status === 401 && !isPublicEndpoint) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("accessToken");
       window.location.href = "/login";
