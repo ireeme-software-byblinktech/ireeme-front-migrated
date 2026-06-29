@@ -119,12 +119,12 @@ export default function RegisterPage() {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 ml-1">Country</label>
+                    <label className="text-sm font-bold text-gray-700 ml-1">Country (Optional)</label>
                     <CountryAutocomplete
                       value={formData.country}
                       onChange={handleCountryChange}
                       placeholder="e.g. United States"
-                      required
+                      required={false}
                     />
                   </div>
                 </div>
