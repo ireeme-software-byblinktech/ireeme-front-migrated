@@ -1,0 +1,30 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "dev",
+    "emmanuel",
+    "main",
+    "sam",
+    "samuel",
+    "sandrine",
+    "sonia"
+  ],
+  "parent": {
+    "dev": "main",
+    "emmanuel": "main",
+    "main": null,
+    "sam": "main",
+    "samuel": "main",
+    "sandrine": "main",
+    "sonia": "main"
+  },
+  "order": [
+    "main",
+    "dev",
+    "emmanuel",
+    "sam",
+    "samuel",
+    "sandrine",
+    "sonia"
+  ]
+}
